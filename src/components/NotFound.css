@@ -1,0 +1,58 @@
+.not-found-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.not-found-container h1 {
+  color: #dc3545;
+  margin-bottom: 20px;
+}
+
+.error-details {
+  background-color: #fff;
+  border-left: 4px solid #dc3545;
+  padding: 15px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.error-details h2 {
+  color: #343a40;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.action-buttons {
+  margin-top: 30px;
+}
+
+.home-button, .retry-button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.home-button {
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+}
+
+.retry-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.home-button:hover, .retry-button:hover {
+  opacity: 0.9;
+}

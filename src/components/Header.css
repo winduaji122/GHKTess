@@ -1,0 +1,289 @@
+.header {
+    background-color: #000;
+    padding: 0;
+    width: 100%;
+    border-bottom: none;
+    position: relative;
+    z-index: 1000; /* Menurunkan z-index header agar tidak menimpa dropdown */
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 1100px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .site-title {
+    color: #fff;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .search-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    padding: 8px;
+    border: none;
+    border-radius: 4px 0 0 4px;
+  }
+
+  .search-button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .login-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  .notification-icon {
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+/* Gaya untuk tombol profil */
+.writer-profile-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  border: none;
+  outline: none;
+  position: relative;
+  z-index: 10002; /* Memastikan button selalu dapat diklik */
+}
+
+.writer-profile-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.writer-profile-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Gaya untuk kontainer gambar profil */
+.writer-profile-image-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #4B5563;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Gaya untuk gambar profil */
+.writer-profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Gaya untuk tombol profil default (ikon user) */
+.writer-profile-button-default {
+  background-color: #4B5563;
+}
+
+/* Gaya untuk kontainer ikon profil */
+.writer-profile-icon-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Gaya untuk ikon profil */
+.writer-profile-icon {
+  width: 24px;
+  height: 24px;
+  color: #D1D5DB;
+}
+
+/* Gaya untuk ikon fallback */
+.writer-profile-fallback-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #D1D5DB;
+  background-color: #4B5563;
+  border-radius: 50%;
+}
+
+/* Menghilangkan garis bawah pada tautan di menu dropdown */
+.user-dropdown-menu a,
+.user-dropdown-menu a:link,
+.user-dropdown-menu a:visited {
+  text-decoration: none !important;
+  color: #333 !important;
+}
+
+/* Memastikan tidak ada garis bawah saat hover */
+.user-dropdown-menu a:hover,
+.user-dropdown-menu a:active {
+  text-decoration: none !important;
+  color: #333 !important;
+}
+
+/* Styling untuk item menu dropdown */
+.user-dropdown-menu .group {
+  color: #333 !important;
+}
+
+/* Styling untuk item menu dropdown saat hover */
+.user-dropdown-menu .group:hover {
+  background-color: #f0f0f0;
+}
+
+/* Styling untuk dropdown container di header */
+.header-dropdown-container {
+  position: relative;
+  isolation: isolate; /* Membuat stacking context baru */
+  z-index: 10001;
+}
+
+/* Styling untuk dropdown container saat hover */
+.header-dropdown-container:hover {
+  z-index: 99999 !important; /* Meningkatkan z-index saat hover */
+}
+
+/* Memastikan dropdown tetap terlihat saat hover */
+.header-dropdown-container:hover .header-dropdown-menu,
+.header-dropdown-menu:hover {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Memastikan dropdown container tidak tertimpa oleh komponen lain */
+.header-dropdown-container::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 30px; /* Tingkatkan area hover */
+  z-index: 10000; /* Pastikan area hover memiliki z-index yang cukup tinggi */
+  pointer-events: none; /* Pastikan area ini tidak menghalangi interaksi */
+}
+
+/* Styling untuk dropdown menu di header */
+.header-dropdown-menu {
+  z-index: 10001 !important; /* Memastikan z-index jauh lebih tinggi dari navbar dan header */
+  position: absolute !important; /* Menggunakan fixed positioning untuk mencegah tertimpa */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Shadow yang lebih kuat */
+  padding-top: 8px !important; /* Menambahkan padding atas */
+  padding-bottom: 8px !important; /* Menambahkan padding bawah */
+  min-width: 200px !important; /* Memastikan dropdown memiliki lebar minimum */
+  background-color: white !important; /* Memastikan background putih */
+  border-radius: 8px !important; /* Memastikan sudut bulat */
+  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* Menambahkan border tipis */
+  transform-origin: top right !important; /* Memastikan animasi berasal dari kanan atas */
+  will-change: transform, opacity !important; /* Optimasi performa animasi */
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease !important; /* Transisi yang lebih halus */
+  max-height: calc(100vh - 100px) !important; /* Memastikan dropdown tidak terlalu panjang */
+  overflow-y: auto !important; /* Menambahkan scroll jika konten terlalu panjang */
+  margin-top: 5px !important; /* Sedikit margin atas untuk memisahkan dari tombol */
+  pointer-events: auto !important; /* Memastikan menu tetap di atas selama transisi */
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Styling tambahan untuk dropdown menu */
+.header-dropdown-menu.visible,
+.header-dropdown-menu:hover {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important; /* Memastikan dropdown dapat menerima event mouse */
+  transform: translateY(0) scale(1) !important; /* Memastikan dropdown muncul dengan animasi yang tepat */
+  display: block !important; /* Memastikan dropdown tetap terlihat */
+}
+
+/* Styling untuk dropdown menu saat tidak terlihat */
+.header-dropdown-menu:not(.visible):not(:hover) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important; /* Memastikan dropdown tidak dapat menerima event mouse */
+  transform: translateY(-10px) scale(0.95) !important; /* Memastikan dropdown hilang dengan animasi yang tepat */
+}
+
+/* Hapus atau modifikasi styling yang mengubah z-index saat hover */
+.header-dropdown-container:hover .header-dropdown-menu,
+.header-dropdown-menu:hover {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+  /* Hapus perubahan z-index di sini karena sudah diatur di atas */
+}
+
+/* Tambahkan styling untuk memastikan transisi yang mulus */
+.header-dropdown-menu[data-state="entering"],
+.header-dropdown-menu[data-state="entered"] {
+  z-index: 10001 !important;
+  visibility: visible !important;
+}
+
+.header-dropdown-menu[data-state="leaving"] {
+  z-index: 10001 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+/* Pastikan menu tetap terlihat saat aktif */
+.header-dropdown-menu[data-headlessui-state="open"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Styling untuk ikon di menu dropdown */
+.user-dropdown-menu svg {
+  color: #333 !important;
+}
+
+/* Styling untuk judul situs */
+header a.text-3xl {
+  color: white !important;
+  text-decoration: none !important;
+}
+
+header a.text-3xl:hover {
+  color: white !important;
+  text-decoration: none !important;
+}

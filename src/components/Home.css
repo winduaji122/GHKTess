@@ -1,0 +1,76 @@
+.menu-item-active {
+  background-color: #0078ff;
+  color: white;
+}
+
+.home-wrapper {
+  width: 100%;
+}
+
+.carousel-section {
+  margin-top: 20px; /* Menambahkan margin atas agar tidak menindih navbar */
+  margin-bottom: 2rem;
+  width: 100%;
+  position: relative; /* Memastikan posisi relatif */
+  z-index: 5; /* Memastikan z-index lebih rendah dari navbar */
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+}
+
+.left-column {
+  flex: 1;
+  width: 100%;
+}
+
+.right-column {
+  flex: 1;
+  min-width: 240px;
+  max-width: 320px;
+}
+
+.featured-post-section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+  color: #2c3e50;
+}
+
+.latest-posts-section {
+  margin-top: 10px;
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .right-column {
+    max-width: 100%;
+  }
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #e74c3c;
+}

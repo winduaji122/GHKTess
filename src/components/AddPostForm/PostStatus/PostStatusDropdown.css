@@ -1,0 +1,137 @@
+/* PostStatusDropdown.css */
+.status-dropdown {
+  appearance: none;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.status-dropdown:hover {
+  border-color: #bdbdbd;
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Styling untuk opsi di dalam dropdown */
+.status-dropdown option {
+  padding: 10px;
+  font-weight: 500;
+}
+
+/* Styling khusus untuk setiap status */
+.status-dropdown option[value="draft"] {
+  color: #FFC107;
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.status-dropdown option[value="published"] {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.status-dropdown option[value="archived"] {
+  color: #9E9E9E;
+  background-color: rgba(158, 158, 158, 0.1);
+}
+
+/* Styling untuk opsi yang dinonaktifkan */
+.status-dropdown option:disabled {
+  color: #bdbdbd;
+  background-color: #f5f5f5;
+  font-style: italic;
+}
+
+/* Styling untuk dropdown berdasarkan status yang dipilih */
+.status-dropdown.draft {
+  border-left: 4px solid #FFC107;
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+.status-dropdown.published {
+  border-left: 4px solid #4CAF50;
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.status-dropdown.archived {
+  border-left: 4px solid #9E9E9E;
+  background-color: rgba(158, 158, 158, 0.05);
+}
+
+/* Styling untuk container status */
+.status-container {
+  position: relative;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.status-container:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling untuk label status */
+.status-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Styling untuk info status */
+.status-info {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #757575;
+  font-style: italic;
+  padding: 8px 12px;
+  background-color: rgba(33, 150, 243, 0.08);
+  border-left: 3px solid #2196F3;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+/* Animasi saat dropdown dibuka */
+@keyframes dropdownOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-dropdown:focus {
+  animation: dropdownOpen 0.2s ease-out forwards;
+}
+
+/* Responsif untuk layar kecil */
+@media (max-width: 768px) {
+  .status-dropdown {
+    font-size: 13px;
+    padding: 8px 10px;
+    padding-right: 32px;
+    background-size: 14px;
+    background-position: right 10px center;
+  }
+}

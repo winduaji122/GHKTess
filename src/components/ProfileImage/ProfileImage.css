@@ -1,0 +1,239 @@
+/* Profile Image Component Styles */
+
+.user-profile-image-section {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.user-profile-image-dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-profile-image-dropzone.dropzone-active {
+  border-color: #4a90e2;
+  background-color: rgba(74, 144, 226, 0.05);
+}
+
+.user-profile-image-dropzone.dropzone-uploading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.user-profile-image-input {
+  display: none;
+}
+
+.user-profile-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.user-profile-image-icon {
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.user-profile-upload-text {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.user-profile-upload-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.user-profile-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-profile-upload-button:hover {
+  background-color: #3a7bc8;
+}
+
+.user-profile-button-icon {
+  margin-right: 0.5rem;
+}
+
+/* Upload Progress Styles */
+.user-profile-upload-progress-wrapper {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.user-profile-upload-progress-container {
+  width: 100%;
+}
+
+.user-profile-upload-progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.user-profile-upload-progress-fill {
+  height: 100%;
+  background-color: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+.user-profile-upload-progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.user-profile-upload-percentage {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* Image Preview Styles */
+.user-profile-image-preview-container {
+  margin-top: 1rem;
+}
+
+.user-profile-image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Avatar Container Styles */
+.user-profile-avatar-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 3px solid #fff;
+}
+
+.user-profile-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.user-profile-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s;
+}
+
+.user-profile-image-preview.uploading {
+  opacity: 0.7;
+}
+
+.user-profile-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #e0e0e0;
+  color: #888;
+}
+
+.user-profile-image-remove-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.user-profile-image-remove-button:hover {
+  background-color: #ff7875;
+}
+
+.user-profile-image-debug {
+  margin-top: 0.5rem;
+  text-align: left;
+  word-break: break-all;
+}
+
+/* Crop styles telah dihapus */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-profile-image-dropzone {
+    padding: 1rem;
+  }
+
+  .user-profile-upload-text {
+    font-size: 0.9rem;
+  }
+
+  .user-profile-upload-hint {
+    font-size: 0.75rem;
+  }
+
+  .user-profile-crop-container {
+    padding: 0.5rem;
+  }
+
+  .user-profile-crop-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

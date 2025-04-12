@@ -1,0 +1,146 @@
+.label-navbar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 1000; /* Memastikan z-index sama dengan navbar */
+}
+
+.label-navbar {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding: 0 10px;
+  flex-grow: 1;
+  position: relative;
+  z-index: 1001; /* Memastikan z-index sama dengan dropdown-container */
+}
+
+.label-navbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.label-nav-item {
+  padding: 12px 20px;
+  white-space: nowrap;
+  color: #555;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1001; /* Memastikan z-index sama dengan dropdown-container */
+}
+
+.label-nav-item:hover {
+  color: #1a5f7a;
+  background-color: rgba(26, 95, 122, 0.05);
+}
+
+.label-nav-item.active {
+  color: #1a5f7a;
+  border-bottom-color: #1a5f7a;
+  font-weight: 600;
+}
+
+.home-icon {
+  font-size: 1rem;
+}
+
+.nav-arrow {
+  background: #f9f9f9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.3s ease;
+  z-index: 1002; /* Memastikan z-index sama dengan navbar-dropdown-menu */
+}
+
+.nav-arrow:hover {
+  color: #1a5f7a;
+  background-color: rgba(26, 95, 122, 0.1);
+}
+
+.nav-arrow-left {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.nav-arrow-right {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Styling untuk dropdown menu di label navbar */
+.navbar-dropdown-menu {
+  z-index: 1002 !important; /* Memastikan dropdown menu selalu di atas komponen lain */
+  position: absolute !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Shadow yang lebih kuat */
+  margin-top: 0 !important; /* Menghilangkan margin atas */
+  border-top: 2px solid #1a5f7a !important; /* Menambahkan border atas untuk visual connection */
+  background-color: white !important;
+}
+
+.dropdown-container {
+  position: relative;
+  z-index: 1001; /* Memastikan container dropdown juga memiliki z-index tinggi */
+}
+
+/* Memastikan dropdown tetap terlihat saat hover */
+.dropdown-container:hover .navbar-dropdown-menu,
+.navbar-dropdown-menu:hover {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important; /* Memastikan dropdown dapat menerima event mouse */
+}
+
+/* Styling untuk item di dropdown menu */
+.navbar-dropdown-menu a,
+.navbar-dropdown-menu div[role="menuitem"] {
+  color: #333 !important;
+  text-decoration: none !important;
+  display: block !important; /* Memastikan link menempati seluruh area */
+  padding: 8px 16px !important; /* Padding yang lebih besar untuk area klik yang lebih besar */
+}
+
+.navbar-dropdown-menu a:hover,
+.navbar-dropdown-menu div[role="menuitem"]:hover {
+  color: #1a5f7a !important;
+  text-decoration: none !important;
+  background-color: #f0f0f0 !important;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .label-nav-item {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+
+  .nav-arrow {
+    width: 35px;
+    height: 35px;
+  }
+
+  .navbar-dropdown-menu {
+    width: 100% !important;
+    left: 0 !important;
+  }
+}

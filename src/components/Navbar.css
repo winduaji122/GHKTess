@@ -1,0 +1,213 @@
+.navbar {
+  background-color: #000000;
+  padding: 0; /* Hapus padding di sini */
+  transition: all 0.3s ease-in-out;
+  border-bottom: none; /* Menghilangkan border bawah */
+  height: 50px; /* Menyesuaikan tinggi navbar dengan navbar-container */
+}
+
+.navbar.floating {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  animation: translateY(0);
+}
+
+/* Tambahkan ini untuk memastikan konten navbar selalu memiliki padding yang sama */
+.navbar-content {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: none; /* Menghilangkan border bawah */
+  max-height: 50px; /* Memastikan tinggi konten navbar tidak melebihi navbar */
+}
+
+
+
+/* Container sudah didefinisikan di index.css */
+
+.navbar a,
+.navbar a:link,
+.navbar a:visited,
+.navbar a:hover,
+.navbar a:active {
+  text-decoration: none !important;
+  color: #ffffff !important; /* Sesuaikan dengan warna teks yang Anda inginkan */
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  height: 40px; /* Memastikan tinggi link tidak melebihi navbar */
+}
+
+.navbar a:hover {
+  background-color: #333333; /* Sesuaikan dengan warna hover yang Anda inginkan */
+  border-radius: 4px;
+  text-decoration: none !important;
+  color: #ffffff !important;
+  /* Pastikan efek hover tidak melewati container */
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.home-icon {
+  font-size: 20px;
+}
+
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  border-width: 0 10px 10px;
+  border-style: solid;
+  border-color: transparent transparent white;
+}
+
+.transform {
+  transition: transform 0.3s ease-in-out;
+}
+
+.translate-y-0 {
+  transform: translateY(0);
+}
+
+.-translate-y-full {
+  transform: translateY(-100%);
+}
+
+.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.floating-nav {
+  transition: top 0.3s ease-in-out;
+}
+
+.navbar-container {
+  width: 100%;
+  background-color: #000000;
+  border-top: 1px solid #333333;
+  height: var(--navbar-height, 45px); /* Default 40px, bisa diubah dengan CSS variable */
+  align-items: center;
+  padding-top: 1px; /* Menambahkan sedikit padding di atas */
+}
+
+.navbar-container .container {
+  width: 1100px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+}
+
+/* Pastikan panel mobile juga menggunakan container yang sama */
+.sm\:hidden .container {
+  width: 1100px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  background-color: #000000;
+}
+
+/* Tambahkan padding untuk menu mobile */
+.sm\:hidden .space-y-1 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slideDown 0.8s ease-out forwards;
+}
+
+/* Styling untuk dropdown menu di navbar */
+.navbar-dropdown-menu {
+  z-index: 1000 !important; /* Memastikan dropdown menu selalu di atas komponen lain */
+  position: absolute !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Shadow yang lebih kuat */
+  margin-top: 0 !important; /* Menghilangkan margin atas */
+  border-top: 2px solid #333 !important; /* Menambahkan border atas untuk visual connection */
+}
+
+.dropdown-container {
+  position: relative;
+  z-index: 999; /* Memastikan container dropdown juga memiliki z-index tinggi */
+}
+
+/* Memastikan dropdown tetap terlihat saat hover */
+.dropdown-container:hover .navbar-dropdown-menu,
+.navbar-dropdown-menu:hover {
+  display: block !important;
+  opacity: 1 ;
+  visibility: visible ;
+  transform: translateY(0) ;
+  pointer-events: auto ; /* Memastikan dropdown dapat menerima event mouse */
+}
+
+/* Memastikan dropdown menu selalu di atas komponen lain */
+.navbar, .navbar-container {
+  position: relative;
+  z-index: 1000; /* Meningkatkan z-index navbar */
+}
+
+.dropdown-container {
+  position: relative;
+  z-index: 1001; /* Meningkatkan z-index container dropdown */
+}
+
+.navbar-dropdown-menu {
+  position: absolute !important;
+  z-index: 1002 !important; /* Memastikan z-index dropdown menu lebih tinggi dari semua komponen */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.navbar-dropdown-menu a,
+.navbar-dropdown-menu a:link,
+.navbar-dropdown-menu a:visited {
+  color: #333 !important;
+  text-decoration: none !important;
+  display: block !important; /* Memastikan link menempati seluruh area */
+  padding: 8px 16px !important; /* Padding yang lebih besar untuk area klik yang lebih besar */
+}
+
+.navbar-dropdown-menu a:hover,
+.navbar-dropdown-menu a:active {
+  color: #333 !important;
+  text-decoration: none !important;
+  background-color: #f0f0f0;
+}
+
+/* Class untuk menurunkan navbar content */
+.writer-navbar-content-shifted {
+  margin-top: 2px; /* Meningkatkan margin untuk efek yang lebih terlihat */
+  transform: translateY(1px); /* Meningkatkan transform untuk efek yang lebih terlihat */
+  position: relative;
+  top: 1px; /* Menambahkan posisi relatif dan top untuk memastikan pergeseran */
+  padding-top: 1px; /* Menambahkan padding untuk efek yang lebih terlihat */
+}
