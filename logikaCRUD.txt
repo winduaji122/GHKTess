@@ -1,0 +1,25 @@
+Urutan interaksi dengan backend untuk operasi CRUD (Create, Read, Update, Delete) atau metode HTTP (PUT, POST, GET, DELETE) biasanya mengikuti alur berikut:
+1. Route
+2. Middleware
+3. Controller
+4. Model
+5. Database
+Penjelasan detail:
+1. Route:
+    Ini adalah titik masuk pertama untuk permintaan HTTP.
+    Menentukan URL endpoint dan metode HTTP yang akan digunakan.
+    Mengarahkan permintaan ke middleware dan/atau controller yang sesuai.
+2. Middleware:
+    Berjalan sebelum controller.
+    Melakukan tugas seperti autentikasi, validasi, logging, dll.
+    Dapat menghentikan alur permintaan atau meneruskannya ke middleware/controller berikutnya.
+3. Controller:
+    Menangani logika bisnis utama.
+    Menerima data dari request, memproses data tersebut, dan menentukan respons.
+    Berinteraksi dengan Model untuk operasi data.
+4. Model:
+    Merepresentasikan struktur data dan logika bisnis terkait data.
+    Berinteraksi langsung dengan database.
+    Melakukan operasi CRUD pada database.
+5. Database:
+    Menyimpan dan mengelola data.

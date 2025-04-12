@@ -1,0 +1,203 @@
+    MY-REACT-APP/
+├── backend/
+│   ├── config/
+│   │   ├── databaseConfig.js
+│   │   └── googleAuth.js
+│   ├── controllers/
+│   │   ├── adminController.js
+│   │   ├── authController.js
+│   │   ├── labelController.js
+│   │   ├── postController.js
+│   │   ├── searchController.js
+│   │   ├── uploadController.js
+│   │   └── userController.js
+│   ├── logs/
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   ├── cacheMiddleware.js
+│   │   ├── csrfMiddleware.js
+│   │   ├── isPostOwner.js
+│   │   ├── uploadMiddleware.js
+│   │   └── validationMiddleware.js
+│   ├── models/
+│   │   ├── Label.js
+│   │   ├── Post.js
+│   │   ├── PostLabel.js
+│   │   ├── UniqueLabel.js
+│   │   └── User.js
+│   ├── node_modules/
+│   └── routes/
+│       ├── authRoutes.js
+│       ├── labels.js
+│       ├── posts.js
+│       └── search.js
+│       └── uploadRoutes.js
+├── scripts/
+│   ├── createAdmin.js
+│   ├── fixDuplicateSlugs.js
+│   ├── fixImagePaths.js
+│   └── fixPostsData.js
+├── services/
+│   └── userService.js
+├── uploads/
+├── utils/
+│   ├── cache.js
+│   ├── checkPermission.js
+│   ├── dateHelper.js
+│   ├── emailQueue.js
+│   ├── emailService.js
+│   ├── emailTemplates.js
+│   ├── logger.js
+│   ├── rateLimiter.js
+│   ├── errorHandler.js
+│   ├── slugUtils.js
+│   ├── tokenCleanup.js
+│   └── urlHelper.js
+├── .env
+├── .gitignore
+├── app.js
+├── combined.log
+├── config.js
+├── createAdminUser.js
+├── error.log
+├── package-lock.json
+├── package.json
+├── server.js
+└── uploadConfig.js
+frontend/
+├── public/
+│   ├── service-worker.js
+│   └── vite.svg
+├── src/
+│   ├── api/
+│   │   ├── auth.js
+│   │   ├── axios.js
+│   │   ├── Config.js
+│   │   ├── labelApi.js
+│   │   └── postApi.js
+│   ├── assets/
+│   │   └── react.svg
+│   └── components/
+│       ├── Backup/
+│       ├── AddPostForm/
+│       │   ├── AddPostForm.css
+│       │   ├── AddPostForm.jsx
+│       │   ├── PostImage/
+│       │   │   ├── index.jsx
+│       │   │   ├── ImagePreview.jsx    
+│       │   │   ├── UploadProgress.jsx
+│       │   ├── PostFeatures/
+│       │   │   ├── index.jsx
+│       │   │   ├── FeaturedToggle.jsx
+│       │   │   ├── SpotlightToggle.jsx
+│       │   ├── PostLabels/
+│       │   │   ├── index.jsx
+│       │   │   ├── LabelList.jsx
+│       │   │   ├── LabelManager.jsx
+│       │   │   └── LabelDropdown.jsx
+│       │   ├── PostStatus/
+│       │   │   ├── index.jsx
+│       │   │   ├── PostStatusDropdown.jsx
+│       │   ├── hooks/
+│       │   │   ├── usePostForm.js
+│       │   │   ├── usePostLabels.js
+│       │   │   └── usePostImages.js
+│       │   └── utils/
+│       │       ├── postValidation.js
+│       │       ├── postFormatter.js
+│       │       └── postHelper.js   
+│       ├── AdminLayout.jsx
+│       ├── AdminManageUsers.jsx
+│       ├── AdminManageUsers.css
+│       ├── AdminPosts.css
+│       ├── AdminPosts.jsx
+│       ├── CustomXAxis.jsx
+│       ├── CustomYAxis.jsx
+│       ├── Dashboard.jsx
+│       ├── ErrorBoundary.jsx
+│       ├── FeaturedPost.css
+│       ├── FeaturedPost.jsx
+│       ├── Footer.jsx
+│       ├── ForgotPassword.jsx
+│       ├── FullPostView.css
+│       ├── FullPostView.jsx
+│       ├── GoogleAuthCallback.jsx
+│       ├── Header.css
+│       ├── Header.jsx
+│       ├── Home.css
+│       ├── Home.jsx
+│       ├── LabelComponent.jsx
+│       ├── LabelManager.jsx
+│       ├── Login.jsx
+│       ├── Navbar.css
+│       ├── Navbar.jsx
+│       ├── NestedDropdown.css
+│       ├── NestedDropdown.jsx
+│       ├── NotFound.css
+│       ├── NotFound.jsx
+│       ├── Pagination.jsx
+│       ├── Post.jsx
+│       ├── PostCard.css
+│       ├── PostCard.jsx
+│       ├── PostList.jsx
+│       ├── PrivacyPolicy.css
+│       ├── PrivacyPolicy.jsx
+│       ├── PrivateRoute.jsx
+│       ├── RefreshPage.jsx
+│       ├── Register.css
+│       ├── Register.jsx
+│       ├── RelatedPostWidget.css
+│       ├── RelatedPostWidget.jsx
+│       ├── ResetPassword.jsx
+│       ├── SearchBar.jsx
+│       ├── SearchPage.css
+│       ├── SearchPage.jsx
+│       ├── SpotlightPage.css
+│       ├── SpotlightPage.jsx
+│       ├── SpotlightWidget.css
+│       ├── SpotlightWidget.jsx
+│       ├── TermsOfService.css
+│       ├── TermsOfService.jsx
+│       ├── VerifyEmail.css
+│       └── VerifyEmail.jsx
+├── config.js/
+│   └── navigation.js
+├── constants/
+│   └── errorMessages.js
+├── contexts/
+│   └── AuthContext.jsx
+├── hooks/
+│   ├── useInitialData.js
+│   ├── useLabels.js
+│   └── useLocalStorage.js
+├── services/
+│   ├── authService.js
+│   └── userService.js
+├── test/
+│   └── setup.js
+├── utils/
+│   ├── constants.js
+│   ├── csrfUtils.js
+│   ├── highlightText.jsx
+│   ├── imageHelper.js
+│   ├── imageLoader.js
+│   ├── tokenManager.js
+│   └── tokenStorage.js
+├── App.css
+├── App.jsx
+├── index.css
+├── index.js
+├── main.jsx
+├── reportWebVitals.js
+├── server.js
+├── .env
+├── .eslintrc.cjs
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── README.md
+├── struktur_frontend_baru.txt
+├── tailwind.config.js
+├── vite.config.js
+└── node_modules/

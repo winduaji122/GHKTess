@@ -1,0 +1,24 @@
+1. Backend:
+   - backend/controllers/authController.js: Berisi logika untuk menangani permintaan login dan register.
+   - backend/routes/authRoutes.js: Mendefinisikan rute API untuk login dan register.
+   - backend/middleware/authMiddleware.js: berisi middleware untuk autentikasi.
+   - backend/models/User.js: Model database untuk pengguna.
+   - backend/config/googleAuth.js: Konfigurasi untuk autentikasi Google (jika digunakan).
+   - backend/.env: berisi konfigurasi penting seperti URL API atau kunci rahasia.
+2. Frontend:
+   - frontend/src/components/Login.jsx: Komponen React untuk halaman login.
+   - frontend/src/components/Register.jsx: Komponen React untuk halaman register.
+   - frontend/src/api/auth.js: Berisi fungsi-fungsi untuk melakukan permintaan API terkait autentikasi.
+   - frontend/src/contexts/AuthContext.jsx: Menyediakan konteks autentikasi untuk aplikasi.
+   - frontend/src/components/GoogleAuthCallback.jsx: Menangani callback dari autentikasi Google.
+   - frontend/src/services/authService.js: berisi logika tambahan terkait autentikasi.
+   - frontend/.env: berisi konfigurasi penting seperti URL API atau kunci rahasia.
+
+Alur logika login dan register sebagai berikut:
+1. Pengguna memasukkan data di komponen Login.jsx atau Register.jsx.
+2. Komponen ini menggunakan fungsi dari auth.js untuk mengirim permintaan ke backend.
+3. Permintaan diterima oleh rute yang didefinisikan di authRoutes.js.
+4. authController.js memproses permintaan, berinteraksi dengan model User.js.
+5. Respons dikirim kembali ke frontend.
+6. Frontend memperbarui state autentikasi menggunakan AuthContext.jsx.
+7. Jika berhasil, pengguna diarahkan ke halaman AdminPosts.jsx.
