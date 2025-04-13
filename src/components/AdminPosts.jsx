@@ -922,13 +922,17 @@ function AdminPosts() {
     try {
       const version = imageVersions[postId] || Date.now();
 
-      // Bersihkan URL dari duplikasi localhost
+      // Bersihkan URL dari duplikasi localhost atau backend URL
       let cleanPath = imagePath.replace(/^http:\/\/localhost:5000\/uploads\//, '');
+      cleanPath = cleanPath.replace(/^https:\/\/ghk-tess-backend\.vercel\.app\/uploads\//, '');
       cleanPath = cleanPath.replace(/^uploads\//, '');
 
       // Pastikan path tidak mengandung URL lengkap ganda
       if (cleanPath.includes('http://localhost:5000')) {
         cleanPath = cleanPath.substring(cleanPath.lastIndexOf('http://localhost:5000/uploads/') + 29);
+      }
+      if (cleanPath.includes('https://ghk-tess-backend.vercel.app')) {
+        cleanPath = cleanPath.substring(cleanPath.lastIndexOf('https://ghk-tess-backend.vercel.app/uploads/') + 43);
       }
 
       return `${import.meta.env.VITE_API_BASE_URL}/uploads/${cleanPath}?v=${version}`;
