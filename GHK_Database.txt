@@ -1,0 +1,18 @@
+Langkah-langkah yang perlu Anda lakukan:
+Di frontend/src/components/AddPostForm.jsx:
+Pastikan form memiliki encType="multipart/form-data"
+Periksa cara Anda membuat dan mengisi FormData
+Di frontend/src/api/postApi.js:
+Pastikan Anda mengirim request dengan header yang benar untuk multipart/form-data
+Di frontend/src/api/axios.js:
+Periksa konfigurasi axios, terutama untuk handling multipart/form-data
+Di backend/routes/posts.js:
+Pastikan route untuk membuat post menggunakan middleware multer
+Di backend/controllers/postController.js:
+Tambahkan logging untuk melihat data yang diterima
+Periksa cara Anda menangani file yang diupload
+Di backend/middleware/validationMiddleware.js:
+Periksa validasi untuk pembuatan post, pastikan tidak terlalu ketat
+Di backend/models/Post.js:
+Pastikan model dapat menangani semua field yang dikirim dari frontend
+Di backend/app.js:

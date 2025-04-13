@@ -1,0 +1,226 @@
+PEDOMAN EDITORIAL 
+UNTUK NASKAH BERBAHASA INDONESIA
+Isi
+PENGANTAR	1
+BUKU	2
+BAB ATAU SEBUAH BAGIAN DARI BUKU YANG MEMPUNYAI EDITOR	2
+BUKU TERJEMAHAN	4
+E-BOOK	5
+MAKALAH, SKRIPSI, TESIS ATAU DISERTASI	5
+ARTIKEL DARI JURNAL	6
+ARTIKEL KORAN ATAU MAJALAH	7
+REVIEW ATAU RESENSI ATAS KARYA ILMIAH (BUKU, ARTIKEL, DLL.)	8
+WEBSITE	9
+KONTEN AUDIOVISUAL	9
+KONTEN MEDIA SOSIAL	10
+KOMUNIKASI PERSONAL (WAWANCARA, EMAIL)	11
+CATATAN UMUM	11
+
+PENGANTAR
+Pedoman Editorial ini diadaptasi dari Chicago Manual Style edisi ke-17 (Turabian), dengan Notes and Bibliography Stye. (https://www.chicagomanualofstyle.org/turabian/turabian-notes-and-bibliography-citation-quick-guide.html) oleh D. Sukristiono, PhD. 
+Catatan umum: Istilah yang digunakan dalam bahasa Inggris disesuaikan dengan kaidah Bahasa Indonesia, misalnya: 
+-	“edited by” menjadi “diedit oleh”
+-	“trans.” menjadi “terj.”
+-	“Translated by” menjadi “Diterjemahkan oleh”
+-	“eds.” tidak digunakan dan hanya digunakan “ed.” saja (Bahasa Indonesia tidak mengenal akhiran “s” sebagai penanda jamak)
+-	“et al.” menjadi “dkk.”
+-	“and” menjadi “dan”
+-	“PhD Diss.” menjadi “Disertasi”
+-	“Thesis” menjadi “Tesis” atau “Skripsi”
+-	Penulisan tanggal “Month Day, Year” (“May 12, 2023”) menjadi “Tanggal Bulan Tahun” (“12 Mei 2023”)
+Penulisan tanda baca (titik, koma, kolon, apostrof, kurung), cara penulisan huruf (Kapital/kecil, miring/tegak) dan urutan penulisan tidak diubah.
+BUKU
+FOOTNOTE
+Apabila Anda mereferensi pada sebuah buku untuk pertama kali dalam tulisan Anda, Anda harus menuliskan keterangan buku secara lengkap disertai dengan halaman yang spesifik yang dirujuk. Anda tidak diperkenankan memberikan referensi pada FOOTNOTE tanpa ada rujukan halaman yang jelas.
+
+1 Franz Magnis-Suseno, Menalar Tuhan (Yogyakarta: Kanisius, 2006), 25.
+2 Sharon Sassler dan Amanda Jayne Miller, Cohabitation Nation: Gender, Class, and the Remaking of Relationships (Oakland: University of California Press, 2017), 114.
+FOOTNOTE PENDEK
+Apabila Anda menggunakan kembali referensi yang sama untuk kedua kalinya atau seterusnya, Anda diperbolehkan menggunakan FOOTNOTE PENDEK seperti berikut ini. Di dalam FOOTNOTE PENDEK Anda hanya harus menuliskan nama akhir dari penulis dan satu atau beberapa kata dari judul buku yang dirujuk. Awalan “ibid.” dan “op cit.” tidak boleh digunakan.
+
+3 Magnis-Suseno, Menalar Tuhan, 91–92.
+4 Sassler dan Miller, Cohabitation Nation, 205.
+
+DAFTAR PUSTAKA (DITULIS SECARA ALFABETIS)
+Magnis-Suseno, Franz. Menalar Tuhan. Yogyakarta: Kanisius, 2006.
+Sassler, Sharon, dan Amanda Jayne Miller. Cohabitation Nation: Gender, Class, and the Remaking of Relationships. Oakland: University of California Press, 2017.
+BAB ATAU SEBUAH BAGIAN DARI BUKU YANG MEMPUNYAI EDITOR
+Di dalam FOOTNOTE, Anda wajib mencantumkan secara spesifik halaman dari buku yang Anda kutip atau referensi. Di dalam DAFTAR PUSTAKA Anda harus mencantumkan keseluruhan nomor halaman dari bab atau bagian yang Anda kutip.
+FOOTNOTE
+15 Mary Rowlandson, “The Narrative of My Captivity,”dalam The Making of the American Essay, diedit oleh John D’Agata (Minneapolis: Graywolf Press, 2016), 19–20.
+
+FOOTNOTE PENDEK
+17 Rowlandson, “Captivity,” 48.
+DAFTAR PUSTAKA (ALFABETIS)
+Rowlandson, Mary. “The Narrative of My Captivity.” Dalam The Making of the American Essay, diedit oleh John D’Agata, 19–56. Minneapolis: Graywolf Press, 2016.
+Untuk mereferensi keseluruhan sebuah buku yang mempunyai editor, Anda harus menuliskan nama editor terlebih dahulu dan diikuti dengan “ed.”. Lihat di bawah ini:
+FOOTNOTE
+1 John D’Agata, ed., The Making of the American Essay (Minneapolis: Graywolf Press, 2016), 19–20.
+FOOTNOTE PENDEK
+Di dalam FOOTNOTE PENDEK, singkatan “ed.” tidak dituliskan.
+2 D’Agata, American Essay, 48.
+
+DAFTAR PUSTAKA
+D’Agata, John, ed. The Making of the American Essay. Minneapolis: Graywolf Press, 2016.
+
+
+Apabila sebuah buku mempunyai dua sampai dengan tiga editor Anda harus menuliskan semua nama, seperti berikut ini
+FOOTNOTE
+1 Mary Rowlandson, “The Narrative of My Captivity,” dalam The Making of the American Essay, diedit oleh John D’Agata, Michael McMurry, dan Mark Murphy (Minneapolis: Graywolf Press, 2016), 19-20.
+
+FOOTNOTE PENDEK
+2 Mary Rowlandson, “The Narrative of My Captivity,” 22.
+
+
+DAFTAR PUSTAKA
+Rowlandson, Mary. “The Narrative of My Captivity.” Dalam The Making of the American Essay, diedit oleh John D’Agata, Michael McMurry, dan Mark Murphy, 19–56. Minneapolis: Graywolf Press, 2016.
+
+Apabila sebuah buku mempunyai empat editor atau lebih Anda harus menggunakan “dkk.” sesudah menuliskan nama editor pertama, seperti berikut ini:
+FOOTNOTE
+1 Mary Rowlandson, “The Narrative of My Captivity,” dalam The Making of the American Essay, diedit oleh John D’Agata, dkk. (Minneapolis: Graywolf Press, 2016), 19-20.
+
+FOOTNOTE PENDEK
+2 Rowlandson, “The Narrative of My Captivity,” 22.
+DAFTAR PUSTAKA (ALFABETIS)
+Rowlandson, Mary. “The Narrative of My Captivity.” Dalam The Making of the American Essay, diedit oleh John D’Agata, Michael McMurry, dkk 19–56. Minneapolis: Graywolf Press, 2016.
+BUKU TERJEMAHAN
+FOOTNOTE
+1 Jhumpa Lahiri, In Other Words, terj. Ann Goldstein (New York: Alfred A. Knopf, 2016), 146.
+FOOTNOTE PENDEK
+2 Lahiri, In Other Words, 184.
+DAFTAR PUSTAKA (ALFABETIS)
+Lahiri, Jhumpa. In Other Words. Diterjemahkan oleh Ann Goldstein. New York: Alfred A. Knopf, 2016.
+
+
+
+E-BOOK
+Untuk e-book yang Anda referensi secara online, Anda harus menuliskan alamat website di mana e-book tersebut dipublikasikan secara resmi. Masukkan alamat website (URL) atau nama databasenya. Untuk e-book dengan format yang lain, tuliskan formatnya (misalnya, Kindle). Tuliskan pula halaman yang spesifik sesuai yang Anda rujuk. Apabila rujukan halaman tidak memungkinkan tuliskan nomor babnya atau subbabnya.
+FOOTNOTE
+1 Fyodor Dostoevsky, Crime and Punishment, terj. Constance Garnett, ed. William Allan Neilson (New York: P. F. Collier & Son, 1917), 444, https://archive.org/details/crimepunishment00dostuoft.
+2 Eric Schlosser, Fast Food Nation: The Dark Side of the American Meal (Boston: Houghton Mifflin, 2001), 88, ProQuest Ebrary.
+3 Jane Austen, Pride and Prejudice (New York: Penguin Classics, 2007), bab 3, Kindle.
+FOOTNOTE PENDEK
+4 Dostoevsky, Crime and Punishment, 504–5.
+5 Schlosser, Fast Food Nation, 100.
+6 Austen, Pride and Prejudice, bab 14.
+DAFTAR PUSTAKA (ALFABETIS)
+Austen, Jane. Pride and Prejudice. New York: Penguin Classics, 2007. Kindle.
+Dostoevsky, Fyodor. Crime and Punishment. Diterjemahkan oleh Constance Garnett, edited by William Allan Neilson. New York: P. F. Collier & Son, 1917. https://archive.org/details/crimepunishment00dostuoft.
+Schlosser, Eric. Fast Food Nation: The Dark Side of the American Meal. Boston: Houghton Mifflin, 2001. ProQuest Ebrary.
+MAKALAH, SKRIPSI, TESIS ATAU DISERTASI
+FOOTNOTE
+1 Guadalupe Navarro-Garcia, “Integrating Social Justice Values in Educational Leadership: A Study of African American and Black University Presidents” (Disertasi, University of California, Los Angeles, 2016), 44.
+FOOTNOTE PENDEK
+2 Navarro-Garcia, “Social Justice Values,” 125–26.
+
+DAFTAR PUSTAKA (ALFABETIS)
+Navarro-Garcia, Guadalupe. “Integrating Social Justice Values in Educational Leadership: A Study of African American and Black University Presidents.” Disertasi, University of California, Los Angeles, 2016.
+ARTIKEL DARI JURNAL
+Di dalam FOOTNOTE tuliskan halaman secara spesifik. Di dalam DAFTAR PUSTAKA, tuliskan keseluruhan halaman dari artikel yang dirujuk. Untuk artikel yang dipublikasikan secara online tuliskan URL atau nama databasenya. Apabila artikel tersebut mempunyai DOI (Digital Object Identifier) URL yang DOI inilah yang harus Anda tulis. URL dari DOI yang diawali dengan https://doi.org/ adalah yang utama yang harus Anda tuliskan. URL dan DOI harus tertaut dengan laman sumbernya.
+Untuk artikel yang mempunyai dua sampai dengan tiga nama penulis, Anda harus menuliskan semua namanya di FOOTNOTE yang pertama dan di DAFTAR PUSTAKA. 
+FOOTNOTE
+1 Ashley Hope Pérez, “Material Morality and the Logic of Degrees in Diderot’s Le neveu de Rameau,” Modern Philology 114, no. 4 (2017): 874, https://doi.org/10.1086/689836. 
+2 Shao-Hsun Keng, Chun-Hung Lin, dan Peter F. Orazem, “Expanding College Access in Taiwan, 1978–2014: Effects on Graduate Quality and Income Inequality,” Journal of Human Capital 11, no. 1 (Spring 2017): 9–10, https://doi.org/10.1086/690235.
+3 Peter LaSalle, “Conundrum: A Story about Reading,” New England Review 38, no. 1 (2017): 95, Project MUSE.
+FOOTNOTE PENDEK
+4 Pérez, “Material Morality,” 880–81.
+5 Keng, Lin, dan Orazem, “Expanding College Access,” 23.
+6 LaSalle, “Conundrum,” 101.
+DAFTAR PUSTAKA (ALFABETIS)
+Keng, Shao-Hsun, Chun-Hung Lin, dan Peter F. Orazem. “Expanding College Access in Taiwan, 1978–2014: Effects on Graduate Quality and Income Inequality.” Journal of Human Capital 11, no. 1 (Spring 2017): 1–34. https://doi.org/10.1086/690235.
+LaSalle, Peter. “Conundrum: A Story about Reading.” New England Review 38, no. 1 (2017): 95–109. Project MUSE.
+Pérez, Ashley Hope. “Material Morality and the Logic of Degrees in Diderot’s Le neveu de Rameau.” Modern Philology 114, no. 4 (May 2017): 872–98. https://doi.org/10.1086/689836.
+Untuk artikel yang mempunyai empat atau lebih nama pengarang, di dalam FOOTNOTE Anda harus menuliskan nama pengarang pertama dan ditambahi “dkk.” Di dalam DAFTAR PUSTAKA Anda harus menuliskan semua nama pengarangnya. Apabila nama pengarang lebih dari sepulih, di dalam DAFTAR PUSTAKA Anda menuliskan “dkk.” setelah nama ke-tujuh.
+FOOTNOTE
+7 Jesse N. Weber dkk., “Resist Globally, Infect Locally: A Transcontinental Test of Adaptation by Stickleback and Their Tapeworm Parasite,” American Naturalist 189, no. 1 (January 2017): 45, https://doi.org/10.1086/689597.
+FOOTNOTE PENDEK
+8 Weber dkk., “Resist Globally,” 48–49.
+DAFTAR PUSTAKA
+Weber, Jesse N., Martin Kalbe, Kum Chuan Shim, Noémie I. Erin, Natalie C. Steinel, Lei Ma, dan Daniel I. Bolnick. “Resist Globally, Infect Locally: A Transcontinental Test of Adaptation by Stickleback and Their Tapeworm Parasite.” American Naturalist 189, no. 1 (January 2017): 43–57. https://doi.org/10.1086/689597.
+ARTIKEL KORAN ATAU MAJALAH
+Artikel dari koran, majalah, blog atau yang semacamnya dikutip secara seragam seperti berikut ini. Nomor halaman, bila ada, dapat dituliskan di FOOTNOTE tetapi dihilangkan di DAFTAR PUSTAKA. Apabila Anda merujuk pada artikel Online, alamat URL harus Anda berikan secara utuh, sehingga apabila seseorang merujuknya dapat membuka laman tersebut. Setiap artikel harus mempunyai nama pengarang. Apabila tidak ditemukan dapat dituliskan “Editor”. Penulisan tanggal mengikuti kaidah Bahasa Indonesia, misalnya: “25 Januari 2023”. URL yang tercantum harus tertaut dengan sumbernya.
+FOOTNOTE
+1 Farhad Manjoo, “Snap Makes a Bet on the Cultural Supremacy of the Camera,” New York Times, 8 Maret 2017, https://www.nytimes.com/2017/03/08/technology/snap-makes-a-bet-on-the-cultural-supremacy-of-the-camera.html.
+2 Erin Anderssen, “Through the Eyes of Generation Z,” Globe and Mail (Toronto), 25 Juni 2016, http://www.theglobeandmail.com/news/national/through-the-eyes-of-generation-z/article30571914/.
+3 Rob Pegoraro, “Apple’s iPhone Is Sleek, Smart and Simple,” Washington Post, 5 Juli 2007, LexisNexis Academic.
+4 Editor, “You Don’t Understand: John McWhorter Makes His Case for Black English,” New Yorker, 15 Mei 2017, 85.
+5 Dara Lind, “Moving to Canada, Explained,” Vox, 15 September 2016, http://www.vox.com/2016/5/9/11608830/move-to-canada-how.
+FOOTNOTE PENDEK
+6 Manjoo, “Snap.”
+7 Anderssen, “Generation Z.”
+8 Pegoraro, “Apple’s iPhone.”
+9 Editor, “Black English,” 86.
+10 Lind, “Moving to Canada.”
+DAFTAR PUSTAKA (ALFABETIS)
+Anderssen, Erin. “Through the Eyes of Generation Z.” Globe and Mail (Toronto), 25 Juni 2016. http://www.theglobeandmail.com/news/national/through-the-eyes-of-generation-z/article30571914/.
+Editor. “You Don’t Understand: John McWhorter Makes His Case for Black English.” New Yorker, 15 Mei 2017.
+Lind, Dara. “Moving to Canada, Explained.” Vox, 15 September 2016. http://www.vox.com/2016/5/9/11608830/move-to-canada-how.
+Manjoo, Farhad. “Snap Makes a Bet on the Cultural Supremacy of the Camera.” New York Times, 8 Maret 2017. https://www.nytimes.com/2017/03/08/technology/snap-makes-a-bet-on-the-cultural-supremacy-of-the-camera.html.
+Pegoraro, Rob. “Apple’s iPhone Is Sleek, Smart and Simple.” Washington Post, 5 Juli 2007. LexisNexis Academic.
+Komentar pembaca yang dikutip dituliskan referensinya pada FOOTNOTE tetapi tidak dicantumkan dalam DAFTAR PUSTAKA.
+FOOTNOTE
+11 Eduardo B (Los Angeles), 9 Maret 2017, komentar terhadap Manjoo, “Snap.”
+REVIEW ATAU RESENSI ATAS KARYA ILMIAH (BUKU, ARTIKEL, DLL.)
+FOOTNOTE
+1 Fernanda Eberstadt, “Gone Guy: A Writer Leaves His Wife, Then Disappears in Greece,” resensi atas A Separation,  oleh Katie Kitamura, New York Times, 15 Februari 15 2017, https://www.nytimes.com/2017/02/15/books/review/separation-katie-kitamura.html.
+FOOTNOTE PENDEK
+2 Eberstadt, “Gone Guy.”
+DAFTAR PUSTAKA
+Eberstadt, Fernanda. “Gone Guy: A Writer Leaves His Wife, Then Disappears in Greece.” Resensi atas A Separation, oleh Katie Kitamura. New York Times, 15 Februari, 2017. https://www.nytimes.com/2017/02/15/books/review/separation-katie-kitamura.html.
+WEBSITE 
+Isi dari sebuah website dapat dikutip sebagai berikut. Apabila di dalam tulisan website yang dirujuk tidak disebutkan tanggal publikasinya, tuliskan tanggal mengaksesnya (seperti dalam contoh pada Columbia berikut). URL yang dituliskan harus tertaut dengan sumbernya.
+FOOTNOTE
+1 “Privacy Policy,” Privacy & Terms, Google, terakhir dimodifikasi 17 April 2017, https://www.google.com/policies/privacy/.
+2 “History,” Columbia University, diakses pada 15 Mei 2023, http://www.columbia.edu/content/history.html.
+FOOTNOTE PENDEK
+3 Google, “Privacy Policy.”
+4 Columbia University, “History.”
+DAFTAR PUSTAKA (ALFABETIS)
+Columbia University. “History.” Diakses pada 15 Mei 2023. http://www.columbia.edu/content/history.html.
+Google. “Privacy Policy.” Privacy & Terms. Terakhir dimodifikasi 17 April 2017. https://www.google.com/policies/privacy/.
+KONTEN AUDIOVISUAL 
+FOOTNOTE
+1 Kory Stamper, “From ‘F-Bomb’ to ‘Photobomb,’ How the Dictionary Keeps Up with English,” wawancara oleh Terry Gross, Fresh Air, NPR, 19 April 2017, audio, 35:25, http://www.npr.org/2017/04/19/524618639/from-f-bomb-to-photobomb-how-the-dictionary-keeps-up-with-english.
+2 Beyoncé, “Sorry,” diarahkah oleh Kahlil Joseph dan Beyoncé Knowles, 22 Juni 2016, video, 4:25, https://youtu.be/QxsmWxxouIM.
+FOOTNOTE PENDEK
+3 Stamper, wawancara.
+4 Beyoncé, “Sorry.”
+DAFTAR PUSTAKA (ALFABETIS)
+Beyoncé. “Sorry.” Diarahkan oleh Kahlil Joseph dan Beyoncé Knowles. 22 Juni 2016. Video, 4:25. https://youtu.be/QxsmWxxouIM.
+Stamper, Kory. “From ‘F-Bomb’ to ‘Photobomb,’ How the Dictionary Keeps Up with English.” Wawancara oleh Terry Gross. Fresh Air, NPR, 19 April 2017. Audio, 35:25. http://www.npr.org/2017/04/19/524618639/from-f-bomb-to-photobomb-how-the-dictionary-keeps-up-with-english.
+KONTEN MEDIA SOSIAL
+Kutipan dari media sosial, misalnya Instagram, Facebook atau Twitter biasanya terbatas pada apa yang tertulis atau apa yang diucapkan. Sebuah FOOTNOTE dapat diberikan jika referensi resmi/formal diperlukan atau untuk memberikan tautan (link) pada konten yang dimaksud. DAFTAR PUSTAKA mengenai referensi tersebut juga bisa diberikan, meskipun sangat jarang terjadi. 
+TEKS
+Sloane Crosley memberi nasehat bahwa, “How to edit: Attack a sentence. Write in the margins. Toss in some arrows. Cross out words. Rewrite them. Circle the whole mess and STET” (@askanyone, Twitter, 19 Mei 2017).
+FOOTNOTE 
+1 Pete Souza (@petesouza), “President Obama bids farewell to President Xi of China at the conclusion of the Nuclear Security Summit,” Instagram photo, 1 April 2016, https://www.instagram.com/p/BDrmfXTtNCt/.
+2 Chicago Manual of Style, “Is the world ready for singular they? We thought so back in 1993,” Facebook, 17 April 2015, https://www.facebook.com/ChicagoManual/posts/10152906193679151.
+FOOTNOTE PENDEK
+3 Souza, “President Obama.”
+4 Michele Truty, 17 April 2015, 15.30 WIB, komentar terhadap Chicago Manual of Style, “singular they.”
+
+
+
+
+DAFTAR PUSTAKA
+Chicago Manual of Style. “Is the world ready for singular they? We thought so back in 1993.” Facebook, 17 April 2015. https://www.facebook.com/ChicagoManual/posts/10152906193679151.
+KOMUNIKASI PERSONAL (WAWANCARA, EMAIL)
+Wawancara personal, korespondensi dan bentuk komunikasi personal yang lain, termasuk email, pesan teks dalam berbagai bentuk (SMS, Whatsapp, DM, dll.) biasanya diberi keterangan di dalam teksnya dan hanya dalam FOOTNOTE. Pada DAFTAR PUSTAKA hal-hal tersebut tidak dicantumkan.
+FOOTNOTE
+1 Sam Gomez, Pesan Facebook Messenger kepada penulis, 1 August 2017.
+2 Wawancara dengan responden pada 31 Juli 2017.
+
+CATATAN UMUM
+Perhatikan selalu penulisan TANDA BACA (titik, koma, kurung, kolon, strip, dst.), CARA PENULISAN huruf (KAPITAL atau kecil, miring atau tegak) dan URUTAN penulisan. Semua harus sesuai dengan yang diwajibkan.
+
+DAFTAR PUSTAKA 
+1.	Daftar Pustaka disusun secara alfabetis, tanpa nomor urut.
+2.	Nama belakang dari pengarang dituliskan di depan dengan dipisahkan sebuah koma dengan nama(-nama) depannya. Gelar pengarang tidak ditulis. Misalnya: 
+o	“Franz Magnis-Suseno” dituliskan “Magnis-Suseno, Franz.”
+o	“C.B. Mulyatno” dituliskan “Mulyatno, C.B.”
+o	“A. Setyo Wibowo” dituliskan “Wibowo, A. Setyo”
+o	“Ridwan F. Hanif” dituliskan “Hanif, Ridwan F.”
+3.	Nama pengarang yang sama yang dirujuk untuk kedua kali dan seterusnya dituliskan secara lengkap. Urutan entri penulisan untuk pengarang yang sama mengikuti urutan tahun publikasi, dari yang paling lama ke paling baru. Apabila ada dua atau lebih refensi yang terbit pada tahun yang sama, di akhir tahun diberi suffix abjad (misalnya, 1998a, 1998b). Tidak diperbolehkan menggunakan garis (                  .) untuk referensi yang kedua dan seterusnya pada pengarang yang sama.
+4.	Apabila pengarangnya lebih dari satu orang, hanya nama penulis pertama yang penulisannya dibalik (mengikuti poin 2). Misalnya:
+o	“Franz Magnis-Suseno dan A. Setyo Wibowo” dituliskan “Magnis-Suseno, Franz dan A. Setyo Wibowo”
+5.	Entri DP dituliskan dengan model menggantung atau “hanging” untuk baris kedua dan seterusnya pada setiap entrinya.

@@ -1,0 +1,27 @@
+1. Modifikasi halaman Admin Post:
+Tambahkan pengecekan peran pengguna di backend dan frontend.
+Batasi akses ke fitur-fitur tertentu berdasarkan peran (admin vs writer).
+2. Implementasi pembatasan akses:
+Di backend, buat middleware untuk memeriksa peran pengguna.
+Di frontend, gunakan conditional rendering untuk menampilkan atau menyembunyikan elemen UI berdasarkan peran.
+3. Modifikasi CRUD operations:
+Untuk writer, batasi operasi CRUD hanya pada post yang mereka buat.
+Nonaktifkan fitur untuk menetapkan featured post dan spotlight post bagi writer.
+4. UI/UX Adjustments:
+Sembunyikan opsi untuk mengelola label dari writer.
+Tampilkan hanya post milik writer yang sedang login (untuk writer).
+Tampilkan semua post untuk admin.
+5. Navigasi dan Routing:
+Arahkan writer ke halaman Admin Post yang sudah dimodifikasi setelah login.
+Pastikan writer tidak dapat mengakses rute-rute yang khusus untuk admin.
+6. Keamanan:
+Implementasikan pengecekan peran di setiap endpoint API yang relevan.
+Gunakan middleware di backend untuk memvalidasi akses ke rute tertentu.
+7. Notifikasi dan Feedback:
+Berikan feedback yang jelas kepada writer jika mereka mencoba mengakses fitur yang tidak diizinkan.
+8. Optimisasi Performa:
+Pertimbangkan untuk mengimplementasikan pagination atau lazy loading untuk daftar post, terutama jika jumlahnya besar.
+9. Logging dan Monitoring:
+Implementasikan logging untuk aktivitas penting, terutama untuk operasi CRUD.
+Testing:
+Lakukan pengujian menyeluruh untuk memastikan pembatasan akses berfungsi dengan benar untuk semua peran.
