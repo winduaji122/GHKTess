@@ -1,0 +1,131 @@
+.post-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+
+.post-card {
+  position: relative;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  flex: 1; /* Ini akan membuat card mengisi seluruh tinggi link */
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.post-card-image-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.post-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-card-content {
+  padding: 5px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card-title {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.post-card-excerpt {
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+.post-card-labels-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.post-card-label {
+  background-color: rgba(52, 152, 219, 0.5); /* Warna biru yang lebih transparan */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px); /* Untuk dukungan Safari */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.post-card-read-more {
+  display: inline-block;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.post-card-read-more:hover {
+  text-decoration: underline;
+}
+
+.post-card-category {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.post-card-labels {
+  margin-top: 10px;
+}
+
+
+@media (max-width: 768px) {
+  .post-card-image-container {
+    height: 150px;
+  }
+  
+  .post-card-title {
+    font-size: 16px;
+  }
+  
+  .post-card-excerpt {
+    font-size: 12px;
+  }
+}
+
+/* Pastikan tidak ada efek hover yang tidak diinginkan */
+.post-card-link:hover,
+.post-card-link:focus {
+  background-color: transparent;
+  color: inherit;
+}

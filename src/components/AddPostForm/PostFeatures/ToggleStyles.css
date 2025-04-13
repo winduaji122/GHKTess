@@ -1,0 +1,69 @@
+/* Styling untuk checkbox container */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Styling untuk label checkbox */
+.featured-checkbox, .spotlight-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+/* Sembunyikan checkbox default */
+.featured-checkbox input, .spotlight-checkbox input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Styling untuk slider */
+.featured-slider, .spotlight-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+/* Styling untuk slider sebelum digeser */
+.featured-slider:before, .spotlight-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Styling untuk checkbox yang dicentang */
+input:checked + .featured-slider {
+  background-color: #2196F3; /* Warna biru untuk featured */
+}
+
+input:checked + .spotlight-slider {
+  background-color: #4CAF50; /* Warna hijau untuk spotlight */
+}
+
+/* Geser slider saat dicentang */
+input:checked + .featured-slider:before, 
+input:checked + .spotlight-slider:before {
+  transform: translateX(26px);
+}
+
+/* Styling untuk label teks */
+.featured-edit-post, .spotlight-label {
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,0 +1,161 @@
+.writer-carousel-wrapper {
+  width: 100%;
+  background-color: #f5f5f5;
+  padding: 0;
+  margin-bottom: 2rem;
+  margin-top: 20px; /* Menambahkan margin atas */
+  position: relative; /* Memastikan posisi relatif */
+  z-index: 10; /* Memastikan z-index lebih rendah dari navbar */
+}
+
+.writer-carousel-container {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.writer-carousel-image {
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.writer-carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  padding: 2rem;
+  color: white;
+  text-align: left;
+  z-index: 12; /* Memastikan caption berada di atas kontrol tapi di bawah tombol */
+}
+
+.writer-carousel-caption h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.writer-carousel-caption p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.writer-carousel-button {
+  display: inline-block;
+  background-color: #3182ce;
+  color: white !important;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none !important;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  position: relative;
+  z-index: 15; /* Memastikan tombol berada di atas kontrol carousel */
+}
+
+.writer-carousel-button:hover {
+  background-color: #2c5282;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+/* Styling untuk indikator carousel */
+.carousel-indicators {
+  margin-bottom: 1rem;
+}
+
+.carousel-indicators button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  margin: 0 5px;
+}
+
+.carousel-indicators button.active {
+  background-color: white;
+}
+
+/* Styling untuk kontrol carousel */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 5%;
+  opacity: 0.7;
+  z-index: 10; /* Memastikan kontrol berada di bawah tombol */
+  height: calc(100% - 80px); /* Mengurangi tinggi kontrol agar tidak menutupi tombol */
+  top: 0; /* Memastikan kontrol dimulai dari atas */
+  bottom: auto; /* Menghapus posisi bottom default */
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 1;
+}
+
+/* Memperbaiki area klik untuk kontrol carousel */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  width: 30px;
+  height: 30px;
+  background-size: 100%;
+  z-index: 11; /* Memastikan ikon kontrol berada di atas kontrol tapi di bawah tombol */
+}
+
+/* Loading dan error states */
+.writer-carousel-loading,
+.writer-carousel-error {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.writer-carousel-error {
+  color: #e53e3e;
+}
+
+/* Responsif untuk layar kecil */
+@media (max-width: 768px) {
+  .writer-carousel-image {
+    height: 300px;
+  }
+
+  .writer-carousel-caption h3 {
+    font-size: 1.5rem;
+  }
+
+  .writer-carousel-caption p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .writer-carousel-image {
+    height: 250px;
+  }
+
+  .writer-carousel-caption {
+    padding: 1rem;
+  }
+
+  .writer-carousel-caption h3 {
+    font-size: 1.2rem;
+  }
+
+  .writer-carousel-caption p {
+    font-size: 0.8rem;
+  }
+
+  .writer-carousel-button {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    margin-right: 20px; /* Menambahkan margin kanan untuk menghindari tombol kontrol */
+  }
+}

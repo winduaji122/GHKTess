@@ -1,0 +1,396 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Custom variables */
+  --navbar-height: 45px; /* Default navbar height */
+}
+
+/* Gaya default untuk tautan dalam konten */
+.content-area a, .content-area a:link, .content-area a:visited {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: none !important;
+}
+.content-area a:hover, .content-area a:active {
+  color: #535bf2;
+  text-decoration: none !important;
+}
+
+/* Gaya umum untuk semua tautan */
+a, a:link, a:visited, a:hover, a:active {
+  text-decoration: none !important;
+}
+
+/* Memastikan dropdown menu bekerja dengan baik di semua halaman */
+.header-dropdown-menu, .navbar-dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Memastikan dropdown container tidak tertimpa oleh komponen lain */
+.header-dropdown-container, .dropdown-container {
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Memastikan navbar selalu di atas carousel */
+.navbar, .navbar-container {
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+/* Memastikan carousel selalu di bawah navbar */
+.carousel-section, .writer-carousel-wrapper, .writer-carousel-container {
+  z-index: 10 !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+    /* Hapus atau ubah baris-baris berikut */
+    /* width: 100%;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto; */
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+/* Tailwind directives - dikomentari untuk menghindari peringatan */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root, .app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1 0 auto;
+  flex-grow: 1;
+}
+
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  /* Hapus padding di sini, kita akan mengaturnya di dalam footer */
+}
+
+.container {
+  width: 1100px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+}
+
+@media (max-width: 1100px) {
+  .container {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+#general-container, .general-container {
+  width: 1100px;
+  max-width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 15px;
+  padding-left: 15px;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1100px) {
+  #general-container, .general-container {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* Tambahkan kelas baru untuk container konten */
+.content-container {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Aturan untuk header dan navbar */
+.header-container {
+  width: 100%;
+  background-color: #000000;
+}
+
+
+
+/* Konten dalam header dan navbar */
+header > div.container, nav > div.container {
+  width: 1100px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+@media (max-width: 1100px) {
+  header > div.container, nav > div.container {
+    width: 100%;
+  }
+}
+
+/* Responsif untuk layar kecil */
+@media (max-width: 1200px) {
+  .content-container,
+  header > div,
+  nav > div {
+    max-width: 100%;
+  }
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.full-width {
+  width: 100%;
+  background-color: #fff; /* atau warna yang Anda inginkan */
+}
+
+.content-spacing > * + * {
+  margin-top: 2rem;
+}
+
+.content-container {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+
+@media (max-width: 1100px) {
+  .content-container {
+    max-width: 100%;
+  }
+}
+
+/* Menghilangkan separator antara header dan navbar */
+.header-navbar-separator {
+  height: 0;
+  background-color: transparent;
+  margin: 0 auto;
+  width: 100%;
+  display: none; /* Menyembunyikan separator */
+}
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.header, .navbar {
+  background-color: #000000; /* Sesuaikan dengan warna latar belakang yang diinginkan */
+  width: 100%;
+  border: none;
+}
+
+/* Pastikan tidak ada margin atau padding yang tidak diinginkan */
+.header__wrap, .navbar__row {
+  margin: 0;
+  padding: 0; /* Menghilangkan padding */
+}
+
+/* Media query untuk responsivitas */
+@media (max-width: 1100px) {
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+.border-separator {
+  width: 100%;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50%;
+  margin-right: -50%;
+  background-color: #000000; /* Sesuaikan dengan warna latar belakang navbar */
+}
+
+.border-separator .border-t {
+  height: 1px;
+  background-color: #4a5568; /* Warna garis, sesuaikan jika perlu */
+}
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 38px;
+  padding-right: 15px;
+}
+
+@media (max-width: 1100px) {
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+footer p {
+  margin-bottom: 0.5rem;
+}
+
+footer nav {
+  margin-top: 0.5rem;
+}
+
+footer a {
+  color: #cbd5e0; /* text-gray-300 dalam Tailwind */
+  text-decoration: none;
+  margin: 0 0.5rem;
+  transition: color 0.15s ease-in-out;
+}
+
+footer a:hover {
+  color: #fff;
+}
+
+/* Responsivitas untuk footer */
+@media (max-width: 1100px) {
+  footer .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* Memastikan footer selalu di bawah */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  /* Hapus padding di sini, kita akan mengaturnya di dalam footer */
+}
+
+
+.site-footer {
+  background-color: #000000; /* Sesuaikan dengan warna yang diinginkan */
+  color: white;
+  padding: 2.5rem 0; /* Pindahkan padding ke sini */
+}
+
+.site-footer .container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-copyright {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .footer-copyright {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-copyright > * {
+    margin-bottom: 1rem;
+  }
+}
+
+
+

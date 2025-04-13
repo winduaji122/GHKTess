@@ -1,0 +1,70 @@
+/* Anda bisa menambahkan ini ke file CSS global atau buat file VerifyEmail.css */
+
+.verify-email-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .verify-email-container h2 {
+    color: #333;
+    margin-bottom: 1rem;
+  }
+  
+  .info-message {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .success-message {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .verify-email-container p {
+    margin-bottom: 1rem;
+  }
+  
+  .verify-email-container a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .verify-email-container a:hover {
+    text-decoration: underline;
+  }
+  
+  .back-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .back-button:hover {
+    background-color: #5a6268;
+  }
