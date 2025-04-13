@@ -1,4 +1,4 @@
-import { jwtDecode } from 'jwt-decode';
+/*  */import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 // Tambahkan logger untuk mencatat error
 const logger = console;
@@ -36,7 +36,7 @@ let activeStorageType = STORAGE_TYPES.SESSION;
 
 // PERBAIKAN: Inisialisasi api terlebih dahulu
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true
 });
 
