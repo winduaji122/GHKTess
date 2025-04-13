@@ -7,7 +7,7 @@ import {
   decodeToken as decodeJwtToken
 } from '../utils/tokenManager';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://ghk-tess-backend-o8kpe0ucu-windus-projects-834e092c.vercel.app';
 console.log('API Base URL being used:', BASE_URL);
 console.log('Environment variables:', {
   VITE_API_URL: import.meta.env.VITE_API_URL,
