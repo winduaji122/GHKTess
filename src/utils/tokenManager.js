@@ -262,7 +262,8 @@ export const refreshToken = async (silent = false) => {
     refreshPromise = (async () => {
       try {
         // Panggil endpoint refresh token
-        const response = await axios.post('/api/auth/refresh-token', {}, {
+        // Gunakan GET request karena backend mengharapkan refresh token dari cookie
+        const response = await axios.get('/api/auth/refresh-token', {
           withCredentials: true,
           headers: {
             'Cache-Control': 'no-cache',
