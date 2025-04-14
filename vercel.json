@@ -2,17 +2,13 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "src": "api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ],
   "env": {
     "NODE_ENV": "production"
@@ -27,5 +23,5 @@
         { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
       ]
     }
-  ] 
+  ]
 }
