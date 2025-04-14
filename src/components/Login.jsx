@@ -187,10 +187,16 @@ export default function Login() {
       } else {
         let errorMessage = 'Terjadi kesalahan saat login';
 
-        if (error.response && error.response.data && error.response.data.message) {
+        // Cek apakah error adalah 401 (Unauthorized) - password salah
+        if (error.response && error.response.status === 401) {
+          errorMessage = 'Email atau password salah. Silakan coba lagi.';
+          // Tampilkan pesan error di form
+          setError(errorMessage);
+        } else if (error.response && error.response.data && error.response.data.message) {
           errorMessage = error.response.data.message;
         }
 
+        // Tampilkan toast error
         toast.error(errorMessage);
       }
     } finally {
