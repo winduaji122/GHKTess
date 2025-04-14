@@ -154,7 +154,8 @@ export const getCsrfToken = async () => {
     }
 
     // Jika dalam mode development dan MOCK_CSRF_TOKEN diaktifkan, gunakan mock token
-    if (import.meta.env.DEV && localStorage.getItem('use_mock_csrf') === 'true') {
+    // Atau jika kita sudah mencapai batas retry sebelumnya
+    if (import.meta.env.DEV && (localStorage.getItem('use_mock_csrf') === 'true' || csrfRetryCount >= MAX_RETRY)) {
       console.log('Using mock CSRF token for development');
       api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
       return MOCK_CSRF_TOKEN;
@@ -199,15 +200,18 @@ export const getCsrfToken = async () => {
         await new Promise(resolve => setTimeout(resolve, delay));
         return getCsrfToken(); // Recursive retry
       } else {
-        // Jika sudah mencapai batas retry, gunakan mock token untuk development
+        // Jika sudah mencapai batas retry
+        console.warn('Max retries reached for CSRF token.');
+        localStorage.setItem('use_mock_csrf', 'true');
+
+        // Gunakan mock token untuk development
         if (import.meta.env.DEV) {
-          console.warn('Max retries reached for CSRF token. Using mock token for development.');
-          localStorage.setItem('use_mock_csrf', 'true');
+          console.warn('Using mock token for development.');
           api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
           return MOCK_CSRF_TOKEN;
         } else {
           // Untuk production, tampilkan pesan error yang lebih jelas
-          console.error('Max retries reached for CSRF token. Server may be experiencing high traffic.');
+          console.error('Server may be experiencing high traffic.');
           throw new Error('Server sedang sibuk. Silakan coba lagi nanti.');
         }
       }

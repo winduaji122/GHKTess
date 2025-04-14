@@ -98,6 +98,12 @@ export default function Login() {
     setError('');
 
     try {
+      // Cek apakah kita menggunakan mock token
+      const useMockToken = localStorage.getItem('use_mock_csrf') === 'true';
+      if (useMockToken && import.meta.env.DEV) {
+        toast.info('Menggunakan mode alternatif login karena server sibuk.');
+      }
+
       // Set storage type berdasarkan preferensi "Ingat Saya"
       setStorageType(rememberMe ? STORAGE_TYPES.LOCAL : STORAGE_TYPES.SESSION);
 
@@ -106,6 +112,9 @@ export default function Login() {
 
       if (result.success) {
         console.log('Login berhasil:', result.user);
+
+        // Hapus flag mock token jika login berhasil
+        localStorage.removeItem('use_mock_csrf');
 
         // Redirect berdasarkan parameter URL atau role
         if (redirectPath) {
@@ -125,7 +134,15 @@ export default function Login() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      if (error.message === 'CSRF token invalid') {
+
+      // Cek apakah error terkait CSRF token atau rate limiting
+      if (error.message === 'CSRF token invalid' ||
+          (error.response && error.response.status === 429)) {
+        // Aktifkan mode mock token untuk development
+        if (import.meta.env.DEV) {
+          localStorage.setItem('use_mock_csrf', 'true');
+          toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
+        }
         await debouncedFetchCsrfToken();
         setError('Silakan coba lagi');
       } else {
