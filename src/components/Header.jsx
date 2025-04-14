@@ -164,6 +164,15 @@ export default function Header({ isLoggedIn, onLogout, user }) {
     }, 800); // Meningkatkan delay menjadi 800ms untuk memberikan waktu lebih banyak
   };
 
+  // Fungsi untuk memperbarui posisi dropdown
+  const updateDropdownPosition = () => {
+    if (buttonRef.current && dropdownRef.current) {
+      // Logika untuk memperbarui posisi dropdown jika diperlukan
+      // Misalnya, menyesuaikan posisi berdasarkan posisi tombol
+      console.log('Updating dropdown position');
+    }
+  };
+
   // Modifikasi fungsi toggleDropdown
   const toggleDropdown = (e) => {
     e.preventDefault(); // Mencegah default action
@@ -258,10 +267,10 @@ export default function Header({ isLoggedIn, onLogout, user }) {
                 >
                   {console.log('Header render - userData:', userData)}
                   {console.log('Header render - profile_picture:', userData?.profile_picture)}
-                  {console.log('Rendering profile image with:', userData.profile_picture)}
+                  {userData?.profile_picture && console.log('Rendering profile image with:', userData.profile_picture)}
                   <div className="writer-profile-image-container">
                     <img
-                      src={getImageUrl(userData.profile_picture)}
+                      src={getImageUrl(userData?.profile_picture || '')}
                       alt="Profile"
                       className="writer-profile-image"
                       onError={(e) => {

@@ -15,6 +15,10 @@ import {
 
 let csrfToken = null;
 let csrfCancelToken = null;
+let csrfRetryCount = 0;
+let csrfLastRetryTime = 0;
+const MAX_RETRY = 3;
+const RETRY_DELAY_BASE = 1000; // 1 second base delay
 
 export const setCsrfToken = (token) => {
   if (token) {
@@ -142,9 +146,21 @@ export const getCsrfToken = async () => {
       return existingToken;
     }
 
+    // Cek jika kita perlu menunggu karena rate limiting
+    const now = Date.now();
+    if (csrfRetryCount > 0 && now - csrfLastRetryTime < RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1)) {
+      console.log('Waiting before retry due to rate limiting...');
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1)));
+    }
+
+    csrfLastRetryTime = Date.now();
+
     const response = await api.get('/api/auth/csrf-token', {
       withCredentials: true,
-      cancelToken: csrfCancelToken.token
+      cancelToken: csrfCancelToken.token,
+      params: {
+        _t: Date.now() // Cache busting
+      }
     });
 
     if (response.data?.csrfToken) {
@@ -157,9 +173,24 @@ export const getCsrfToken = async () => {
       console.log('Request cancelled:', error.message);
       return null;
     }
+
+    // Handle rate limiting (429 Too Many Requests)
+    if (error.response && error.response.status === 429) {
+      console.warn('Rate limit exceeded (429). Retrying with backoff...');
+      csrfRetryCount++;
+
+      if (csrfRetryCount <= MAX_RETRY) {
+        const delay = RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1);
+        console.log(`Waiting ${delay}ms before retry ${csrfRetryCount}/${MAX_RETRY}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return getCsrfToken(); // Recursive retry
+      }
+    }
+
     console.error('Error getting CSRF token:', error);
     throw error;
   } finally {
+    // Reset csrfCancelToken
     csrfCancelToken = null;
   }
 };
