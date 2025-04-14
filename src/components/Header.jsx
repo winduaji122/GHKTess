@@ -136,7 +136,8 @@ export default function Header({ isLoggedIn, onLogout, user }) {
     }
   }, [isLoggedIn]);
 
-  const userRole = userData?.role || 'writer'; // Default ke writer jika tidak ada data
+  // Default ke 'guest' jika tidak ada data, 'writer' jika ada data tapi tidak ada role
+  const userRole = userData ? (userData.role || 'writer') : 'guest';
   console.log('User role:', userRole);
   console.log('User name:', userData?.name);
   console.log('User username:', userData?.username);

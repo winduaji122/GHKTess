@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getCsrfToken } from '../api/auth';
+import axios from 'axios';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
 import './Login.css';

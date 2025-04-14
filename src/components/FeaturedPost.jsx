@@ -28,7 +28,19 @@ function FeaturedPost({ post }) {
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
+
+    // Jika URL sudah lengkap tapi menggunakan localhost, ganti dengan API_BASE_URL
+    if (imagePath.startsWith('http://localhost:5000')) {
+      return imagePath.replace('http://localhost:5000', import.meta.env.VITE_API_BASE_URL);
+    }
+
+    // Jika URL sudah lengkap dan bukan localhost, gunakan apa adanya
     if (imagePath.startsWith('http')) return imagePath;
+
+    // Jika path dimulai dengan /uploads/
+    if (imagePath.startsWith('/uploads/')) return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
+
+    // Jika hanya nama file
     return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
