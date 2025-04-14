@@ -48,23 +48,37 @@ export default function Login() {
         const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
         console.log('Current environment mode (Login):', import.meta.env.MODE, 'isDev:', isDev);
 
-        // Cek apakah kita perlu menggunakan pendekatan alternatif untuk CSRF
+        // Cek apakah server sedang mengalami masalah rate limiting
         if (localStorage.getItem('use_mock_csrf') === 'true') {
-          console.log('Using alternative CSRF approach due to previous rate limiting');
+          console.log('Server experiencing rate limiting issues');
 
-          if (import.meta.env.DEV) {
-            // Untuk development, gunakan mock token
-            const mockToken = 'mock-csrf-token-for-development-only';
-            axios.defaults.headers.common['X-CSRF-Token'] = mockToken;
-            setCsrfToken(mockToken);
-            toast.info('Menggunakan mode alternatif login karena server sibuk.');
-          } else {
-            // Untuk production, gunakan token bypass
-            const bypassToken = 'bypass-csrf-check-' + Date.now();
-            axios.defaults.headers.common['X-CSRF-Token'] = bypassToken;
-            setCsrfToken(bypassToken);
-            toast.info('Menggunakan mode alternatif login. Silakan coba login.');
-          }
+          // Tampilkan pesan yang lebih jelas untuk pengguna
+          setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
+
+          // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
+          toast.error(
+            <div>
+              Server sedang sibuk.
+              <button
+                onClick={() => {
+                  localStorage.removeItem('use_mock_csrf');
+                  window.location.reload();
+                }}
+                style={{
+                  background: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  padding: '5px 10px',
+                  borderRadius: '3px',
+                  marginLeft: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                Coba Lagi
+              </button>
+            </div>,
+            { autoClose: false }
+          );
           return;
         }
 
@@ -85,23 +99,36 @@ export default function Login() {
           if (error.response && error.response.status === 429 ||
               (error.message && error.message.includes('Server sedang sibuk'))) {
 
-            // Aktifkan mode alternatif untuk semua environment
+            // Aktifkan flag untuk menunjukkan server sedang sibuk
             localStorage.setItem('use_mock_csrf', 'true');
-            setError('Server sedang sibuk. Menggunakan mode alternatif login.');
 
-            if (import.meta.env.DEV) {
-              // Untuk development, gunakan mock token
-              const mockToken = 'mock-csrf-token-for-development-only';
-              axios.defaults.headers.common['X-CSRF-Token'] = mockToken;
-              setCsrfToken(mockToken);
-              toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
-            } else {
-              // Untuk production, gunakan token bypass
-              const bypassToken = 'bypass-csrf-check-' + Date.now();
-              axios.defaults.headers.common['X-CSRF-Token'] = bypassToken;
-              setCsrfToken(bypassToken);
-              toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
-            }
+            // Tampilkan pesan yang lebih jelas untuk pengguna
+            setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
+
+            // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
+            toast.error(
+              <div>
+                Server sedang sibuk.
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('use_mock_csrf');
+                    window.location.reload();
+                  }}
+                  style={{
+                    background: '#4a90e2',
+                    color: 'white',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '3px',
+                    marginLeft: '10px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Coba Lagi
+                </button>
+              </div>,
+              { autoClose: false }
+            );
           } else {
             setError('Gagal mengambil token keamanan. Silakan muat ulang halaman.');
           }
@@ -130,10 +157,38 @@ export default function Login() {
     setError('');
 
     try {
-      // Cek apakah kita menggunakan mock token
-      const useMockToken = localStorage.getItem('use_mock_csrf') === 'true';
-      if (useMockToken && import.meta.env.DEV) {
-        toast.info('Menggunakan mode alternatif login karena server sibuk.');
+      // Cek apakah server sedang sibuk
+      const serverBusy = localStorage.getItem('use_mock_csrf') === 'true';
+      if (serverBusy) {
+        // Tampilkan pesan yang lebih jelas untuk pengguna
+        setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
+
+        // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
+        toast.error(
+          <div>
+            Server sedang sibuk.
+            <button
+              onClick={() => {
+                localStorage.removeItem('use_mock_csrf');
+                window.location.reload();
+              }}
+              style={{
+                background: '#4a90e2',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '3px',
+                marginLeft: '10px',
+                cursor: 'pointer'
+              }}
+            >
+              Coba Lagi
+            </button>
+          </div>,
+          { autoClose: false }
+        );
+        setIsLoading(false);
+        return;
       }
 
       // Set storage type berdasarkan preferensi "Ingat Saya"
@@ -170,13 +225,37 @@ export default function Login() {
       // Cek apakah error terkait CSRF token atau rate limiting
       if (error.message === 'CSRF token invalid' ||
           (error.response && error.response.status === 429)) {
-        // Aktifkan mode mock token untuk development
-        if (import.meta.env.DEV) {
-          localStorage.setItem('use_mock_csrf', 'true');
-          toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
-        }
-        await debouncedFetchCsrfToken();
-        setError('Silakan coba lagi');
+
+        // Aktifkan flag untuk menunjukkan server sedang sibuk
+        localStorage.setItem('use_mock_csrf', 'true');
+
+        // Tampilkan pesan yang lebih jelas untuk pengguna
+        setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
+
+        // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
+        toast.error(
+          <div>
+            Server sedang sibuk.
+            <button
+              onClick={() => {
+                localStorage.removeItem('use_mock_csrf');
+                window.location.reload();
+              }}
+              style={{
+                background: '#4a90e2',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '3px',
+                marginLeft: '10px',
+                cursor: 'pointer'
+              }}
+            >
+              Coba Lagi
+            </button>
+          </div>,
+          { autoClose: false }
+        );
       } else {
         let errorMessage = 'Terjadi kesalahan saat login';
 
