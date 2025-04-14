@@ -15,7 +15,7 @@ export const getAllPosts = async (page = 1, limit = 20) => {
     const limitNum = parseInt(limit) || 20;
 
     const response = await publicApi.get('/api/posts', {
-      baseURL: import.meta.env.VITE_API_URL,
+      baseURL: import.meta.env.VITE_API_BASE_URL,
       params: {
         page: pageNum,
         limit: limitNum,
@@ -154,7 +154,7 @@ export const getFeaturedPosts = async () => {
 export const getSpotlightPosts = async (limit = 6) => {
   try {
     const response = await publicApi.get('/api/posts/spotlight', {
-      baseURL: import.meta.env.VITE_API_URL,
+      baseURL: import.meta.env.VITE_API_BASE_URL,
       params: {
         page: 1,
         limit
@@ -927,7 +927,7 @@ export const getPublicPostBySlug = async (slugOrId) => {
     // Gunakan endpoint yang tepat sesuai response Postman
     const endpoint = `/api/posts/public/slug/${slugOrId}`;
 
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}${endpoint}`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`);
 
     if (!response.data?.success) {
       throw new Error(response.data.message || 'Gagal mengambil data post');

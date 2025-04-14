@@ -1,5 +1,5 @@
 // API URL
-export const apiUrl = import.meta.env.VITE_API_URL || 'https://ghk-tess-backend.vercel.app';
+export const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
 // Timeout untuk request API (dalam milidetik)
 export const apiTimeout = 15000;
