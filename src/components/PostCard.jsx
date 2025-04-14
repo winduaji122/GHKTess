@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 
 const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
   const navigate = useNavigate();
-  
+
   const truncateContent = useCallback((content, maxLength = isSpotlight ? 50 : 100) => {
-    if (!content) return ''; 
+    if (!content) return '';
     const strippedContent = content.replace(/<\/?[^>]+(>|$)/g, "");
     const decodedContent = strippedContent
       .replace(/&nbsp;/g, ' ')
@@ -15,8 +15,8 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .trim();
-    const truncated = decodedContent.length > maxLength 
-      ? `${decodedContent.substr(0, maxLength)}...` 
+    const truncated = decodedContent.length > maxLength
+      ? `${decodedContent.substr(0, maxLength)}...`
       : decodedContent;
     return truncated.split('\n').slice(0, isSpotlight ? 1 : 2).join('\n');
   }, [isSpotlight]);
@@ -50,8 +50,19 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
 
   const getImageUrl = useCallback((imagePath) => {
     if (!imagePath) return '/default-fallback-image.jpg';
+
+    // Jika URL sudah lengkap tapi menggunakan localhost, ganti dengan API_BASE_URL
+    if (imagePath.startsWith('http://localhost:5000')) {
+      return imagePath.replace('http://localhost:5000', import.meta.env.VITE_API_BASE_URL);
+    }
+
+    // Jika URL sudah lengkap dan bukan localhost, gunakan apa adanya
     if (imagePath.startsWith('http')) return imagePath;
+
+    // Jika path dimulai dengan /uploads/
     if (imagePath.startsWith('/uploads/')) return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
+
+    // Jika hanya nama file
     return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath}`;
   }, []);
 
@@ -67,11 +78,11 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
       <>
         <div className="post-card-image-container">
           {getImageUrl(post.image) && (
-            <img 
-              src={getImageUrl(post.image)} 
-              alt={post.title || 'Post image'} 
-              className="post-card-image" 
-              loading="lazy" 
+            <img
+              src={getImageUrl(post.image)}
+              alt={post.title || 'Post image'}
+              className="post-card-image"
+              loading="lazy"
               onError={(e) => {
                 console.error('Image failed to load:', getImageUrl(post.image));
                 e.target.onerror = null;
@@ -109,7 +120,7 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
   }
 
   return (
-    <div 
+    <div
       className={`post-card ${isSpotlight ? 'spotlight-card' : ''}`}
       data-index={index}
       onClick={handleCardClick}
