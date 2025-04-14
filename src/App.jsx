@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { api, refreshCsrfToken } from './api/auth';
 import Header from './components/Header';
@@ -376,6 +377,7 @@ function App() {
           </ErrorBoundary>
         </AuthProvider>
       </Router>
+      <SpeedInsights />
     </GoogleOAuthProvider>
   );
 }
