@@ -39,8 +39,17 @@ const PostCardLabel = ({ post, onClick }) => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '/default-post-image.jpg';
 
-    // If image is already a full URL
-    if (imagePath.startsWith('http')) {
+    // Jika image path berisi localhost, ganti dengan API base URL
+    if (imagePath.includes('localhost')) {
+      // Ekstrak path setelah localhost:port
+      const pathMatch = imagePath.match(/localhost:\d+(\/uploads\/.*)/i);
+      if (pathMatch && pathMatch[1]) {
+        return `${import.meta.env.VITE_API_BASE_URL}${pathMatch[1]}`;
+      }
+    }
+
+    // If image is already a full URL (but not localhost)
+    if (imagePath.startsWith('http') && !imagePath.includes('localhost')) {
       return imagePath;
     }
 
