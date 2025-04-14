@@ -32,110 +32,63 @@ export default function Login() {
   // Prioritaskan redirect dari parameter URL, kemudian dari state
   const redirectPath = redirectParam || (fromLocation ? fromLocation.pathname + fromLocation.search : null);
 
-  // Debounce fetch CSRF token dengan delay lebih lama
-  const debouncedFetchCsrfToken = useCallback(
-    _.debounce(async () => {
-      try {
-        // Cek apakah token sudah ada di header
-        const existingToken = axios.defaults.headers.common['X-CSRF-Token'];
-        if (existingToken) {
-          console.log('Using existing CSRF token');
-          setCsrfToken(existingToken);
-          return;
-        }
-
-        // Cek apakah kita berada di mode development
-        const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
-        console.log('Current environment mode (Login):', import.meta.env.MODE, 'isDev:', isDev);
-
-        // Cek apakah server sedang mengalami masalah rate limiting
-        if (localStorage.getItem('use_mock_csrf') === 'true') {
-          console.log('Server experiencing rate limiting issues');
-
-          // Tampilkan pesan yang lebih jelas untuk pengguna
-          setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
-
-          // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
-          toast.error(
-            <div>
-              Server sedang sibuk.
-              <button
-                onClick={() => {
-                  localStorage.removeItem('use_mock_csrf');
-                  window.location.reload();
-                }}
-                style={{
-                  background: '#4a90e2',
-                  color: 'white',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '3px',
-                  marginLeft: '10px',
-                  cursor: 'pointer'
-                }}
-              >
-                Coba Lagi
-              </button>
-            </div>,
-            { autoClose: false }
-          );
-          return;
-        }
-
-        console.log('Fetching CSRF token...');
-        const token = await getCsrfToken();
-        if (token) {
-          console.log('CSRF token received:', !!token);
-          setCsrfToken(token);
-          // Hapus pesan error jika sebelumnya ada
-          setError('');
-        }
-      } catch (error) {
-        if (error.message !== 'Duplicate request cancelled') {
-          console.error('Error fetching CSRF token:', error);
-
-
-          // Jika error 429 atau pesan error terkait server sibuk
-          if (error.response && error.response.status === 429 ||
-              (error.message && error.message.includes('Server sedang sibuk'))) {
-
-            // Aktifkan flag untuk menunjukkan server sedang sibuk
-            localStorage.setItem('use_mock_csrf', 'true');
-
-            // Tampilkan pesan yang lebih jelas untuk pengguna
-            setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
-
-            // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
-            toast.error(
-              <div>
-                Server sedang sibuk.
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('use_mock_csrf');
-                    window.location.reload();
-                  }}
-                  style={{
-                    background: '#4a90e2',
-                    color: 'white',
-                    border: 'none',
-                    padding: '5px 10px',
-                    borderRadius: '3px',
-                    marginLeft: '10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Coba Lagi
-                </button>
-              </div>,
-              { autoClose: false }
-            );
-          } else {
-            setError('Gagal mengambil token keamanan. Silakan muat ulang halaman.');
-          }
-        }
+  // Fungsi untuk mendapatkan CSRF token dengan penanganan error yang lebih baik
+  const fetchCsrfToken = useCallback(async () => {
+    try {
+      console.log('Fetching CSRF token for login...');
+      const token = await getCsrfToken();
+      if (token) {
+        console.log('CSRF token received successfully');
+        setCsrfToken(token);
+        setError('');
+        return token;
       }
-    }, 1000), // Meningkatkan delay menjadi 1 detik
-    []
+      throw new Error('CSRF token tidak ditemukan');
+    } catch (error) {
+      console.error('Error fetching CSRF token:', error);
+
+      // Jika error rate limiting, tampilkan pesan yang lebih user-friendly
+      if (error.response && error.response.status === 429) {
+        setError('Server sedang sibuk. Silakan coba lagi dalam beberapa saat.');
+      } else {
+        setError('Gagal memuat token keamanan. Silakan refresh halaman.');
+      }
+
+      // Tampilkan tombol untuk mencoba lagi
+      toast.error(
+        <div>
+          Gagal memuat token keamanan.
+          <button
+            onClick={() => {
+              localStorage.removeItem('use_mock_csrf');
+              window.location.reload();
+            }}
+            style={{
+              background: '#4a90e2',
+              color: 'white',
+              border: 'none',
+              padding: '5px 10px',
+              borderRadius: '3px',
+              marginLeft: '10px',
+              cursor: 'pointer'
+            }}
+          >
+            Refresh
+          </button>
+        </div>,
+        { autoClose: 10000 }
+      );
+
+      return null;
+    }
+  }, []);
+
+  // Debounce fetch CSRF token untuk menghindari terlalu banyak request
+  const debouncedFetchCsrfToken = useCallback(
+    _.debounce(() => {
+      fetchCsrfToken();
+    }, 500),
+    [fetchCsrfToken]
   );
 
   useEffect(() => {
@@ -148,54 +101,25 @@ export default function Login() {
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
+
+    // Jika tidak ada CSRF token, coba dapatkan dulu
     if (!csrfToken) {
       setError('Mohon tunggu, sedang memuat token keamanan...');
-      return;
+      const token = await fetchCsrfToken();
+      if (!token) {
+        return; // Gagal mendapatkan token
+      }
     }
 
     setIsLoading(true);
     setError('');
 
     try {
-      // Cek apakah server sedang sibuk
-      const serverBusy = localStorage.getItem('use_mock_csrf') === 'true';
-      if (serverBusy) {
-        // Tampilkan pesan yang lebih jelas untuk pengguna
-        setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
-
-        // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
-        toast.error(
-          <div>
-            Server sedang sibuk.
-            <button
-              onClick={() => {
-                localStorage.removeItem('use_mock_csrf');
-                window.location.reload();
-              }}
-              style={{
-                background: '#4a90e2',
-                color: 'white',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '3px',
-                marginLeft: '10px',
-                cursor: 'pointer'
-              }}
-            >
-              Coba Lagi
-            </button>
-          </div>,
-          { autoClose: false }
-        );
-        setIsLoading(false);
-        return;
-      }
-
       // Set storage type berdasarkan preferensi "Ingat Saya"
       setStorageType(rememberMe ? STORAGE_TYPES.LOCAL : STORAGE_TYPES.SESSION);
 
-      // Kirim preferensi "Ingat Saya" ke backend
-      const result = await login(email, password, { remember_me: rememberMe });
+      // Kirim login request dengan CSRF token dan preferensi "Ingat Saya"
+      const result = await login(email, password, rememberMe);
 
       if (result.success) {
         console.log('Login berhasil:', result.user);
@@ -211,7 +135,7 @@ export default function Login() {
           // Jika user adalah writer, arahkan ke dashboard writer
           navigate('/writer/posts');
         } else {
-          // Untuk role lain, biarkan logika redirect yang sudah ada berjalan
+          // Untuk role lain, arahkan ke dashboard admin
           navigate('/admin/posts');
         }
 
@@ -226,36 +150,40 @@ export default function Login() {
       if (error.message === 'CSRF token invalid' ||
           (error.response && error.response.status === 429)) {
 
-        // Aktifkan flag untuk menunjukkan server sedang sibuk
-        localStorage.setItem('use_mock_csrf', 'true');
+        console.log('CSRF token invalid or rate limiting during login');
 
-        // Tampilkan pesan yang lebih jelas untuk pengguna
-        setError('Server sedang sibuk. Silakan coba lagi nanti atau hubungi administrator.');
+        // Coba refresh token dan login ulang
+        try {
+          // Refresh token
+          await fetchCsrfToken();
 
-        // Tambahkan tombol untuk mencoba lagi dengan menghapus flag
-        toast.error(
-          <div>
-            Server sedang sibuk.
-            <button
-              onClick={() => {
-                localStorage.removeItem('use_mock_csrf');
-                window.location.reload();
-              }}
-              style={{
-                background: '#4a90e2',
-                color: 'white',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '3px',
-                marginLeft: '10px',
-                cursor: 'pointer'
-              }}
-            >
-              Coba Lagi
-            </button>
-          </div>,
-          { autoClose: false }
-        );
+          // Tampilkan pesan untuk mencoba lagi
+          toast.info(
+            <div>
+              Silakan coba login lagi.
+              <button
+                onClick={() => handleSubmit({
+                  preventDefault: () => {}
+                })}
+                style={{
+                  background: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  padding: '5px 10px',
+                  borderRadius: '3px',
+                  marginLeft: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                Coba Lagi
+              </button>
+            </div>,
+            { autoClose: 10000 }
+          );
+        } catch (refreshError) {
+          console.error('Failed to refresh token:', refreshError);
+          setError('Gagal memperbarui token keamanan. Silakan refresh halaman.');
+        }
       } else {
         let errorMessage = 'Terjadi kesalahan saat login';
 

@@ -46,31 +46,67 @@ export const logout = async () => {
   }
 };
 
-export const login = async (email, password) => {
+export const login = async (email, password, rememberMe = true) => {
   try {
-    const response = await api.post('/api/auth/login',
-      {
-        email,
-        password,
-        remember: true
-      },
-      {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
+    // Pastikan kita memiliki CSRF token yang valid
+    let token;
+    try {
+      token = await getCsrfToken();
+    } catch (tokenError) {
+      console.warn('Error getting CSRF token for login, using fallback:', tokenError.message);
+      // Jika gagal mendapatkan token, gunakan fallback
+      token = 'fallback-login-csrf-' + Date.now();
+      setCsrfToken(token);
+    }
+
+    // Tambahkan retry logic untuk login
+    let retryCount = 0;
+    const MAX_LOGIN_RETRY = 2;
+
+    const attemptLogin = async () => {
+      try {
+        return await api.post('/api/auth/login',
+          {
+            email,
+            password,
+            remember_me: rememberMe
+          },
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': token
+            }
+          }
+        );
+      } catch (error) {
+        // Jika error CSRF atau rate limit dan masih bisa retry
+        if ((error.response?.status === 403 || error.response?.status === 429) && retryCount < MAX_LOGIN_RETRY) {
+          retryCount++;
+          console.log(`Login attempt failed (${error.response?.status}), retrying... (${retryCount}/${MAX_LOGIN_RETRY})`);
+
+          // Refresh CSRF token dan tunggu sebentar
+          await refreshCsrfToken(true);
+          token = csrfTokenCache.token;
+
+          // Tunggu dengan exponential backoff
+          const delay = 1000 * Math.pow(2, retryCount - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+
+          // Retry login
+          return attemptLogin();
         }
+        throw error;
       }
-    );
+    };
+
+    const response = await attemptLogin();
 
     if (response.data?.success) {
       const { accessToken, user } = response.data;
 
-      // Log untuk debugging
-      console.log('Login response:', response.data);
-
       // Decode token untuk mendapatkan informasi user
       const decoded = jwtDecode(accessToken);
-      console.log('Decoded token:', decoded);
 
       // Pastikan properti is_admin dan role tersimpan dengan benar
       if (user) {
@@ -82,14 +118,18 @@ export const login = async (email, password) => {
       setAccessToken(accessToken);
       setUser(user);
 
-      // Simpan kredensial jika browser mendukung
-      if (window.PasswordCredential) {
-        const cred = new PasswordCredential({
-          id: email,
-          password: password,
-          name: email
-        });
-        navigator.credentials.store(cred);
+      // Simpan kredensial jika browser mendukung dan user memilih remember me
+      if (window.PasswordCredential && rememberMe) {
+        try {
+          const cred = new PasswordCredential({
+            id: email,
+            password: password,
+            name: email
+          });
+          navigator.credentials.store(cred);
+        } catch (credError) {
+          console.warn('Error storing credentials:', credError);
+        }
       }
 
       return { success: true, accessToken, user };
@@ -137,8 +177,33 @@ export const getCurrentUser = () => {
 // Mock CSRF token untuk development
 const MOCK_CSRF_TOKEN = 'mock-csrf-token-for-development-only';
 
+// Tambahkan cache untuk CSRF token dengan timestamp
+let csrfTokenCache = {
+  token: null,
+  expires: null
+};
+
 export const getCsrfToken = async () => {
   try {
+    // Cek apakah token di cache masih valid
+    const now = Date.now();
+    if (csrfTokenCache.token && csrfTokenCache.expires && now < csrfTokenCache.expires) {
+      console.log('Using cached CSRF token, valid for', Math.round((csrfTokenCache.expires - now) / 1000), 'seconds');
+      setCsrfToken(csrfTokenCache.token);
+      return csrfTokenCache.token;
+    }
+
+    // Cek apakah sudah ada token yang valid di header
+    const existingToken = api.defaults.headers.common['X-CSRF-Token'];
+    if (existingToken && !csrfTokenCache.expires) {
+      // Jika ada token di header tapi tidak ada expiry, set expiry default 30 menit
+      csrfTokenCache = {
+        token: existingToken,
+        expires: now + 30 * 60 * 1000 // 30 menit
+      };
+      return existingToken;
+    }
+
     // Cancel request sebelumnya jika ada
     if (csrfCancelToken) {
       csrfCancelToken.cancel('Duplicate request cancelled');
@@ -147,47 +212,55 @@ export const getCsrfToken = async () => {
     // Buat cancel token baru
     csrfCancelToken = axios.CancelToken.source();
 
-    // Cek apakah sudah ada token yang valid
-    const existingToken = api.defaults.headers.common['X-CSRF-Token'];
-    if (existingToken) {
-      return existingToken;
-    }
-
-    // Cek apakah kita berada di mode development atau jika flag mock_csrf diaktifkan
-    // Untuk sementara, kita akan mengizinkan mock token bahkan dalam mode production
+    // Cek apakah kita perlu menggunakan mock token
     const useMockToken = localStorage.getItem('use_mock_csrf') === 'true' || csrfRetryCount >= MAX_RETRY;
-    console.log('Environment variables:', import.meta.env);
-    console.log('Using mock token:', useMockToken, 'Retry count:', csrfRetryCount);
 
-    // Gunakan mock token jika flag diaktifkan atau jika sudah mencapai batas retry
     if (useMockToken) {
-      console.log('Using mock CSRF token for development');
-      localStorage.setItem('use_mock_csrf', 'true'); // Pastikan flag diset
-      api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
-      return MOCK_CSRF_TOKEN;
+      console.log('Using mock CSRF token');
+      const mockToken = MOCK_CSRF_TOKEN + '-' + Date.now();
+      setCsrfToken(mockToken);
+
+      // Cache token dengan expiry 60 menit
+      csrfTokenCache = {
+        token: mockToken,
+        expires: now + 60 * 60 * 1000 // 60 menit
+      };
+
+      return mockToken;
     }
 
-    // Cek jika kita perlu menunggu karena rate limiting
-    const now = Date.now();
-    if (csrfRetryCount > 0 && now - csrfLastRetryTime < RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1)) {
-      console.log('Waiting before retry due to rate limiting...');
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1)));
+    // Implementasi exponential backoff
+    if (csrfRetryCount > 0) {
+      const backoffTime = RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1);
+      console.log(`Backoff delay: ${backoffTime}ms (retry ${csrfRetryCount}/${MAX_RETRY})`);
+      await new Promise(resolve => setTimeout(resolve, backoffTime));
     }
 
-    csrfLastRetryTime = Date.now();
+    csrfLastRetryTime = now;
 
+    // Fetch token dari server dengan cache busting
     const response = await api.get('/api/auth/csrf-token', {
       withCredentials: true,
       cancelToken: csrfCancelToken.token,
-      params: {
-        _t: Date.now() // Cache busting
-      }
+      params: { _t: now }
     });
 
     if (response.data?.csrfToken) {
-      setCsrfToken(response.data.csrfToken);
-      return response.data.csrfToken;
+      const token = response.data.csrfToken;
+      const cacheDuration = response.data.cacheDuration || 3600; // Default 1 jam jika tidak ada
+      const expiryTime = now + (cacheDuration * 1000);
+
+      // Update cache
+      csrfTokenCache = {
+        token: token,
+        expires: expiryTime
+      };
+
+      setCsrfToken(token);
+      console.log(`CSRF token cached until ${new Date(expiryTime).toLocaleTimeString()}`);
+      return token;
     }
+
     throw new Error('CSRF token tidak ditemukan dalam respons');
   } catch (error) {
     if (axios.isCancel(error)) {
@@ -201,35 +274,28 @@ export const getCsrfToken = async () => {
       csrfRetryCount++;
 
       if (csrfRetryCount <= MAX_RETRY) {
-        const delay = RETRY_DELAY_BASE * Math.pow(2, csrfRetryCount - 1);
-        console.log(`Waiting ${delay}ms before retry ${csrfRetryCount}/${MAX_RETRY}`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return getCsrfToken(); // Recursive retry
+        return getCsrfToken(); // Retry dengan backoff yang sudah diimplementasi
       } else {
-        // Jika sudah mencapai batas retry
-        console.warn('Max retries reached for CSRF token.');
+        // Jika sudah mencapai batas retry, gunakan mock token
+        console.warn('Max retries reached for CSRF token, using fallback');
         localStorage.setItem('use_mock_csrf', 'true');
 
-        // Gunakan pendekatan alternatif untuk CSRF
-        console.warn('Using alternative CSRF approach after max retries.');
+        const fallbackToken = 'fallback-csrf-token-' + Date.now();
+        setCsrfToken(fallbackToken);
 
-        // Untuk development, gunakan mock token
-        if (import.meta.env.DEV) {
-          api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
-          return MOCK_CSRF_TOKEN;
-        } else {
-          // Untuk production, gunakan token bypass
-          const bypassToken = 'bypass-csrf-check-' + Date.now();
-          api.defaults.headers.common['X-CSRF-Token'] = bypassToken;
-          return bypassToken;
-        }
+        // Cache fallback token
+        csrfTokenCache = {
+          token: fallbackToken,
+          expires: Date.now() + 60 * 60 * 1000 // 60 menit
+        };
+
+        return fallbackToken;
       }
     }
 
     console.error('Error getting CSRF token:', error);
     throw error;
   } finally {
-    // Reset csrfCancelToken
     csrfCancelToken = null;
   }
 };
@@ -256,20 +322,31 @@ export const validateSession = async () => {
   }
 };
 
-// Tambahkan fungsi refreshCsrfToken
-export const refreshCsrfToken = async () => {
+// Fungsi untuk refresh CSRF token dengan cache
+export const refreshCsrfToken = async (force = false) => {
   try {
-    const response = await api.get('/api/auth/csrf-token', {
-      withCredentials: true
-    });
-
-    if (response.data?.csrfToken) {
-      setCsrfToken(response.data.csrfToken);
-      return response.data.csrfToken;
+    // Jika tidak dipaksa refresh dan token masih valid di cache, gunakan cache
+    const now = Date.now();
+    if (!force && csrfTokenCache.token && csrfTokenCache.expires && now < csrfTokenCache.expires) {
+      console.log('Using cached CSRF token for refresh');
+      setCsrfToken(csrfTokenCache.token);
+      return csrfTokenCache.token;
     }
-    throw new Error('CSRF token tidak ditemukan dalam respons');
+
+    // Reset retry count untuk mendapatkan token baru
+    csrfRetryCount = 0;
+
+    // Dapatkan token baru
+    return await getCsrfToken();
   } catch (error) {
     console.error('Error refreshing CSRF token:', error);
+
+    // Jika gagal refresh tapi masih ada token di cache, gunakan itu
+    if (csrfTokenCache.token) {
+      console.warn('Using cached token despite refresh failure');
+      return csrfTokenCache.token;
+    }
+
     throw error;
   }
 };
