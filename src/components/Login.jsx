@@ -44,11 +44,24 @@ export default function Login() {
           return;
         }
 
+        // Cek apakah kita berada di mode development
+        const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+        console.log('Current environment mode (Login):', import.meta.env.MODE, 'isDev:', isDev);
+
         // Cek apakah kita perlu menggunakan mock token
         if (localStorage.getItem('use_mock_csrf') === 'true') {
           console.log('Using mock CSRF token due to previous rate limiting');
-          setError('Server sedang sibuk. Menggunakan mode alternatif untuk login.');
-          return;
+          if (isDev) {
+            // Untuk development, gunakan mock token
+            const mockToken = 'mock-csrf-token-for-development-only';
+            axios.defaults.headers.common['X-CSRF-Token'] = mockToken;
+            setCsrfToken(mockToken);
+            toast.info('Menggunakan mode alternatif login karena server sibuk.');
+            return;
+          } else {
+            setError('Server sedang sibuk. Silakan coba lagi nanti.');
+            return;
+          }
         }
 
         console.log('Fetching CSRF token...');
@@ -62,12 +75,28 @@ export default function Login() {
       } catch (error) {
         if (error.message !== 'Duplicate request cancelled') {
           console.error('Error fetching CSRF token:', error);
+
+          // Cek apakah kita berada di mode development
+          const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+
           // Jika error 429, tampilkan pesan yang lebih spesifik
           if (error.response && error.response.status === 429) {
             setError('Server sedang sibuk. Silakan tunggu beberapa saat dan coba lagi.');
             // Aktifkan mode mock token untuk percobaan berikutnya
-            if (import.meta.env.DEV) {
+            if (isDev) {
               localStorage.setItem('use_mock_csrf', 'true');
+              const mockToken = 'mock-csrf-token-for-development-only';
+              axios.defaults.headers.common['X-CSRF-Token'] = mockToken;
+              setCsrfToken(mockToken);
+              toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
+            }
+          } else if (error.message && error.message.includes('Server sedang sibuk')) {
+            setError('Server sedang sibuk. Silakan tunggu beberapa saat dan coba lagi.');
+            if (isDev) {
+              localStorage.setItem('use_mock_csrf', 'true');
+              const mockToken = 'mock-csrf-token-for-development-only';
+              axios.defaults.headers.common['X-CSRF-Token'] = mockToken;
+              setCsrfToken(mockToken);
               toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
             }
           } else {

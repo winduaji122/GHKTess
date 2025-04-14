@@ -153,10 +153,15 @@ export const getCsrfToken = async () => {
       return existingToken;
     }
 
+    // Cek apakah kita berada di mode development
+    const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+    console.log('Current environment mode:', import.meta.env.MODE, 'isDev:', isDev);
+
     // Jika dalam mode development dan MOCK_CSRF_TOKEN diaktifkan, gunakan mock token
     // Atau jika kita sudah mencapai batas retry sebelumnya
-    if (import.meta.env.DEV && (localStorage.getItem('use_mock_csrf') === 'true' || csrfRetryCount >= MAX_RETRY)) {
+    if (isDev && (localStorage.getItem('use_mock_csrf') === 'true' || csrfRetryCount >= MAX_RETRY)) {
       console.log('Using mock CSRF token for development');
+      localStorage.setItem('use_mock_csrf', 'true'); // Pastikan flag diset
       api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
       return MOCK_CSRF_TOKEN;
     }
@@ -204,8 +209,12 @@ export const getCsrfToken = async () => {
         console.warn('Max retries reached for CSRF token.');
         localStorage.setItem('use_mock_csrf', 'true');
 
+        // Cek apakah kita berada di mode development
+        const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+        console.log('Current environment mode (in catch):', import.meta.env.MODE, 'isDev:', isDev);
+
         // Gunakan mock token untuk development
-        if (import.meta.env.DEV) {
+        if (isDev) {
           console.warn('Using mock token for development.');
           api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
           return MOCK_CSRF_TOKEN;
