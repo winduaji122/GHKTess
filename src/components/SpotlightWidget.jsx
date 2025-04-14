@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const SpotlightWidget = ({ posts, limit = 5 }) => {
   const navigate = useNavigate();
 
-  const spotlightPosts = Array.isArray(posts?.data) ? posts.data : 
+  const spotlightPosts = Array.isArray(posts?.data) ? posts.data :
                         Array.isArray(posts) ? posts : [];
 
   if (spotlightPosts.length === 0) {
@@ -19,7 +19,7 @@ const SpotlightWidget = ({ posts, limit = 5 }) => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${import.meta.env.VITE_API_URL}/uploads/${imagePath.split('/').pop()}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
   const stripHtml = (html) => {
@@ -43,16 +43,16 @@ const SpotlightWidget = ({ posts, limit = 5 }) => {
       <h2 className="spotlight-title">Sorotan</h2>
       <div className="spotlight-posts">
         {limitedPosts.map((post) => (
-          <Link 
-            key={post.id} 
-            to={`/post/${post.slug || post.id}`} 
+          <Link
+            key={post.id}
+            to={`/post/${post.slug || post.id}`}
             className="spotlight-item"
           >
             {post.image && (
               <div className="spotlight-item-image-container">
-                <img 
-                  src={getImageUrl(post.image)} 
-                  alt={post.title} 
+                <img
+                  src={getImageUrl(post.image)}
+                  alt={post.title}
                   className="spotlight-item-image"
                   onError={(e) => {
                     e.target.onerror = null;

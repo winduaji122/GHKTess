@@ -987,7 +987,7 @@ export const fetchPostToEdit = async (postId) => {
 const formatImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
-  return `${import.meta.env.VITE_API_URL}/uploads/${imagePath.split('/').pop()}`;
+  return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
 };
 
 // Helper function untuk format labels

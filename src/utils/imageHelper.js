@@ -45,7 +45,7 @@ export const getImageUrl = (imagePath) => {
   }
 
   // Ambil base URL dari environment variable
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://ghk-tess-backend.vercel.app';
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
   console.log('API URL:', apiUrl);
 
   // Jika path dimulai dengan '/uploads/'
