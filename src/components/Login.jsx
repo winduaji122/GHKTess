@@ -31,10 +31,18 @@ export default function Login() {
   // Prioritaskan redirect dari parameter URL, kemudian dari state
   const redirectPath = redirectParam || (fromLocation ? fromLocation.pathname + fromLocation.search : null);
 
-  // Debounce fetch CSRF token
+  // Debounce fetch CSRF token dengan delay lebih lama
   const debouncedFetchCsrfToken = useCallback(
     _.debounce(async () => {
       try {
+        // Cek apakah token sudah ada di header
+        const existingToken = axios.defaults.headers.common['X-CSRF-Token'];
+        if (existingToken) {
+          console.log('Using existing CSRF token');
+          setCsrfToken(existingToken);
+          return;
+        }
+
         console.log('Fetching CSRF token...');
         const token = await getCsrfToken();
         if (token) {
@@ -44,10 +52,15 @@ export default function Login() {
       } catch (error) {
         if (error.message !== 'Duplicate request cancelled') {
           console.error('Error fetching CSRF token:', error);
-          setError('Gagal mengambil token keamanan. Silakan muat ulang halaman.');
+          // Jika error 429, tampilkan pesan yang lebih spesifik
+          if (error.response && error.response.status === 429) {
+            setError('Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.');
+          } else {
+            setError('Gagal mengambil token keamanan. Silakan muat ulang halaman.');
+          }
         }
       }
-    }, 300),
+    }, 1000), // Meningkatkan delay menjadi 1 detik
     []
   );
 

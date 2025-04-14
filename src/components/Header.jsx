@@ -258,7 +258,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
           <Menu as="div" className="relative inline-block text-left header-dropdown-container" ref={dropdownRef} onMouseEnter={handleDropdownMouseEnter} onMouseLeave={handleDropdownMouseLeave}>
             <div>
               {/* Menu Button dengan gambar profil atau ikon default */}
-              {isLoggedIn && userData?.profile_picture ? (
+              {isLoggedIn ? (
                 <Menu.Button
                   className="writer-profile-button"
                   ref={buttonRef}
@@ -269,22 +269,28 @@ export default function Header({ isLoggedIn, onLogout, user }) {
                   {console.log('Header render - profile_picture:', userData?.profile_picture)}
                   {userData?.profile_picture && console.log('Rendering profile image with:', userData.profile_picture)}
                   <div className="writer-profile-image-container">
-                    <img
-                      src={getImageUrl(userData?.profile_picture || '')}
-                      alt="Profile"
-                      className="writer-profile-image"
-                      onError={(e) => {
-                        console.error('Error loading profile image:', e);
-                        e.target.onerror = null;
-                        // Ganti dengan ikon default jika gambar gagal dimuat
-                        const container = e.target.parentNode;
-                        container.innerHTML = '';
-                        const iconElement = document.createElement('div');
-                        iconElement.className = 'writer-profile-fallback-icon';
-                        iconElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>`;
-                        container.appendChild(iconElement);
-                      }}
-                    />
+                    {userData?.profile_picture ? (
+                      <img
+                        src={getImageUrl(userData.profile_picture)}
+                        alt="Profile"
+                        className="writer-profile-image"
+                        onError={(e) => {
+                          console.error('Error loading profile image:', e);
+                          e.target.onerror = null;
+                          // Ganti dengan ikon default jika gambar gagal dimuat
+                          const container = e.target.parentNode;
+                          container.innerHTML = '';
+                          const iconElement = document.createElement('div');
+                          iconElement.className = 'writer-profile-fallback-icon';
+                          iconElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>`;
+                          container.appendChild(iconElement);
+                        }}
+                      />
+                    ) : (
+                      <div className="writer-profile-fallback-icon">
+                        <UserIcon className="w-6 h-6" aria-hidden="true" />
+                      </div>
+                    )}
                   </div>
                 </Menu.Button>
               ) : (
