@@ -1,10 +1,10 @@
 import { api } from '../api/axios';
-import { 
-  setAccessToken, 
-  clearTokenState, 
+import {
+  setAccessToken,
+  clearTokenState,
   getAccessToken,
   isTokenValid,
-  decodeToken 
+  decodeToken
 } from '../utils/tokenManager';
 
 class AuthService {
@@ -37,9 +37,9 @@ class AuthService {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Login failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login gagal'
       };
     }
   }
@@ -52,9 +52,9 @@ class AuthService {
       return { success: true };
     } catch (error) {
       console.error('Logout failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Logout gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Logout gagal'
       };
     }
   }
@@ -70,9 +70,9 @@ class AuthService {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Google auth failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Google auth gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Google auth gagal'
       };
     }
   }
@@ -90,9 +90,9 @@ class AuthService {
   async validateSession() {
     try {
       const response = await api.get('/api/auth/validate-session');
-      return { 
+      return {
         valid: response.data.valid,
-        user: response.data.user 
+        user: response.data.user
       };
     } catch (error) {
       return { valid: false };
@@ -105,9 +105,9 @@ class AuthService {
       const response = await api.put('/api/auth/profile', data);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Update profil gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Update profil gagal'
       };
     }
   }
@@ -117,9 +117,9 @@ class AuthService {
       const response = await api.put('/api/auth/change-password', data);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Ganti password gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Ganti password gagal'
       };
     }
   }
@@ -130,24 +130,24 @@ class AuthService {
       const response = await api.post('/api/auth/forgot-password', { email });
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Request reset password gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Request reset password gagal'
       };
     }
   }
 
   async resetPassword(token, password) {
     try {
-      const response = await api.post('/api/auth/reset-password', { 
-        token, 
-        password 
+      const response = await api.post('/api/auth/reset-password', {
+        token,
+        password
       });
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Reset password gagal' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Reset password gagal'
       };
     }
   }
@@ -186,13 +186,20 @@ class AuthService {
   }
 
   async handleSessionExpired() {
-    // Tampilkan modal login
-    const shouldReauth = await this.showReauthModal();
-    if (shouldReauth) {
-      // Redirect ke login dengan return URL
-      const currentPath = window.location.pathname;
+    // Redirect langsung ke login dengan return URL
+    const currentPath = window.location.pathname;
+    console.log('Session expired, redirecting to login page');
+    // Tambahkan delay untuk mencegah redirect loop
+    setTimeout(() => {
       window.location.href = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
-    }
+    }, 500);
+    return true;
+  }
+
+  // Fungsi ini tidak digunakan lagi, tetapi ditambahkan untuk mencegah error
+  async showReauthModal() {
+    console.log('showReauthModal called but not implemented');
+    return true;
   }
 }
 
