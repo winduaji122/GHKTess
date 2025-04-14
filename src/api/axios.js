@@ -10,7 +10,6 @@ import {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 console.log('API Base URL being used:', BASE_URL);
 console.log('Environment variables:', {
-  VITE_API_URL: import.meta.env.VITE_API_URL,
   VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL
 });
 const DEFAULT_TIMEOUT = 15000;

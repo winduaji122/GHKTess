@@ -700,7 +700,7 @@ function AdminPosts() {
 
               // Coba lagi verifikasi writer dengan token baru
               const retryResponse = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/auth/verify-writer/${writerId}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/auth/verify-writer/${writerId}`,
                 {},
                 {
                   headers: {
