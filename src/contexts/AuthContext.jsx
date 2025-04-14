@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       // Set timeout baru
       refreshTimeoutRef.current = setTimeout(async () => {
         try {
-          const response = await api.post('/api/auth/refresh-token');
+          const response = await api.get('/api/auth/refresh-token');
           if (response.data.success) {
             setAccessToken(response.data.token);
             const userData = response.data.user;
