@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Carousel as BootstrapCarousel } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/axios';
+import { apiUrl } from '../../api/Config';
 import './Carousel.css';
 
 const Carousel = () => {
@@ -57,7 +58,7 @@ const Carousel = () => {
           <BootstrapCarousel.Item key={slide.id || index}>
             <div
               className="writer-carousel-image"
-              style={{ backgroundImage: `url(${slide.image_url})` }}
+              style={{ backgroundImage: `url(${apiUrl}/${slide.image_url})` }}
             >
               <div className="writer-carousel-caption">
                 <h3>{slide.title}</h3>
