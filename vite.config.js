@@ -40,7 +40,7 @@ export default defineConfig({
   // Hapus define karena Vite sudah menangani env variables dengan baik
   // define: {
   //   'process.env': {
-  //     VITE_API_URL: JSON.stringify(process.env.VITE_API_URL || 'http://localhost:5000'),
+  //     VITE_API_BASE_URL: JSON.stringify(process.env.VITE_API_BASE_URL || 'http://localhost:5000'),
   //     NODE_ENV: JSON.stringify(process.env.NODE_ENV)
   //   }
   // },

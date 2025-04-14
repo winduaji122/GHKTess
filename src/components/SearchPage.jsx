@@ -24,9 +24,9 @@ function SearchPage() {
 
   const getImageUrl = useCallback((imagePath) => {
     if (!imagePath) return '';
-    return imagePath.startsWith('http') 
-      ? imagePath 
-      : `${import.meta.env.VITE_API_URL}/uploads/${imagePath.split('/').pop()}`;
+    return imagePath.startsWith('http')
+      ? imagePath
+      : `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   }, []);
 
   const formatDate = useCallback((dateString) => {
@@ -48,7 +48,7 @@ function SearchPage() {
 
   const getLabelsFromPost = useCallback((post) => {
     if (!post?.labels) return [];
-    
+
     try {
       if (Array.isArray(post.labels)) {
         return post.labels.map(label => ({
@@ -56,7 +56,7 @@ function SearchPage() {
           label: label.label || label.name || 'TANPA LABEL'
         }));
       }
-      
+
       if (typeof post.labels === 'string') {
         return post.labels.split(',').map(labelStr => {
           try {
@@ -94,7 +94,7 @@ function SearchPage() {
         sort: sortBy
       });
 
-      const filteredResults = response.data.data.filter(post => 
+      const filteredResults = response.data.data.filter(post =>
         post.status === 'published' && !post.deleted_at
       );
 
@@ -135,21 +135,21 @@ function SearchPage() {
 
   const handleSearch = useCallback((newSearchTerm, newSelectedLabel) => {
     const newParams = new URLSearchParams();
-    
+
     if (newSearchTerm?.trim()) {
       newParams.set('q', newSearchTerm.trim());
     }
-    
+
     if (newSelectedLabel) {
       newParams.set('label_id', newSelectedLabel);
     }
-    
+
     newParams.set('page', '1');
-    
+
     if (sortBy) {
       newParams.set('sort', sortBy);
     }
-    
+
     navigate(`/search?${newParams.toString()}`);
   }, [navigate, sortBy]);
 
@@ -189,7 +189,7 @@ function SearchPage() {
         labels={labels}
         onSearch={handleSearch}
       />
-      
+
       {(searchQuery || selectedLabel) && (
         <div className="active-filters">
           {searchQuery && <h1 className="search-title">Pencarian "{searchQuery.toUpperCase()}"</h1>}
@@ -207,17 +207,17 @@ function SearchPage() {
         <div className="error">{error}</div>
       ) : Array.isArray(searchResults) && searchResults.length > 0 ? (
         searchResults.map((post) => (
-          <div 
-            key={post.id} 
-            className="search-result-item" 
+          <div
+            key={post.id}
+            className="search-result-item"
             onClick={() => handlePostClick(post.id)}
           >
             <div className="result-image-container">
               {post.image && (
-                <img 
-                  src={getImageUrl(post.image)} 
-                  alt={post.title} 
-                  className="result-image" 
+                <img
+                  src={getImageUrl(post.image)}
+                  alt={post.title}
+                  className="result-image"
                   onError={(e) => {
                     console.error('Error loading image:', e.target.src);
                     e.target.onerror = null;

@@ -36,7 +36,7 @@ let activeStorageType = STORAGE_TYPES.SESSION;
 
 // PERBAIKAN: Inisialisasi api terlebih dahulu
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://ghk-tess-backend.vercel.app',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app',
   withCredentials: true
 });
 

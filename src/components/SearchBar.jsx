@@ -3,37 +3,37 @@ import axios from 'axios';
 import './SearchBar.css';
 import { debounce } from 'lodash';
 
-const SearchBar = ({ 
-  searchTerm, 
-  selectedLabel, 
-  labels, 
-  onSearch 
+const SearchBar = ({
+  searchTerm,
+  selectedLabel,
+  labels,
+  onSearch
 }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm || '');
   const [localLabel, setLocalLabel] = useState(selectedLabel || '');
   const [labelOptions, setLabelOptions] = useState(labels || []);
   const [isLoading, setIsLoading] = useState(true);
   const labelsCache = useRef(new Map());
-  
+
   const debouncedFetchLabels = useCallback(
     debounce(async () => {
       try {
         setIsLoading(true);
-        
+
         if (labelsCache.current.has('labels')) {
           setLabelOptions(labelsCache.current.get('labels'));
           setIsLoading(false);
           return;
         }
 
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/search/labels`);
-        
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/search/labels`);
+
         if (Array.isArray(response.data)) {
           const fetchedLabels = response.data.map(label => ({
             id: label.id,
             name: label.name || label.label
           }));
-          
+
           labelsCache.current.set('labels', fetchedLabels);
           setLabelOptions(fetchedLabels);
         } else if (response.data?.data && Array.isArray(response.data.data)) {
@@ -41,13 +41,13 @@ const SearchBar = ({
             id: label.id,
             name: label.name || label.label
           }));
-          
+
           labelsCache.current.set('labels', fetchedLabels);
           setLabelOptions(fetchedLabels);
         }
-        
+
         console.log('Fetched labels:', labelOptions);
-        
+
       } catch (error) {
         console.error('Error fetching labels:', error);
       } finally {
@@ -82,7 +82,7 @@ const SearchBar = ({
         placeholder="Cari artikel..."
         className="search-input"
       />
-      
+
       <div className="search-filters">
         <select
           value={localLabel}

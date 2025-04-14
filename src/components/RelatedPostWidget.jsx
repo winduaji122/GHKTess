@@ -57,7 +57,7 @@ function RelatedPostItem({ post, onClick }) {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${import.meta.env.VITE_API_URL}/uploads/${imagePath.split('/').pop()}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
   // Debug untuk melihat data post

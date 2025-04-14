@@ -13,7 +13,7 @@ function FeaturedPost({ post }) {
   }
 
   const truncateContent = useCallback((content, maxLength = 200) => {
-    if (!content) return ''; 
+    if (!content) return '';
     const strippedContent = content.replace(/<\/?[^>]+(>|$)/g, "");
     const decodedContent = strippedContent
       .replace(/&nbsp;/g, ' ')
@@ -21,15 +21,15 @@ function FeaturedPost({ post }) {
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .trim();
-    return decodedContent.length > maxLength 
-      ? `${decodedContent.substr(0, maxLength)}...` 
+    return decodedContent.length > maxLength
+      ? `${decodedContent.substr(0, maxLength)}...`
       : decodedContent;
   }, []);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${import.meta.env.VITE_API_URL}/uploads/${imagePath.split('/').pop()}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
   console.log('Rendering FeaturedPost with:', {
@@ -42,10 +42,10 @@ function FeaturedPost({ post }) {
   return (
     <Link to={`/post/${post.id}`} className="featured-post">
       <div className="featured-image-container">
-        <img 
-          src={getImageUrl(post.image)} 
-          alt={post.title} 
-          className="featured-image" 
+        <img
+          src={getImageUrl(post.image)}
+          alt={post.title}
+          className="featured-image"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = '/default-fallback-image.jpg'; // Ganti dengan path gambar fallback Anda
@@ -58,7 +58,7 @@ function FeaturedPost({ post }) {
           <div className="featured-vertical-line"></div>
           <div className="featured-text-content">
             <h2 className="featured-title">{post.title}</h2>
-            <div 
+            <div
               className="featured-excerpt"
               dangerouslySetInnerHTML={{ __html: truncateContent(post.content, 150) }}
             />
