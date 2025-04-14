@@ -558,7 +558,7 @@ function AdminPosts() {
 
       // Gunakan axios langsung dengan konfigurasi yang benar
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/approve-writer/${writerId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/approve-writer/${writerId}`,
         {}, // body kosong
         {
           headers: {
@@ -658,7 +658,7 @@ function AdminPosts() {
         // Gunakan axios dengan konfigurasi yang benar
         const response = await axios({
           method: 'post',
-          url: `${import.meta.env.VITE_API_URL}/api/auth/verify-writer/${writerId}`,
+          url: `${import.meta.env.VITE_API_BASE_URL}/api/auth/verify-writer/${writerId}`,
           headers: {
             'Authorization': `Bearer ${finalToken}`,
             'Content-Type': 'application/json',
@@ -808,7 +808,7 @@ function AdminPosts() {
 
       // Gunakan axios langsung dengan konfigurasi yang benar
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/reject-writer/${writerId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/reject-writer/${writerId}`,
         {}, // body kosong
         {
           headers: {
