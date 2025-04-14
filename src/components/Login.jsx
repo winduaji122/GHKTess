@@ -44,18 +44,32 @@ export default function Login() {
           return;
         }
 
+        // Cek apakah kita perlu menggunakan mock token
+        if (localStorage.getItem('use_mock_csrf') === 'true') {
+          console.log('Using mock CSRF token due to previous rate limiting');
+          setError('Server sedang sibuk. Menggunakan mode alternatif untuk login.');
+          return;
+        }
+
         console.log('Fetching CSRF token...');
         const token = await getCsrfToken();
         if (token) {
           console.log('CSRF token received:', !!token);
           setCsrfToken(token);
+          // Hapus pesan error jika sebelumnya ada
+          setError('');
         }
       } catch (error) {
         if (error.message !== 'Duplicate request cancelled') {
           console.error('Error fetching CSRF token:', error);
           // Jika error 429, tampilkan pesan yang lebih spesifik
           if (error.response && error.response.status === 429) {
-            setError('Terlalu banyak permintaan. Silakan tunggu beberapa saat dan coba lagi.');
+            setError('Server sedang sibuk. Silakan tunggu beberapa saat dan coba lagi.');
+            // Aktifkan mode mock token untuk percobaan berikutnya
+            if (import.meta.env.DEV) {
+              localStorage.setItem('use_mock_csrf', 'true');
+              toast.info('Mode alternatif login diaktifkan. Silakan coba lagi.');
+            }
           } else {
             setError('Gagal mengambil token keamanan. Silakan muat ulang halaman.');
           }

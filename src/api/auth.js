@@ -20,9 +20,13 @@ let csrfLastRetryTime = 0;
 const MAX_RETRY = 3;
 const RETRY_DELAY_BASE = 1000; // 1 second base delay
 
+// Fungsi untuk menyimpan CSRF token
 export const setCsrfToken = (token) => {
+  csrfToken = token;
   if (token) {
     api.defaults.headers.common['X-CSRF-Token'] = token;
+  } else {
+    delete api.defaults.headers.common['X-CSRF-Token'];
   }
 };
 
@@ -130,6 +134,9 @@ export const getCurrentUser = () => {
   }
 };
 
+// Mock CSRF token untuk development
+const MOCK_CSRF_TOKEN = 'mock-csrf-token-for-development-only';
+
 export const getCsrfToken = async () => {
   try {
     // Cancel request sebelumnya jika ada
@@ -144,6 +151,13 @@ export const getCsrfToken = async () => {
     const existingToken = api.defaults.headers.common['X-CSRF-Token'];
     if (existingToken) {
       return existingToken;
+    }
+
+    // Jika dalam mode development dan MOCK_CSRF_TOKEN diaktifkan, gunakan mock token
+    if (import.meta.env.DEV && localStorage.getItem('use_mock_csrf') === 'true') {
+      console.log('Using mock CSRF token for development');
+      api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
+      return MOCK_CSRF_TOKEN;
     }
 
     // Cek jika kita perlu menunggu karena rate limiting
@@ -184,6 +198,18 @@ export const getCsrfToken = async () => {
         console.log(`Waiting ${delay}ms before retry ${csrfRetryCount}/${MAX_RETRY}`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return getCsrfToken(); // Recursive retry
+      } else {
+        // Jika sudah mencapai batas retry, gunakan mock token untuk development
+        if (import.meta.env.DEV) {
+          console.warn('Max retries reached for CSRF token. Using mock token for development.');
+          localStorage.setItem('use_mock_csrf', 'true');
+          api.defaults.headers.common['X-CSRF-Token'] = MOCK_CSRF_TOKEN;
+          return MOCK_CSRF_TOKEN;
+        } else {
+          // Untuk production, tampilkan pesan error yang lebih jelas
+          console.error('Max retries reached for CSRF token. Server may be experiencing high traffic.');
+          throw new Error('Server sedang sibuk. Silakan coba lagi nanti.');
+        }
       }
     }
 
