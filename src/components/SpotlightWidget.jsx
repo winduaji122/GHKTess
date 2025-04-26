@@ -2,6 +2,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './SpotlightWidget.css';
+import '../styles/lazyImage.css';
+import LazyImage from './common/LazyImage';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SpotlightWidget = ({ posts, limit = 5 }) => {
@@ -50,14 +52,13 @@ const SpotlightWidget = ({ posts, limit = 5 }) => {
           >
             {post.image && (
               <div className="spotlight-item-image-container">
-                <img
+                <LazyImage
                   src={getImageUrl(post.image)}
                   alt={post.title}
                   className="spotlight-item-image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-fallback-image.jpg';
-                  }}
+                  height="180px"
+                  width="100%"
+                  objectFit="cover"
                 />
               </div>
             )}

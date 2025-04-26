@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import './LabelNavbar.css';
-import { FaChevronLeft, FaChevronRight, FaHome, FaChevronDown } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaHome, FaChevronDown, FaTags } from 'react-icons/fa';
 import { Menu, Transition } from '@headlessui/react';
 
-// Fungsi untuk menggabungkan class names
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+// Fungsi untuk menggabungkan class names (digunakan di komponen lain)
+// function classNames(...classes) {
+//   return classes.filter(Boolean).join(' ');
+// }
 
 // Komponen Dropdown untuk label
 function LabelDropdown({ label, isActive, onClick }) {
@@ -75,7 +75,7 @@ function LabelDropdown({ label, isActive, onClick }) {
         >
           <Menu.Items
             static
-            className="absolute left-0 z-50 w-56 origin-top-left rounded-b-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none navbar-dropdown-menu"
+            className="absolute left-0 z-50 w-56 origin-top-left rounded-b-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none label-navbar-dropdown-menu"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             style={{ minWidth: '200px' }} /* Memastikan dropdown memiliki lebar minimum */
@@ -108,8 +108,11 @@ const LabelNavbar = ({ labels, currentLabel, onLabelClick }) => {
   const navbarRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  // State untuk mendeteksi ukuran layar mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // isMobile digunakan untuk styling responsif di masa mendatang
 
-  // Check if scroll arrows should be shown
+  // Check if scroll arrows should be shown and handle responsive state
   useEffect(() => {
     const checkScrollArrows = () => {
       if (navbarRef.current) {
@@ -119,9 +122,14 @@ const LabelNavbar = ({ labels, currentLabel, onLabelClick }) => {
       }
     };
 
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      checkScrollArrows();
+    };
+
     checkScrollArrows();
-    window.addEventListener('resize', checkScrollArrows);
-    return () => window.removeEventListener('resize', checkScrollArrows);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [scrollPosition, labels]);
 
   // Handle scroll left
@@ -153,6 +161,11 @@ const LabelNavbar = ({ labels, currentLabel, onLabelClick }) => {
 
   return (
     <div className="label-navbar-container">
+      <div className="label-navbar-header">
+        <FaTags className="label-icon" />
+        <h2>Kategori</h2>
+      </div>
+
       {showLeftArrow && (
         <button className="nav-arrow nav-arrow-left" onClick={handleScrollLeft}>
           <FaChevronLeft />

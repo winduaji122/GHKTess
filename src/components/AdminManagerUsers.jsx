@@ -3,7 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
-import { FaUserCheck, FaUserTimes, FaUserClock, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaUserCheck, FaUserTimes, FaSearch, FaTrash, FaSync } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './AdminManagerUsers.css';
 
 function AdminManagerUsers() {
@@ -160,8 +161,33 @@ function AdminManagerUsers() {
       setUsers(users.map(user =>
         user.id === userId ? { ...user, is_approved: false, status: 'rejected' } : user
       ));
+      toast.success('User berhasil ditolak');
     } catch (error) {
       console.error('Error rejecting user:', error);
+      toast.error('Gagal menolak user');
+    } finally {
+      setProcessingUser(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    try {
+      // Tampilkan konfirmasi toast
+      if (!window.confirm(`Yakin ingin menghapus user ${userName}?`)) {
+        return;
+      }
+
+      setProcessingUser(userId);
+      const response = await api.delete(`/api/auth/delete-user/${userId}`);
+
+      if (response.data && response.data.message) {
+        // Hapus user dari state
+        setUsers(users.filter(user => user.id !== userId));
+        toast.success('User berhasil dihapus');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Gagal menghapus user');
     } finally {
       setProcessingUser(null);
     }
@@ -180,6 +206,14 @@ function AdminManagerUsers() {
     <div className="admin-manager-users">
       <div className="admin-manager-header">
         <h2 className="admin-manager-title">Kelola Pengguna</h2>
+        <button
+          className="admin-refresh-button"
+          onClick={fetchUsers}
+          disabled={loading}
+        >
+          <FaSync className={loading ? 'spinning' : ''} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       <div className="admin-manager-stats">
@@ -199,7 +233,6 @@ function AdminManagerUsers() {
 
       <div className="admin-search-filter">
         <div className="admin-search-input-wrapper">
-          <FaSearch className="admin-search-icon" />
           <input
             type="text"
             placeholder="Cari nama atau email..."
@@ -207,10 +240,10 @@ function AdminManagerUsers() {
             onChange={handleSearch}
             className="admin-search-input"
           />
+          <FaSearch className="admin-users-search-icon" />
         </div>
 
         <div className="admin-filter-wrapper">
-          <FaFilter className="admin-filter-icon" />
           <select
             value={statusFilter}
             onChange={handleStatusFilter}
@@ -223,7 +256,6 @@ function AdminManagerUsers() {
         </div>
 
         <div className="admin-filter-wrapper">
-          <FaUserClock className="admin-filter-icon" />
           <select
             value={roleFilter}
             onChange={handleRoleFilter}
@@ -256,16 +288,18 @@ function AdminManagerUsers() {
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>
-                      <select
-                        value={user.role || 'user'}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="admin-filter-select"
-                        disabled={processingUser === user.id}
-                      >
-                        <option value="user">User</option>
-                        <option value="writer">Writer</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                      <div className="admin-filter-wrapper table-select-wrapper">
+                        <select
+                          value={user.role || 'user'}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          className="admin-filter-select table-role-select"
+                          disabled={processingUser === user.id}
+                        >
+                          <option value="user">User</option>
+                          <option value="writer">Writer</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
                     </td>
                     <td>
                       <span className={`user-status ${user.is_approved ? 'status-active' : 'status-pending'}`}>
@@ -292,6 +326,15 @@ function AdminManagerUsers() {
                             </button>
                           </>
                         )}
+                        {/* Tombol hapus user */}
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDeleteUser(user.id, user.name)}
+                          disabled={processingUser === user.id}
+                          title="Hapus user"
+                        >
+                          <FaTrash className="btn-icon" /> <span>Hapus</span>
+                        </button>
                       </div>
                     </td>
                   </tr>

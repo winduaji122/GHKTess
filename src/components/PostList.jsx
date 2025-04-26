@@ -1,4 +1,6 @@
 import React from 'react';
+import LazyImage from './common/LazyImage';
+import '../styles/lazyImage.css';
 
 function PostList({ posts }) {
   return (
@@ -8,13 +10,12 @@ function PostList({ posts }) {
           <h3>{post.postTitle}</h3>
           <p>{post.date} {post.category}</p>
           {post.imageSrc && (
-            <img 
-              src={post.imageSrc} 
+            <LazyImage
+              src={post.imageSrc}
               alt={post.postTitle}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/path/to/placeholder-image.jpg';
-              }}
+              height="200px"
+              width="100%"
+              objectFit="cover"
             />
           )}
           {/* Tambahkan elemen lain sesuai kebutuhan */}

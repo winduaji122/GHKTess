@@ -26,6 +26,16 @@
   margin-bottom: 10px;
 }
 
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+}
+
 .footer-content a {
   color: #cccccc;
   text-decoration: none;
@@ -35,6 +45,32 @@
 .footer-content a:hover {
   color: #ffffff;
   text-decoration: none;
+}
+
+/* Styling untuk sosial media */
+.social-links li {
+  margin-bottom: 12px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease;
+}
+
+.social-link:hover {
+  transform: translateX(3px);
+}
+
+.social-icon {
+  font-size: 1.2rem;
+  color: #ffffff;
+  transition: color 0.3s;
+}
+
+.social-link:hover .social-icon {
+  color: #3498db;
 }
 
 .footer-copyright {
@@ -54,12 +90,12 @@
   .footer-content {
     grid-template-columns: 1fr;
   }
-  
+
   .footer-copyright {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .footer-copyright > div {
     margin-top: 10px;
   }

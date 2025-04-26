@@ -34,7 +34,9 @@ export const usePostForm = (isEditing, postId, userRole) => {
     labels: [],
     slug: '',
     excerpt: '',
-    version: 1
+    version: 1,
+    tags: '',
+    allow_comments: true
   });
 
   const [isLoading, setIsLoading] = useState(isEditing);
@@ -48,7 +50,9 @@ export const usePostForm = (isEditing, postId, userRole) => {
     is_spotlight: false,
     is_featured: false,
     labels: false,
-    slug: false
+    slug: false,
+    tags: false,
+    allow_comments: false
   });
 
   // Tambahkan state untuk initialPost
@@ -96,7 +100,9 @@ export const usePostForm = (isEditing, postId, userRole) => {
                 label.id && typeof label.label === 'string'
               ) : [],
             slug: postData.slug?.trim() || '',
-            version: postData.version
+            version: postData.version,
+            tags: postData.tags || '',
+            allow_comments: postData.allow_comments !== undefined ? Boolean(postData.allow_comments) : true
           };
 
           setPost(formattedPost);
@@ -291,31 +297,33 @@ export const usePostForm = (isEditing, postId, userRole) => {
       checked,
       postId,
       currentSpotlight: Boolean(post.is_spotlight),
-      initialSpotlight: Boolean(initialPost?.is_spotlight)
+      initialSpotlight: Boolean(initialPost?.is_spotlight),
+      isEditing: isEditing
     });
 
-    if (!postId) {
-      toast.error('Post ID tidak ditemukan');
+    // Pastikan nilai boolean
+    const newSpotlightValue = Boolean(checked);
+
+    // Update state dengan nilai boolean
+    setPost(prev => ({
+      ...prev,
+      is_spotlight: newSpotlightValue
+    }));
+
+    // Tandai bahwa perubahan berasal dari toggle
+    setHasChanges(prev => ({
+      ...prev,
+      is_spotlight: true,  // Ini yang akan digunakan sebagai spotlight_changed
+      spotlight_source: 'toggle'  // Tambahan informasi sumber perubahan
+    }));
+
+    // Jika dalam mode create post, cukup update state lokal
+    if (!isEditing || !postId) {
+      console.log('Create mode or no post ID: only updating local state for spotlight');
       return;
     }
 
     try {
-      // Pastikan nilai boolean
-      const newSpotlightValue = Boolean(checked);
-
-      // Update state dengan nilai boolean
-      setPost(prev => ({
-        ...prev,
-        is_spotlight: newSpotlightValue
-      }));
-
-      // Tandai bahwa perubahan berasal dari toggle
-      setHasChanges(prev => ({
-        ...prev,
-        is_spotlight: true,  // Ini yang akan digunakan sebagai spotlight_changed
-        spotlight_source: 'toggle'  // Tambahan informasi sumber perubahan
-      }));
-
       const response = await toggleSpotlight(postId, newSpotlightValue);
 
       if (!response.success) {
@@ -366,7 +374,7 @@ export const usePostForm = (isEditing, postId, userRole) => {
         is_spotlight: false
       }));
     }
-  }, [postId, post.is_spotlight, initialPost]);
+  }, [postId, post.is_spotlight, initialPost, isEditing]);
 
   const handleFeaturedToggle = async (isChecked) => {
     try {
@@ -555,6 +563,8 @@ export const usePostForm = (isEditing, postId, userRole) => {
       formData.append('publish_date', post.publish_date || '');
       formData.append('is_featured', post.is_featured ? '1' : '0');
       formData.append('is_spotlight', post.is_spotlight ? '1' : '0');
+      formData.append('tags', post.tags || '');
+      formData.append('allow_comments', post.allow_comments ? '1' : '0');
 
       // Tambahkan slug jika ada
       if (post.slug) {
@@ -724,32 +734,26 @@ export const usePostForm = (isEditing, postId, userRole) => {
     }));
   }, []);
 
-  // Untuk delete
-  const handleDeletePost = async (postId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus post ini?')) {
-      try {
-        // Update UI dulu (optimistic)
-        const postsCopy = [...regularPosts];
-        setRegularPosts(regularPosts.filter(post => post.id !== postId));
+  // Handler untuk perubahan tags
+  const handleTagsChange = useCallback((value) => {
+    // TagsInput mengirimkan nilai string langsung, bukan event
+    setPost(prev => ({
+      ...prev,
+      tags: value
+    }));
+    trackChange('tags');
+  }, []);
 
-        // Kirim request ke API
-        const response = await deletePost(postId);
+  // Handler untuk toggle allow_comments
+  const handleCommentsToggle = useCallback((checked) => {
+    setPost(prev => ({
+      ...prev,
+      allow_comments: checked
+    }));
+    trackChange('allow_comments');
+  }, []);
 
-        if (!response.success) {
-          // Kembalikan state jika gagal
-          setRegularPosts(postsCopy);
-          toast.error(response.message || 'Gagal menghapus post');
-        } else {
-          toast.success('Post berhasil dihapus');
-        }
-      } catch (error) {
-        // Kembalikan state jika error
-        setRegularPosts(postsCopy);
-        console.error('Error:', error);
-        toast.error('Terjadi kesalahan saat menghapus post');
-      }
-    }
-  };
+  // Fungsi handleDeletePost dipindahkan ke komponen PostList
 
   return {
     post,
@@ -768,6 +772,8 @@ export const usePostForm = (isEditing, postId, userRole) => {
     handleImageChange,
     handleRemoveImage,
     handleLabelChange,
+    handleTagsChange,
+    handleCommentsToggle,
     handleSubmit,
     titleInputRef,
     showSlugConfirm,

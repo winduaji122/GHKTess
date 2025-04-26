@@ -1,0 +1,122 @@
+/* CSS untuk memperbaiki transisi carousel di React Bootstrap */
+
+/* Konfigurasi transisi carousel */
+.carousel-item {
+  transition: transform 0.6s ease-in-out !important;
+  -webkit-backface-visibility: visible !important;
+  backface-visibility: visible !important;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Mengatur arah transisi */
+.carousel-item-next:not(.carousel-item-start) {
+  transform: translateX(100%) !important;
+}
+
+.carousel-item-prev:not(.carousel-item-end) {
+  transform: translateX(-100%) !important;
+}
+
+.carousel-item-next.carousel-item-start {
+  transform: translateX(0) !important;
+}
+
+.carousel-item-prev.carousel-item-end {
+  transform: translateX(0) !important;
+}
+
+.active.carousel-item-start {
+  transform: translateX(-100%) !important;
+}
+
+.active.carousel-item-end {
+  transform: translateX(100%) !important;
+}
+
+/* Kontrol carousel */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 15%;
+  opacity: 0.5;
+  z-index: 20;
+  transition: opacity 0.15s ease;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 0.9;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Indikator carousel */
+.carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carousel-indicators [data-bs-target] {
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  opacity: 1;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.carousel-indicators .active {
+  background-color: #fff;
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+/* Caption carousel */
+.carousel-caption {
+  width: 70%;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+/* Memperbaiki tampilan carousel selama transisi */
+.carousel-inner {
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: visible !important;
+  backface-visibility: visible !important;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+.carousel-inner img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Memastikan tidak ada efek buram selama transisi */
+.carousel-item img {
+  transition: none !important;
+  -webkit-filter: blur(0) !important;
+  filter: blur(0) !important;
+}

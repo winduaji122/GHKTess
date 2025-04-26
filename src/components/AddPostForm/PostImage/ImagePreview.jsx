@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import LazyImage from '../../common/LazyImage';
+import '../../../styles/lazyImage.css';
 
 const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
   const [hasError, setHasError] = useState(false);
@@ -27,15 +27,14 @@ const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
 
   return (
     <div className="writer-image-preview">
-      <LazyLoadImage
-        alt="Preview"
-        height={200}
+      <LazyImage
         src={hasError ? '/default-fallback-image.jpg' : src}
+        alt="Preview"
+        height="200px"
         width="100%"
-        effect="blur"
+        objectFit="cover"
         className={`writer-preview-image ${isUploading ? 'uploading' : ''}`}
         onError={handleError}
-        placeholderSrc="/default-fallback-image.jpg"
         key={src}
       />
       {!hasError && (

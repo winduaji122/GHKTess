@@ -1,0 +1,129 @@
+.not-registered-alert {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 25px;
+  margin: 15px 0;
+  border-left: 5px solid #f97316;
+  animation: slideIn 0.4s ease-out;
+}
+
+.not-registered-icon {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff7ed;
+  border-radius: 50%;
+  color: #f97316;
+  font-size: 24px;
+}
+
+.not-registered-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.not-registered-message {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.not-registered-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.not-registered-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.not-registered-button.user {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.not-registered-button.user:hover {
+  background-color: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.not-registered-button.writer {
+  background-color: #10b981;
+  color: white;
+}
+
+.not-registered-button.writer:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.not-registered-button-icon {
+  margin-right: 8px;
+}
+
+.not-registered-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.not-registered-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #64748b;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 640px) {
+  .not-registered-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .not-registered-button {
+    min-width: 200px;
+  }
+}

@@ -32,7 +32,10 @@ let refreshTimeout = null;
 let refreshPromise = null;
 
 // Tambahkan variabel untuk melacak storage type yang aktif
-let activeStorageType = STORAGE_TYPES.SESSION;
+// Default ke localStorage jika flag persistent login aktif
+let activeStorageType = localStorage.getItem('auth_persistent') === 'true'
+  ? STORAGE_TYPES.LOCAL
+  : STORAGE_TYPES.SESSION;
 
 // PERBAIKAN: Inisialisasi api terlebih dahulu
 const api = axios.create({
@@ -70,6 +73,13 @@ export const setStorageType = (type) => {
 
 // Inisialisasi storage type dari localStorage jika ada
 const initStorageType = () => {
+  // Prioritaskan flag persistent login
+  if (localStorage.getItem('auth_persistent') === 'true') {
+    activeStorageType = STORAGE_TYPES.LOCAL;
+    return;
+  }
+
+  // Jika tidak ada flag persistent, gunakan preferensi yang tersimpan
   const savedType = localStorage.getItem('tokenStorageType');
   if (savedType === STORAGE_TYPES.LOCAL || savedType === STORAGE_TYPES.SESSION) {
     activeStorageType = savedType;
@@ -248,6 +258,13 @@ export const refreshToken = async (silent = false) => {
   try {
     // Dapatkan token saat ini untuk logging
     const currentToken = getAccessToken();
+
+    // Jika tidak ada token, jangan coba refresh
+    if (!currentToken) {
+      console.log('Tidak ada token yang tersedia, skip refresh token');
+      return { success: false, message: 'No token available' };
+    }
+
     const userIdentity = getUserIdentityFromToken(currentToken);
 
     // Gunakan flag untuk mencegah multiple refresh bersamaan
@@ -263,6 +280,8 @@ export const refreshToken = async (silent = false) => {
       try {
         // Panggil endpoint refresh token
         // Gunakan GET request karena backend mengharapkan refresh token dari cookie
+        // Pastikan URL lengkap dengan /api/auth/refresh-token
+        console.log('Calling refresh token endpoint: /api/auth/refresh-token');
         const response = await axios.get('/api/auth/refresh-token', {
           withCredentials: true,
           headers: {
@@ -285,6 +304,14 @@ export const refreshToken = async (silent = false) => {
 
         // Dapatkan identitas user dari token baru
         const newUserIdentity = getUserIdentityFromToken(accessToken);
+
+        // Cek apakah persistent login aktif
+        const isPersistent = localStorage.getItem('auth_persistent') === 'true';
+
+        // Jika persistent login aktif, pastikan menggunakan localStorage
+        if (isPersistent) {
+          setStorageType(STORAGE_TYPES.LOCAL);
+        }
 
         // Simpan access token baru
         setAccessToken(accessToken);

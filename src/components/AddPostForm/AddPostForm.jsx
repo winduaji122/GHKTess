@@ -5,24 +5,25 @@ import 'react-quill/dist/quill.snow.css';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { getPostById } from '../../api/postApi';
-import moment from 'moment';
 
 // Components
 import PostImage from './PostImage';
 import PostFeatures from './PostFeatures';
 import PostStatus from './PostStatus';
 import PostLabels from './PostLabels';
+import TagsInput from './TagsInput';
+import CommentsToggle from './CommentsToggle';
 import LoadingSpinner from '../LoadingSpinner';
 // Hooks & Utils
 import { usePostForm } from './hooks/usePostForm';
 import { usePostImages } from './hooks/usePostImages';
 import { usePostLabels } from './hooks/usePostLabels';
-import { getQuillModules, getQuillFormats, isFormValid, getSubmitButtonText } from './utils/postHelper';
+import { getQuillModules, getQuillFormats, getSubmitButtonText } from './utils/postHelper';
 import { formatDateTimeForInput } from './utils/postFormatter';
 import { validatePost } from './utils/postValidation';
 import './AddPostForm.css';
 
-const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
+const AddPostForm = ({ isEditing = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -37,7 +38,6 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     setPost,
     isLoading,
     isSubmitting,
-    hasChanges,
     setHasChanges,
     handleTitleChange,
     handleContentChange,
@@ -45,6 +45,8 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     handleStatusChange,
     handleFeaturedToggle,
     handleSpotlightToggle,
+    handleTagsChange,
+    handleCommentsToggle,
     handleSubmit,
     titleInputRef,
     handleSetToday,
@@ -62,6 +64,7 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     isEditing
   });
 
+  // Custom hook untuk mengelola label
   const {
     labels,
     selectedLabels,
@@ -70,11 +73,40 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     handleLabelToggle,
     handleLabelCreate,
     handleLabelDelete,
+    handleLabelEdit,
     handleUndo
   } = usePostLabels({
-    setPost,
-    setHasChanges,
-    initialLabels: post.labels || []
+    initialSelectedLabels: post.labels?.map(l => typeof l === 'object' ? l.id : l) || [],
+    onLabelsChange: (newSelectedLabels) => {
+      // Log untuk debugging
+      console.log('Label change triggered with:', newSelectedLabels);
+
+      // Cari objek label yang sesuai dengan ID yang dipilih
+      const selectedObjects = labels
+        .filter(label => newSelectedLabels.includes(label.id))
+        .map(label => ({
+          id: label.id,
+          label: label.label || label.name
+        }));
+
+      console.log('Selected label objects:', selectedObjects);
+
+      // Update post dengan label yang dipilih
+      setPost(prevPost => {
+        const updatedPost = {
+          ...prevPost,
+          labels: selectedObjects
+        };
+        console.log('Updated post with new labels:', updatedPost);
+        return updatedPost;
+      });
+
+      // Update hasChanges
+      setHasChanges(prev => ({
+        ...prev,
+        labels: true
+      }));
+    }
   });
 
   // Memoize validation
@@ -94,15 +126,7 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     handleSpotlightToggle(checked);
   }, [handleSpotlightToggle]);
 
-  // Gunakan di PostFeatures
-  {user?.role === 'admin' && (
-    <PostFeatures
-      post={post}
-      isAdmin={true}
-      onFeaturedToggle={handleFeaturedToggle}
-      onSpotlightToggle={handleSpotlightToggleCallback}
-    />
-  )}
+  // Contoh penggunaan PostFeatures (digunakan di dalam return)
 
   // Gunakan useEffect untuk mengambil data post jika mode edit
   useEffect(() => {
@@ -110,9 +134,27 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
       if (isEditing && id) {
         try {
           const postData = await getPostById(id);
+          console.log('Fetched post data:', postData);
+
+          // Pastikan format label sesuai dengan yang diharapkan
+          let formattedLabels = [];
+          if (postData.labels && Array.isArray(postData.labels)) {
+            formattedLabels = postData.labels.map(label => {
+              // Pastikan label memiliki id sebagai number
+              return {
+                ...label,
+                id: typeof label.id === 'string' ? parseInt(label.id) : label.id,
+                label: label.label || label.name || ''
+              };
+            });
+          }
+
+          console.log('Formatted labels:', formattedLabels);
+
           setPost(prev => ({
             ...prev,
             ...postData,
+            labels: formattedLabels,
             publish_date: postData.publish_date
               ? formatDateTimeForInput(new Date(postData.publish_date))
               : formatDateTimeForInput(new Date(postData.created_at))
@@ -133,6 +175,12 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
   useEffect(() => {
     // Debug log untuk melihat formData
     console.log('Current formData in AddPostForm:', post);
+
+    // Log khusus untuk labels
+    if (post.labels && Array.isArray(post.labels)) {
+      console.log('Current post labels:', post.labels);
+      console.log('Label IDs:', post.labels.map(l => typeof l === 'object' ? l.id : l));
+    }
   }, [post]);
 
   useEffect(() => {
@@ -157,29 +205,8 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
     });
   }, [user]);
 
-  const validatePublishDate = (dateString) => {
-    const publishDate = moment(dateString);
-    const now = moment();
-
-    if (!publishDate.isValid()) {
-      return {
-        isValid: false,
-        message: 'Format tanggal tidak valid'
-      };
-    }
-
-    if (publishDate.isBefore(now)) {
-      return {
-        isValid: false,
-        message: `Tanggal harus ${now.format('DD/MM/YYYY HH:mm')} atau setelahnya`
-      };
-    }
-
-    return {
-      isValid: true,
-      message: ''
-    };
-  };
+  // Fungsi untuk validasi tanggal publikasi (digunakan di usePostForm)
+  // Dipindahkan ke usePostForm.js untuk menghindari duplikasi
 
   if (isLoading || isLoadingLabels) {
     return <LoadingSpinner />;
@@ -271,8 +298,23 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
               onLabelToggle={handleLabelToggle}
               onLabelCreate={handleLabelCreate}
               onLabelDelete={handleLabelDelete}
+              onLabelEdit={handleLabelEdit}
               showUndo={showUndo}
               onUndo={handleUndo}
+            />
+
+            <div className="post-seo">
+              <label htmlFor="post-tags">Tags SEO</label>
+              <TagsInput
+                value={post.tags || ''}
+                onChange={handleTagsChange}
+                placeholder="Tambahkan tag SEO (misal: berita, teknologi, tutorial)..."
+              />
+            </div>
+
+            <CommentsToggle
+              enabled={post.allow_comments}
+              onChange={handleCommentsToggle}
             />
 
             <button
@@ -286,14 +328,7 @@ const AddPostForm = ({ isEditing = false, onAddPost, onUpdatePost }) => {
         </div>
       </form>
 
-      {showUndo && (
-        <div className="undo-notification">
-          <span>Label telah dihapus</span>
-          <button onClick={handleUndo} className="undo-btn">
-            Batalkan
-          </button>
-        </div>
-      )}
+      {/* Notifikasi undo sudah ditangani di dalam komponen PostLabels */}
     </div>
   );
 };

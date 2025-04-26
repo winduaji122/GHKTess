@@ -1,0 +1,342 @@
+.carousel-post-form-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 15px;
+}
+
+.carousel-post-form-header {
+  margin-bottom: 30px;
+}
+
+.carousel-post-form-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.carousel-post-form-header p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.carousel-post-form {
+  display: flex;
+  gap: 30px;
+}
+
+.carousel-post-form-main {
+  flex: 1;
+}
+
+.carousel-post-form-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+}
+
+.carousel-post-form-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.carousel-post-form-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.carousel-post-form-group {
+  margin-bottom: 20px;
+}
+
+.carousel-post-form-group label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+
+.carousel-post-form-group input[type="text"],
+.carousel-post-form-group input[type="datetime-local"],
+.carousel-post-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.carousel-post-form-group input[type="text"]:focus,
+.carousel-post-form-group input[type="datetime-local"]:focus,
+.carousel-post-form-group textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+}
+
+.carousel-post-form-group input.error,
+.carousel-post-form-group textarea.error,
+.carousel-post-form-group .quill.error .ql-container {
+  border-color: #e53e3e;
+}
+
+.carousel-post-form-group .error-message {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.carousel-post-form-group small {
+  display: block;
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 5px;
+}
+
+.carousel-post-form-group.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.carousel-post-form-group.checkbox label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+/* React Quill Editor Styling */
+.carousel-post-form-group .quill {
+  margin-bottom: 10px;
+}
+
+.carousel-post-form-group .ql-container {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  min-height: 200px;
+}
+
+.carousel-post-form-group .ql-toolbar {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+/* Date Input Styling */
+.carousel-post-date-input {
+  display: flex;
+  gap: 10px;
+}
+
+.carousel-post-today-button {
+  padding: 0 15px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.carousel-post-today-button:hover {
+  background-color: #e2e8f0;
+}
+
+/* Image Upload Styling */
+.carousel-post-image-upload {
+  margin-bottom: 15px;
+}
+
+.carousel-post-image-placeholder {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #cbd5e0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  color: #a0aec0;
+}
+
+.carousel-post-image-placeholder:hover {
+  border-color: #3182ce;
+  background-color: #f7fafc;
+}
+
+.carousel-post-image-placeholder p {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.carousel-post-image-preview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.carousel-post-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-post-remove-image {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.carousel-post-remove-image:hover {
+  background-color: rgba(229, 62, 62, 0.8);
+}
+
+.carousel-post-image-help {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 10px;
+}
+
+/* Form Actions */
+.carousel-post-form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.carousel-post-cancel-button {
+  padding: 10px 20px;
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+}
+
+.carousel-post-cancel-button:hover {
+  background-color: #cbd5e0;
+}
+
+.carousel-post-submit-button {
+  padding: 10px 25px;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+}
+
+.carousel-post-submit-button:hover {
+  background-color: #2c5282;
+}
+
+.carousel-post-submit-button:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.carousel-post-form-loading {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 15px;
+}
+
+/* Readonly content styles */
+.carousel-post-readonly-content {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f8fafc;
+  min-height: 200px;
+  margin-bottom: 15px;
+}
+
+.carousel-post-readonly-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(248, 250, 252, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.carousel-post-readonly-message {
+  background-color: #fff;
+  padding: 10px 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #64748b;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.carousel-post-image-placeholder.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .carousel-post-form {
+    flex-direction: column;
+  }
+
+  .carousel-post-form-sidebar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-post-form-container {
+    padding: 15px 10px;
+  }
+
+  .carousel-post-form-section {
+    padding: 20px 15px;
+  }
+
+  .carousel-post-date-input {
+    flex-direction: column;
+  }
+
+  .carousel-post-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .carousel-post-cancel-button,
+  .carousel-post-submit-button {
+    width: 100%;
+  }
+}

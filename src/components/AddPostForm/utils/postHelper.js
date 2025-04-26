@@ -1,8 +1,8 @@
 export const preparePostData = (post, hasChanges) => {
   const formData = new FormData();
-  
-  console.log('Preparing post data:', { 
-    post, 
+
+  console.log('Preparing post data:', {
+    post,
     hasChanges,
     spotlight: {
       current: Boolean(post.is_spotlight),
@@ -15,7 +15,7 @@ export const preparePostData = (post, hasChanges) => {
   formData.append('title', post.title?.trim() || '');
   formData.append('content', post.content?.trim() || '');
   formData.append('status', post.status || 'draft');
-  
+
   // Handle image
   if (hasChanges.image) {
     if (post.image instanceof File) {
@@ -65,7 +65,7 @@ export const preparePostData = (post, hasChanges) => {
   formData.append('is_featured', post.is_featured ? '1' : '0');
 
   // Pastikan nilai spotlight dipertahankan dari server
-  const spotlightValue = typeof post.is_spotlight === 'boolean' 
+  const spotlightValue = typeof post.is_spotlight === 'boolean'
     ? (post.is_spotlight ? '1' : '0')
     : (post.is_spotlight === 1 || post.is_spotlight === '1' ? '1' : '0');
 
@@ -95,37 +95,49 @@ export const preparePostData = (post, hasChanges) => {
 
   return formData;
 };
-  
+
   export const getQuillModules = {
     toolbar: {
       container: [
         [{ 'header': [1, 2, 3, false] }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['link', 'image'],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'align': [] }],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }],
+        ['link', 'image', 'video'],
+        ['blockquote', 'code-block'],
         ['clean']
       ],
+      handlers: {
+        // Kita akan menambahkan custom handler untuk image dan video nanti
+      }
     },
     clipboard: {
       matchVisual: false
     }
   };
-  
+
   export const getQuillFormats = [
     'header',
     'bold', 'italic', 'underline', 'strike',
     'list', 'bullet',
-    'link', 'image'
+    'indent', 'align',
+    'color', 'background',
+    'font', 'size',
+    'link', 'image', 'video',
+    'blockquote', 'code-block'
   ];
-  
+
   export const isFormValid = (post, uploadStatus) => {
-    console.log('Validating form:', { 
+    console.log('Validating form:', {
       title: Boolean(post?.title?.trim()),
       content: Boolean(post?.content?.trim()),
       image: Boolean(post?.image || post?.previous_image),
       isUploading: uploadStatus.isUploading
     });
-    
+
     return (
       !uploadStatus.isUploading &&
       post?.title?.trim() &&
@@ -133,7 +145,7 @@ export const preparePostData = (post, hasChanges) => {
       (post?.image || post?.previous_image) // Pastikan ada gambar
     );
   };
-  
+
   export const getSubmitButtonText = (isEditing, isUploading, isSubmitting) => {
     if (isUploading) return 'Mengunggah...';
     if (isSubmitting) return 'Menyimpan...';

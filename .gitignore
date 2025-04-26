@@ -28,6 +28,7 @@ dist-ssr
 .env.local
 .env.development
 .env.production
+.env.production.local
 
 # Tambahkan baris ini jika Anda ingin menyimpan contoh file .env di repositori
 !.env.example

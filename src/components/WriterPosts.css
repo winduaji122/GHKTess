@@ -95,6 +95,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+  height: 42px;
 }
 
 .writer-new-post-button:hover {
@@ -109,7 +110,8 @@
 }
 
 .writer-new-post-button svg {
-  font-size: 18px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 /* Improved search form */
@@ -186,9 +188,10 @@
 
 .writer-filter-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-top: 15px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .writer-search-button {
@@ -196,12 +199,13 @@
   border-color: #007bff;
   color: white;
   font-weight: 500;
-  padding: 8px 16px;
+  padding: 0 16px;
   border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.3s ease;
+  height: 42px;
 }
 
 .writer-search-button:hover {
@@ -214,12 +218,13 @@
   border-color: #6c757d;
   color: white;
   font-weight: 500;
-  padding: 8px 16px;
+  padding: 0 16px;
   border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.3s ease;
+  height: 42px;
 }
 
 .writer-reset-button:hover {
@@ -334,20 +339,20 @@
   height: 42px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 15px;
+  gap: 8px;
+  padding: 0 16px;
   white-space: nowrap;
   font-weight: 500;
   transition: all 0.3s ease;
   border-radius: 6px;
-  min-width: 180px;
+  min-width: 160px;
   justify-content: center;
   flex-shrink: 0;
 }
 
 .writer-filter-btn svg {
-  font-size: 16px;
-  margin-right: 2px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .writer-status-filter {
@@ -410,6 +415,11 @@
   justify-content: center;
 }
 
+.writer-search-button svg {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 .writer-search-button:hover {
   background-color: #0069d9;
   transform: translateY(-1px);
@@ -436,6 +446,11 @@
   justify-content: center;
 }
 
+.writer-reset-button svg {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 .writer-reset-button:hover {
   background-color: #5a6268;
 }
@@ -447,9 +462,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
   transition: all 0.3s ease;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  background-color: white;
+  color: #495057;
+}
+
+.writer-sort-button svg {
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .writer-sort-button:hover {
@@ -579,23 +602,29 @@
   gap: 4px;
 }
 
-.writer-post-stats {
+.writer-post-stats-container {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   margin-top: 6px;
   font-size: 13px;
   color: #666;
 }
 
-.writer-post-stats span {
+.writer-post-stats {
+  margin: 0 !important;
+}
+
+.writer-post-created {
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 13px;
+  color: #666;
 }
 
-.writer-post-stats svg {
+.writer-post-created svg {
   font-size: 14px;
   color: #6c757d;
 }
@@ -623,9 +652,10 @@
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  height: 36px;
 }
 
 .writer-action-button:disabled {
@@ -693,6 +723,7 @@
 
 .writer-action-button svg {
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .status-badge {

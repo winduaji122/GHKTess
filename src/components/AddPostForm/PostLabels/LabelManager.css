@@ -1,0 +1,131 @@
+/* LabelManager.css - Styling untuk komponen pengelolaan label */
+
+.label-manager {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 20px; /* Tingkatkan padding untuk tampilan yang lebih baik */
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+  border: none; /* Hapus border karena sudah ada di post-labels-dropdown */
+}
+
+.label-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 12px;
+}
+
+.label-manager-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.label-manager-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label-manager-input-group {
+  position: relative;
+}
+
+.label-manager-input {
+  width: 100%;
+  padding: 10px 16px; /* Perlebar padding horizontal */
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.2s ease;
+  height: 42px; /* Tetapkan tinggi yang konsisten */
+  font-weight: 500; /* Sedikit lebih tebal untuk keterbacaan yang lebih baik */
+}
+
+.label-manager-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+.label-manager-input.error {
+  border-color: #ef4444;
+}
+
+.label-manager-error {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.label-manager-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.label-manager-cancel-btn {
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px; /* Tetapkan tinggi yang konsisten */
+  min-width: 80px; /* Tetapkan lebar minimum */
+}
+
+.label-manager-cancel-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.label-manager-submit-btn {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px; /* Tetapkan tinggi yang konsisten */
+  min-width: 100px; /* Tetapkan lebar minimum */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Tambahkan shadow ringan */
+}
+
+.label-manager-submit-btn:hover {
+  background-color: #2563eb;
+}
+
+.label-manager-submit-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .label-manager {
+    padding: 12px;
+  }
+
+  .label-manager-actions {
+    flex-direction: column;
+  }
+
+  .label-manager-cancel-btn,
+  .label-manager-submit-btn {
+    width: 100%;
+  }
+}

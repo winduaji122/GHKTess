@@ -212,6 +212,24 @@
 
 .editor-container .ql-editor {
   min-height: 300px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.editor-container .ql-editor h1 {
+  font-size: 28px;
+}
+
+.editor-container .ql-editor h2 {
+  font-size: 24px;
+}
+
+.editor-container .ql-editor h3 {
+  font-size: 20px;
+}
+
+.editor-container .ql-editor p {
+  margin-bottom: 1em;
 }
 
 .editor-container .ql-toolbar {
@@ -222,6 +240,20 @@
 .label-management {
   position: relative;
   margin-top: 20px;
+  padding-top: 10px; /* Tambahkan padding atas untuk ruang dropdown */
+}
+
+/* SEO Tags */
+.post-seo {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.post-seo label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
 }
 
 .label-dropdown-toggle {
@@ -238,7 +270,7 @@
 
 .label-dropdown-menu {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 0;
   right: 0;
   background-color: white;
@@ -250,6 +282,20 @@
   overflow-y: auto;
   width: 400px;
   padding: 10px;
+  margin-bottom: 10px; /* Tambahkan margin untuk jarak dari tombol */
+  transform-origin: bottom center; /* Animasi dari bawah */
+  animation: dropdown-appear 0.2s ease-out; /* Animasi dropdown */
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .label-list {

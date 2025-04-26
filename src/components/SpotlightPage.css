@@ -1,26 +1,160 @@
 .spotlight-page {
-  padding: 10px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 15px;
+}
+
+.spotlight-header {
+  text-align: center;
+  margin-bottom: 30px;
+  position: relative;
+  animation: fadeInDown 0.8s ease-out;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #333;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1a5f7a;
+  position: relative;
+  display: inline-block;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #1a5f7a, #3498db);
+  border-radius: 2px;
+}
+
+.spotlight-description {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto 20px;
+  line-height: 1.6;
+}
+
+.search-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 0 15px;
+  animation: fadeIn 1s ease-out 0.3s both;
 }
 
 .spotlight-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+  animation: fadeIn 1s ease-out;
+}
+
+.spotlight-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.spotlight-item-skeleton {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  padding-bottom: 15px;
 }
 
 .loading, .error {
   text-align: center;
-  padding: 20px;
+  padding: 40px 20px;
   font-size: 1.2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .error {
   color: #e74c3c;
+  border-left: 4px solid #e74c3c;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Spotlight card styles */
+.spotlight-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  background: #fff;
+  height: 100%;
+  border: 2px solid transparent;
+}
+
+.spotlight-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #1a5f7a;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .spotlight-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .spotlight-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .spotlight-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

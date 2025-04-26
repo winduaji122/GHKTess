@@ -180,6 +180,16 @@
   gap: 1rem;
 }
 
+.user-profile-google-notice {
+  background-color: #ebf8ff;
+  border: 1px solid #bee3f8;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  color: #2c5282;
+  font-size: 0.9rem;
+}
+
 .user-profile-image-upload-button,
 .user-profile-image-remove-button {
   display: flex;
@@ -237,20 +247,20 @@
   .user-profile-container {
     padding: 1.5rem;
   }
-  
+
   .user-profile-tabs {
     flex-direction: column;
     border-bottom: none;
   }
-  
+
   .user-profile-tab {
     border-bottom: 1px solid #e0e0e0;
   }
-  
+
   .user-profile-tab.active {
     border-bottom: 1px solid #3182ce;
   }
-  
+
   .user-profile-image-actions {
     flex-direction: column;
   }

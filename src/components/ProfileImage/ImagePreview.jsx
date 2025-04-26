@@ -7,28 +7,30 @@ const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
   const maxRetries = 3;
 
   const handleError = (error) => {
-    console.error('Image error:', error);
+    // Cek apakah URL adalah URL Google
+    if (src && (src.includes('googleusercontent.com') || src.includes('lh3.google'))) {
+      // Untuk Google avatar, langsung tampilkan error state tanpa retry
+      setHasError(true);
+      onError?.(error);
+      return;
+    }
 
     if (retryCount.current >= maxRetries) {
-      console.log('Max retries reached, showing error state');
       setHasError(true);
       onError?.(error);
       return;
     }
 
     retryCount.current += 1;
-    console.log(`Retry attempt ${retryCount.current}/${maxRetries}`);
 
     // Try with cache busting
     const baseUrl = src.split('?')[0];
     const newSrc = `${baseUrl}?retry=${retryCount.current}&t=${Date.now()}`;
-    console.log('Retrying with new src:', newSrc);
     error.target.src = newSrc;
   };
 
   // Reset error state when src changes
   useEffect(() => {
-    console.log('Image src changed, resetting error state:', src);
     retryCount.current = 0;
     setHasError(false);
   }, [src]);

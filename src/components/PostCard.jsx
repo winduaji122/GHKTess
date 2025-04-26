@@ -1,6 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostCard.css';
+import '../styles/lazyImage.css';
+import LazyImage from './common/LazyImage';
 import PropTypes from 'prop-types';
 
 const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
@@ -77,19 +79,14 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
     return (
       <>
         <div className="post-card-image-container">
-          {getImageUrl(post.image) && (
-            <img
-              src={getImageUrl(post.image)}
-              alt={post.title || 'Post image'}
-              className="post-card-image"
-              loading="lazy"
-              onError={(e) => {
-                console.error('Image failed to load:', getImageUrl(post.image));
-                e.target.onerror = null;
-                e.target.src = '/default-fallback-image.jpg';
-              }}
-            />
-          )}
+          <LazyImage
+            src={getImageUrl(post.image)}
+            alt={post.title || 'Post image'}
+            className="post-card-image"
+            height="200px"
+            width="100%"
+            objectFit="cover"
+          />
           {!isSpotlight && labels.length > 0 && (
             <div className="post-card-labels-overlay">
               {labels.map((label, index) => {

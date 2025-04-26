@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserIcon, MagnifyingGlassIcon, UserPlusIcon, ChartBarIcon, DocumentTextIcon, ArrowRightIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { api } from '../api/axios';
-import { getImageUrl } from '../utils/imageHelper';
+import { getProfileImageUrl } from '../utils/imageHelper';
+import SmartAvatar from './common/SmartAvatar';
 import './Header.css';
 
 export default function Header({ isLoggedIn, onLogout, user }) {
@@ -29,7 +30,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
       // Jika ada profile_picture, coba log URL lengkapnya
       if (user.profile_picture) {
-        const imageUrl = getImageUrl(user.profile_picture);
+        const imageUrl = getProfileImageUrl(user.profile_picture);
         console.log('Profile image filename:', user.profile_picture);
         console.log('Generated profile image URL:', imageUrl);
       }
@@ -38,9 +39,9 @@ export default function Header({ isLoggedIn, onLogout, user }) {
     }
   }, [user]);
 
-  // Effect untuk menangani event user:dataUpdated
+  // Effect untuk menangani event user:dataUpdated, user:logout, dan app:logout
   useEffect(() => {
-    console.log('Setting up user:dataUpdated event listener');
+    console.log('Setting up event listeners in Header.jsx');
 
     const handleUserDataUpdated = () => {
       console.log('User data updated event received');
@@ -53,7 +54,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
           // Jika ada profile_picture, log URL lengkapnya
           if (storedUser.profile_picture) {
-            const imageUrl = getImageUrl(storedUser.profile_picture);
+            const imageUrl = getProfileImageUrl(storedUser.profile_picture);
             console.log('Generated profile image URL after update:', imageUrl);
           }
         } else {
@@ -68,13 +69,31 @@ export default function Header({ isLoggedIn, onLogout, user }) {
       }
     };
 
+    const handleUserLogout = () => {
+      console.log('User logout event received in Header.jsx');
+      // Reset semua state terkait user
+      setUserData(null);
+      setIsDropdownOpen(false);
+    };
+
+    const handleAppLogout = () => {
+      console.log('App logout event received in Header.jsx');
+      // Reset semua state terkait user
+      setUserData(null);
+      setIsDropdownOpen(false);
+    };
+
     // Panggil handler sekali saat komponen dimuat untuk memastikan data terbaru
     handleUserDataUpdated();
 
     window.addEventListener('user:dataUpdated', handleUserDataUpdated);
+    window.addEventListener('user:logout', handleUserLogout);
+    window.addEventListener('app:logout', handleAppLogout);
 
     return () => {
       window.removeEventListener('user:dataUpdated', handleUserDataUpdated);
+      window.removeEventListener('user:logout', handleUserLogout);
+      window.removeEventListener('app:logout', handleAppLogout);
     };
   }, []);
 
@@ -93,7 +112,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
         // Jika ada profile_picture, log URL lengkapnya
         if (storedUser.profile_picture) {
-          const imageUrl = getImageUrl(storedUser.profile_picture);
+          const imageUrl = getProfileImageUrl(storedUser.profile_picture);
           console.log('Generated profile image URL from localStorage:', imageUrl);
         }
       } else if (isLoggedIn) {
@@ -113,7 +132,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
               // Jika ada profile_picture, log URL lengkapnya
               if (response.data.user.profile_picture) {
-                const imageUrl = getImageUrl(response.data.user.profile_picture);
+                const imageUrl = getProfileImageUrl(response.data.user.profile_picture);
                 console.log('Generated profile image URL from API:', imageUrl);
               }
             }
@@ -130,9 +149,15 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
   // Effect untuk mereset userData ketika pengguna logout
   useEffect(() => {
+    console.log('isLoggedIn changed to:', isLoggedIn);
     if (!isLoggedIn) {
-      console.log('User logged out, resetting userData');
+      console.log('User logged out, resetting userData in Header.jsx');
       setUserData(null);
+      setIsDropdownOpen(false);
+      // Hapus data dari localStorage untuk memastikan tidak ada data yang tersisa
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_persistent');
+      localStorage.removeItem('token');
     }
   }, [isLoggedIn]);
 
@@ -145,42 +170,20 @@ export default function Header({ isLoggedIn, onLogout, user }) {
 
   // Jika ada profile_picture, log URL lengkapnya
   if (userData?.profile_picture) {
-    const imageUrl = getImageUrl(userData.profile_picture);
+    const imageUrl = getProfileImageUrl(userData.profile_picture);
     console.log('Final generated profile image URL:', imageUrl);
   }
 
-  // Fungsi untuk menangani hover pada dropdown menu
-  const handleDropdownMouseEnter = () => {
-    if (dropdownTimeoutRef.current) {
-      clearTimeout(dropdownTimeoutRef.current);
-      dropdownTimeoutRef.current = null;
-    }
-    setIsDropdownOpen(true);
-  };
-
-  const handleDropdownMouseLeave = () => {
-    // Menambahkan delay sebelum menutup dropdown
-    dropdownTimeoutRef.current = setTimeout(() => {
-      setIsDropdownOpen(false);
-    }, 800); // Meningkatkan delay menjadi 800ms untuk memberikan waktu lebih banyak
-  };
-
-  // Fungsi untuk memperbarui posisi dropdown
-  const updateDropdownPosition = () => {
-    if (buttonRef.current && dropdownRef.current) {
-      // Logika untuk memperbarui posisi dropdown jika diperlukan
-      // Misalnya, menyesuaikan posisi berdasarkan posisi tombol
-      console.log('Updating dropdown position');
-    }
-  };
-
-  // Modifikasi fungsi toggleDropdown
+  // Fungsi untuk menangani dropdown menu - hanya dengan klik, bukan hover
   const toggleDropdown = (e) => {
-    e.preventDefault(); // Mencegah default action
-    e.stopPropagation(); // Mencegah event bubbling
-    updateDropdownPosition();
+    if (e) {
+      e.preventDefault(); // Mencegah default action
+      e.stopPropagation(); // Mencegah event bubbling
+    }
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // Fungsi untuk menutup dropdown sudah diimplementasikan inline
 
   // Effect untuk menangani klik di luar dropdown
   useEffect(() => {
@@ -256,7 +259,7 @@ export default function Header({ isLoggedIn, onLogout, user }) {
               <MagnifyingGlassIcon className="h-5 w-5"/>
             </button>
           </form>
-          <Menu as="div" className="relative inline-block text-left header-dropdown-container" ref={dropdownRef} onMouseEnter={handleDropdownMouseEnter} onMouseLeave={handleDropdownMouseLeave}>
+          <Menu as="div" className="relative inline-block text-left header-dropdown-container" ref={dropdownRef}>
             <div>
               {/* Menu Button dengan gambar profil atau ikon default */}
               {isLoggedIn ? (
@@ -264,38 +267,22 @@ export default function Header({ isLoggedIn, onLogout, user }) {
                   className="writer-profile-button"
                   ref={buttonRef}
                   onClick={toggleDropdown}
-                  onMouseEnter={handleDropdownMouseEnter}
                 >
                   {console.log('Header render - userData:', userData)}
                   {console.log('Header render - profile_picture:', userData?.profile_picture)}
                   {userData?.profile_picture && console.log('Rendering profile image with:', userData.profile_picture)}
                   <div className="writer-profile-image-container">
-                    {userData?.profile_picture ? (
-                      <img
-                        src={getImageUrl(userData.profile_picture)}
-                        alt="Profile"
-                        className="writer-profile-image"
-                        onError={(e) => {
-                          console.error('Error loading profile image:', e);
-                          e.target.onerror = null;
-                          // Ganti dengan ikon default jika gambar gagal dimuat
-                          const container = e.target.parentNode;
-                          container.innerHTML = '';
-                          const iconElement = document.createElement('div');
-                          iconElement.className = 'writer-profile-fallback-icon';
-                          iconElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>`;
-                          container.appendChild(iconElement);
-                        }}
-                      />
-                    ) : (
-                      <div className="writer-profile-fallback-icon">
-                        <UserIcon className="w-6 h-6" aria-hidden="true" />
-                      </div>
-                    )}
+                    <SmartAvatar
+                      src={userData?.profile_picture}
+                      alt="Profile"
+                      name={userData?.name || userData?.username || 'User'}
+                      size="md"
+                      className="writer-profile-image"
+                    />
                   </div>
                 </Menu.Button>
               ) : (
-                <Menu.Button className="writer-profile-button writer-profile-button-default" onClick={toggleDropdown} onMouseEnter={handleDropdownMouseEnter}>
+                <Menu.Button className="writer-profile-button writer-profile-button-default" onClick={toggleDropdown}>
                   <div className="writer-profile-icon-container">
                     <UserIcon className="writer-profile-icon w-6 h-6" aria-hidden="true" />
                   </div>
@@ -314,8 +301,6 @@ export default function Header({ isLoggedIn, onLogout, user }) {
             >
               <Menu.Items
                 className={`absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[9999] user-dropdown-menu header-dropdown-menu ${isDropdownOpen ? 'visible' : ''}`}
-                onMouseEnter={handleDropdownMouseEnter}
-                onMouseLeave={handleDropdownMouseLeave}
               >
 
                 <div className="px-1 py-1">
@@ -328,6 +313,11 @@ export default function Header({ isLoggedIn, onLogout, user }) {
                             className={`${
                               active ? '!bg-blue-600 !text-white' : 'text-gray-700'
                             } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                            onClick={() => {
+                              console.log('Navigating to profile page');
+                              // Tutup dropdown setelah klik
+                              setIsDropdownOpen(false);
+                            }}
                           >
                             <UserCircleIcon className="mr-2 h-5 w-5" aria-hidden="true" />
                             {userData?.name || userData?.username || 'Profil Saya'}
@@ -375,9 +365,43 @@ export default function Header({ isLoggedIn, onLogout, user }) {
                       <Menu.Item>
                         {({ active }) => (
                           <button
-                            onClick={() => {
-                              onLogout();
-                              navigate('/');
+                            onClick={async () => {
+                              try {
+                                console.log('Logout button clicked');
+                                // Tutup dropdown sebelum logout
+                                setIsDropdownOpen(false);
+                                // Reset userData
+                                setUserData(null);
+                                // Hapus data dari localStorage
+                                localStorage.removeItem('auth_user');
+                                localStorage.removeItem('auth_persistent');
+                                localStorage.removeItem('token');
+
+                                // Tambahkan flag untuk menandai bahwa user baru saja logout
+                                sessionStorage.setItem('recently_logged_out', 'true');
+                                // Panggil fungsi logout dan tunggu sampai selesai
+                                const logoutSuccess = await onLogout();
+                                console.log('Logout completed with status:', logoutSuccess);
+
+                                // Tunggu sebentar untuk memastikan semua state sudah diperbarui
+                                setTimeout(() => {
+                                  // Navigasi ke halaman utama
+                                  navigate('/', { replace: true });
+                                  // Refresh halaman untuk memastikan semua state direset
+                                  window.location.href = '/';
+                                }, 100);
+                              } catch (error) {
+                                console.error('Error during logout:', error);
+                                // Jika terjadi error, tetap coba navigasi dan refresh
+                                localStorage.removeItem('auth_user');
+                                localStorage.removeItem('auth_persistent');
+                                localStorage.removeItem('token');
+
+                                // Tambahkan flag untuk menandai bahwa user baru saja logout
+                                sessionStorage.setItem('recently_logged_out', 'true');
+                                navigate('/', { replace: true });
+                                window.location.href = '/';
+                              }
                             }}
                             className={`${
                               active ? '!bg-red-600 !text-white' : 'text-red-600'

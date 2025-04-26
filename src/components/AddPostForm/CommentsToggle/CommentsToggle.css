@@ -1,0 +1,72 @@
+.writer-comments-toggle {
+  margin-bottom: 20px;
+}
+
+.writer-comments-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.writer-comments-toggle-text {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.writer-comments-toggle-switch {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.writer-comments-toggle-switch.enabled {
+  background-color: #4caf50;
+}
+
+.writer-comments-toggle-switch.disabled {
+  background-color: #f44336;
+}
+
+.writer-comments-toggle-slider {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.writer-comments-toggle-switch.enabled .writer-comments-toggle-slider {
+  transform: translateX(26px);
+}
+
+.writer-comments-toggle-icon {
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  transition: all 0.3s;
+}
+
+.writer-comments-toggle-switch.enabled .writer-comments-toggle-icon {
+  left: 8px;
+}
+
+.writer-comments-toggle-switch.disabled .writer-comments-toggle-icon {
+  right: 8px;
+}
+
+.writer-comments-toggle-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}

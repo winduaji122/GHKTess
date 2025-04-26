@@ -201,13 +201,25 @@ export const getRelatedPosts = async (postId, limit = 5) => {
       throw new Error('Gagal mengambil related posts');
     }
 
+    // Filter posts yang published dan tidak dihapus
     const filteredPosts = response.data.data.filter(post =>
       post.status === 'published' && !post.deleted_at
     );
 
+    // Pastikan tanggal pada related posts diformat dengan benar
+    const formattedPosts = filteredPosts.map(post => ({
+      ...post,
+      // Pastikan tanggal publish_date dan created_at ada dan valid
+      publish_date: post.publish_date || null,
+      created_at: post.created_at || null
+    }));
+
+    // Log untuk debugging
+    console.log('Related posts after formatting:', formattedPosts);
+
     return {
       success: true,
-      data: filteredPosts
+      data: formattedPosts
     };
   } catch (error) {
     console.error('Error fetching related posts:', error);
@@ -218,13 +230,93 @@ export const getRelatedPosts = async (postId, limit = 5) => {
   }
 };
 
+/**
+ * Increment views untuk post (untuk semua pengguna, terautentikasi atau tidak)
+ * @param {string} id - ID post
+ * @returns {Promise<Object>} - Data hasil increment views
+ */
 export const incrementViews = async (id) => {
   try {
-    const response = await publicApi.post(endpoints.incrementViews(id));
+    if (!id) {
+      console.error('Invalid post ID provided to incrementViews');
+      return { success: false, error: 'Invalid post ID' };
+    }
+
+    console.log(`Attempting to increment views for post ${id}`);
+
+    // Coba gunakan endpoint public jika user tidak login
+    const token = localStorage.getItem('token');
+    let response;
+
+    try {
+      if (!token) {
+        // Gunakan endpoint public untuk user yang tidak login
+        console.log(`Using public endpoint for post ${id}`);
+        response = await publicApi.post(`/api/posts/public/increment-views/${id}`);
+      } else {
+        // Gunakan endpoint dengan autentikasi jika user login
+        console.log(`Using authenticated endpoint for post ${id}`);
+        response = await api.post(endpoints.incrementViews(id), {});
+      }
+
+      // Log response untuk debugging
+      console.log(`View increment response for post ${id}:`, response?.data || 'No response data');
+    } catch (requestError) {
+      console.error(`Error making request to increment views for post ${id}:`, requestError);
+
+      // Coba endpoint alternatif jika yang pertama gagal
+      try {
+        console.log(`Trying alternative endpoint for post ${id}`);
+        response = await publicApi.post(`/api/posts/${id}/increment-views`);
+        console.log(`Alternative endpoint response for post ${id}:`, response?.data || 'No response data');
+      } catch (alternativeError) {
+        console.error(`Error with alternative endpoint for post ${id}:`, alternativeError);
+        throw alternativeError;
+      }
+    }
+
+    // Response sudah di-log di atas, tidak perlu di-log lagi
     return response.data;
   } catch (error) {
-    console.error('Error incrementing view count:', error);
-    throw error;
+    console.error(`Error incrementing view count for post ${id}:`, error);
+    // Jangan gagalkan proses jika increment views gagal
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Mendapatkan statistik post (views, comments, likes) - hanya untuk pengguna terautentikasi
+ * @param {string} id - ID post
+ * @returns {Promise<Object>} - Data statistik post
+ */
+export const getPostStats = async (id) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        message: 'Anda harus login untuk melihat statistik post'
+      };
+    }
+
+    const response = await api.get(endpoints.postStats(id), {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error fetching post stats:', error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 };
 
@@ -776,11 +868,15 @@ export const getAllPostsAdmin = async ({
   status = 'all',
   label = '',
   featured = null,
+  user = null,
+  role = null,
   sort = 'created_at:desc',
   includeDeleted = false,
   signal
 }) => {
   try {
+    console.log('getAllPostsAdmin called with params:', { page, limit, status, label, featured, user, role, sort });
+
     // Tambah validasi untuk label
     const labelId = label ? parseInt(label) : undefined;
     if (label && isNaN(labelId)) {
@@ -796,15 +892,38 @@ export const getAllPostsAdmin = async ({
       admin: true,
       includeDeleted: includeDeleted,
       _t: Date.now(), // Tambahkan timestamp untuk menghindari cache
-      is_featured: featured // Gunakan is_featured sesuai dengan kolom di database
+      featured: featured, // Gunakan parameter featured
+      user_role: role !== 'all' ? role : undefined // Filter berdasarkan role
     };
+
+    // Hapus parameter yang undefined
+    Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
 
     // Log untuk debugging
     console.log('Fetching posts with params:', params);
 
-    const response = await api.get('/api/posts', {
+    // Dapatkan token autentikasi
+    const token = getAccessToken();
+    if (!token) {
+      console.error('Token autentikasi tidak tersedia');
+      return {
+        success: false,
+        data: [],
+        message: 'Token autentikasi tidak tersedia',
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          limit: limit
+        }
+      };
+    }
+
+    // Gunakan endpoint baru khusus untuk admin
+    const response = await api.get('/api/posts/admin', {
       params,
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
       },
@@ -814,21 +933,37 @@ export const getAllPostsAdmin = async ({
     // Log response untuk debugging
     console.log('API Response:', response.data);
 
+    // Periksa apakah response.data.data adalah array
+    if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
+      console.error('Invalid response data format:', response.data);
+      return {
+        success: false,
+        data: [],
+        message: 'Format data tidak valid',
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          limit: limit
+        }
+      };
+    }
+
     const filteredData = includeDeleted
-      ? response.data?.data
-      : response.data?.data?.filter(post => !post.deleted_at);
+      ? response.data.data
+      : response.data.data.filter(post => !post.deleted_at);
 
     // Log filtered data
     console.log('Filtered data:', filteredData);
 
     return {
       success: true,
-      data: filteredData || [],
+      data: filteredData,
       pagination: {
-        currentPage: page,
-        totalPages: Math.ceil((response.data?.pagination?.totalItems || 0) / limit),
-        totalItems: response.data?.pagination?.totalItems || 0,
-        limit: limit
+        currentPage: parseInt(page),
+        totalPages: Math.ceil((response.data?.pagination?.totalItems || 0) / parseInt(limit)),
+        totalItems: parseInt(response.data?.pagination?.totalItems || 0),
+        limit: parseInt(limit)
       }
     };
   } catch (error) {
@@ -836,7 +971,17 @@ export const getAllPostsAdmin = async ({
       throw error;
     }
     console.error('Error fetching posts:', error);
-    throw error;
+    return {
+      success: false,
+      data: [],
+      error: error.message,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: 0,
+        totalItems: 0,
+        limit: parseInt(limit)
+      }
+    };
   }
 };
 
@@ -918,7 +1063,7 @@ export const getDeletedPosts = async (page = 1, limit = 10) => {
 };
 
 // Tambahkan fungsi untuk mengambil post publik
-export const getPublicPostBySlug = async (slugOrId) => {
+export const getPublicPostBySlug = async (slugOrId, params = {}) => {
   try {
     if (!slugOrId) {
       throw new Error('Identifier tidak boleh kosong');
@@ -927,10 +1072,72 @@ export const getPublicPostBySlug = async (slugOrId) => {
     // Gunakan endpoint yang tepat sesuai response Postman
     const endpoint = `/api/posts/public/slug/${slugOrId}`;
 
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`);
+    // Tambahkan parameter untuk cache busting jika tidak ada
+    if (!params._t) {
+      params._t = Date.now();
+    }
+
+    // Tambahkan parameter untuk meminta semua label
+    params.include_all_labels = true;
+
+    // Tambahkan header untuk menghindari cache
+    const headers = {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
+    };
+
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
+      params,
+      headers
+    });
 
     if (!response.data?.success) {
       throw new Error(response.data.message || 'Gagal mengambil data post');
+    }
+
+    // Jika backend tidak mengembalikan all_labels, tambahkan dari API labels publik
+    if (response.data.success && response.data.data && !response.data.data.all_labels) {
+      try {
+        // Ambil semua label dari API publik
+        const labelsResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/search/labels`, {
+          params: { _t: Date.now() },
+          headers: {
+            ...headers,
+            'X-Public-Request': 'true' // Tandai sebagai request publik
+          }
+        });
+
+        let allLabels = [];
+        if (Array.isArray(labelsResponse.data)) {
+          allLabels = labelsResponse.data;
+        } else if (labelsResponse.data?.data && Array.isArray(labelsResponse.data.data)) {
+          allLabels = labelsResponse.data.data;
+        } else if (labelsResponse.data?.success && Array.isArray(labelsResponse.data.data)) {
+          allLabels = labelsResponse.data.data;
+        }
+
+        // Tambahkan all_labels ke response
+        response.data.data.all_labels = allLabels;
+      } catch (labelError) {
+        console.error('Error fetching all labels:', labelError);
+        // Jika gagal mengambil semua label, gunakan labels yang ada
+        response.data.data.all_labels = response.data.data.labels || [];
+      }
+    }
+
+    // Pastikan tanggal pada related posts diformat dengan benar
+    if (response.data?.data?.related_posts && Array.isArray(response.data.data.related_posts)) {
+      console.log('Related posts before formatting:', response.data.data.related_posts);
+
+      // Pastikan setiap related post memiliki tanggal yang valid
+      response.data.data.related_posts = response.data.data.related_posts.map(post => ({
+        ...post,
+        // Pastikan tanggal publish_date dan created_at ada dan valid
+        publish_date: post.publish_date || null,
+        created_at: post.created_at || null
+      }));
+
+      console.log('Related posts after formatting:', response.data.data.related_posts);
     }
 
     return response.data;
@@ -1108,11 +1315,23 @@ export const getAdminFeaturedPost = async () => {
   try {
     console.log('Fetching admin featured post...');
 
+    // Dapatkan token autentikasi
+    const token = getAccessToken();
+    if (!token) {
+      console.error('Token autentikasi tidak tersedia');
+      return {
+        success: false,
+        data: null,
+        message: 'Token autentikasi tidak tersedia'
+      };
+    }
+
     const response = await api.get('/api/posts/admin-featured', {
       params: {
         _t: Date.now() // Cache busting
       },
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
       }
@@ -1120,13 +1339,37 @@ export const getAdminFeaturedPost = async () => {
 
     console.log('Admin featured post raw response:', response);
 
-    // Langsung kembalikan data dari response
+    // Periksa apakah response.data.data adalah array atau objek
     if (response.data?.success) {
       console.log('Admin featured post data:', response.data.data);
-      return {
-        success: true,
-        data: response.data.data
-      };
+
+      // Jika data adalah array, ambil elemen pertama
+      if (Array.isArray(response.data.data)) {
+        if (response.data.data.length > 0) {
+          return {
+            success: true,
+            data: response.data.data[0]
+          };
+        } else {
+          return {
+            success: true,
+            data: null
+          };
+        }
+      } else if (response.data.data && typeof response.data.data === 'object') {
+        // Jika data adalah objek, gunakan langsung
+        return {
+          success: true,
+          data: response.data.data
+        };
+      } else {
+        console.log('API response data format not recognized');
+        return {
+          success: false,
+          data: null,
+          message: 'Format data tidak valid'
+        };
+      }
     } else {
       console.log('API response not successful');
       return {
@@ -1243,6 +1486,47 @@ export const getMyDeletedPosts = async ({ page = 1, limit = 10, search = '' }) =
 };
 
 // Tambahkan fungsi untuk mengambil post milik writer yang sedang login
+// Fungsi untuk mendapatkan post populer berdasarkan jumlah views
+export const getPopularPosts = async (limit = 6) => {
+  try {
+    const response = await publicApi.get('/api/posts/popular', {
+      baseURL: import.meta.env.VITE_API_BASE_URL,
+      params: {
+        limit,
+        status: 'published',
+        deleted: false
+      },
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'X-Public-Request': 'true' // Menandai ini sebagai request publik
+      }
+    });
+
+    if (!response.data?.success) {
+      throw new Error('Gagal mengambil popular posts');
+    }
+
+    const popularPosts = response.data.data.map(post => ({
+      ...post,
+      labels: Array.isArray(post.labels) ? formatLabels(post.labels) : []
+    }));
+
+    return {
+      success: true,
+      data: popularPosts
+    };
+
+  } catch (error) {
+    console.error('Error fetching popular posts:', error);
+    return {
+      success: false,
+      data: [],
+      error: error.message
+    };
+  }
+};
+
 export const getMyPosts = async (params) => {
   // Ekstrak parameter atau gunakan nilai default
   const {

@@ -1,40 +1,54 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { api, refreshCsrfToken } from './api/auth';
-import Header from './components/Header';
-import Navbar from './components/Navbar';
-import FullPostView from './components/FullPostView';
-import Dashboard from './components/Dashboard';
-import './index.css';
-import './transitions.css';
-import SearchPage from './components/SearchPage';
-import ErrorBoundary from './components/ErrorBoundary';
-import AddPostForm from './components/AddPostForm/AddPostForm';
-import Home from './components/Home';
-import Footer from './components/Footer';
-import AdminPosts from './components/AdminPosts';
-import Login from './components/Login';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsOfService from './components/TermsOfService';
-import GoogleAuthCallback from './components/GoogleAuthCallback';
-import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
-import AdminManagerUsers from './components/AdminManagerUsers.jsx';
-import VerifyEmail from './components/VerifyEmail';
-import SpotlightPage from './components/SpotlightPage';
-import Register from './components/Register';
-import WriterPostsPage from './components/WriterPostsPage';
 import { getAllPosts } from './api/postApi';
-import NotFound from './components/NotFound';
-import MyProfile from './components/MyProfile';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'react-hot-toast';
-import WriterNotApproved from './components/WriterNotApproved';
-import LabelPostsPage from './components/LabelPostsPage';
+import './index.css';
+import './transitions.css';
+
+// Google One Tap dinonaktifkan karena masalah kompatibilitas
+
+// Komponen yang selalu digunakan/kritis
+import Header from './components/Header';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Lazy load komponen yang lebih besar atau jarang digunakan
+const Home = React.lazy(() => import('./components/Home'));
+const FullPostView = React.lazy(() => import('./components/FullPostView'));
+// Import Dashboard secara langsung untuk menghindari masalah lazy loading
+import Dashboard from './components/Dashboard';
+const SearchPage = React.lazy(() => import('./components/SearchPage'));
+const AddPostForm = React.lazy(() => import('./components/AddPostForm/AddPostForm'));
+const AdminPosts = React.lazy(() => import('./components/AdminPosts'));
+const Login = React.lazy(() => import('./components/Login'));
+const StaticPage = React.lazy(() => import('./components/StaticPage'));
+// Legacy pages - akan digantikan oleh StaticPage
+const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./components/TermsOfService'));
+const GoogleAuthCallback = React.lazy(() => import('./components/GoogleAuthCallback'));
+const GoogleLoginSuccess = React.lazy(() => import('./components/GoogleLoginSuccess'));
+const ForgotPassword = React.lazy(() => import('./components/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('./components/ResetPassword'));
+const AdminManagerUsers = React.lazy(() => import('./components/AdminManagerUsers.jsx'));
+const VerifyEmail = React.lazy(() => import('./components/VerifyEmail'));
+const SpotlightPage = React.lazy(() => import('./components/SpotlightPage'));
+const Register = React.lazy(() => import('./components/Register'));
+const RegisterUser = React.lazy(() => import('./components/RegisterUser'));
+const WriterPostsPage = React.lazy(() => import('./components/WriterPostsPage'));
+const NotFound = React.lazy(() => import('./components/NotFound'));
+const MyProfile = React.lazy(() => import('./components/MyProfile'));
+const WriterNotApproved = React.lazy(() => import('./components/WriterNotApproved'));
+const LabelPostsPage = React.lazy(() => import('./components/LabelPostsPage'));
+const CarouselPostView = React.lazy(() => import('./components/Carousel/CarouselPostView'));
+const AddCarouselPost = React.lazy(() => import('./components/Carousel/AddCarouselPost'));
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 function PrivateRoute({ children, adminOnly = false, writerOnly = false }) {
@@ -42,7 +56,11 @@ function PrivateRoute({ children, adminOnly = false, writerOnly = false }) {
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   if (!isLoggedIn) {
@@ -79,21 +97,31 @@ function AppContent() {
       console.error('Error fetching posts:', error);
       if (error.response && error.response.status === 401) {
         try {
-          await refreshAuthState();
-          const postsData = await getAllPosts({ page: 1, limit: 20, includeLabels: true });
-          setPosts(postsData.posts || []);
+          // Coba refresh token tanpa logout jika gagal
+          if (refreshAuthState) {
+            await refreshAuthState();
+            try {
+              const postsData = await getAllPosts({ page: 1, limit: 20, includeLabels: true });
+              setPosts(postsData.posts || []);
+            } catch (retryError) {
+              console.error('Error fetching posts after token refresh:', retryError);
+              // Tetap tampilkan halaman meskipun gagal mengambil posts
+              setPosts([]);
+            }
+          }
         } catch (refreshError) {
           console.error('Error refreshing auth state:', refreshError);
-          setError('Sesi Anda telah berakhir. Silakan login kembali.');
-          logout();
+          // Tetap tampilkan halaman meskipun gagal refresh token
+          setPosts([]);
         }
       } else {
-        setError('Gagal mengambil post. Silakan coba lagi nanti.');
+        // Tetap tampilkan halaman meskipun gagal mengambil posts
+        setPosts([]);
       }
     } finally {
       setLoading(false);
     }
-  }, [refreshAuthState, logout]);
+  }, [refreshAuthState]);
 
   useEffect(() => {
     fetchPosts();
@@ -107,13 +135,13 @@ function AppContent() {
         }
       } catch (error) {
         console.error('Failed to refresh auth state:', error);
-        // Handle error, redirect ke login jika perlu
-        navigate('/login');
+        // Hanya log error, jangan redirect ke login
+        // Ini mencegah redirect otomatis ke login saat membuka halaman utama
       }
     };
 
     checkAuthStatus();
-  }, [refreshAuthState, navigate]);
+  }, [refreshAuthState]);
 
   const filteredPosts = useMemo(() => {
     return Array.isArray(posts) ? posts.filter(post =>
@@ -210,15 +238,43 @@ function AppContent() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await logout();
-      navigate('/');
+      console.log('Handling logout in App.jsx');
+      // Hapus semua data dari localStorage terlebih dahulu
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_persistent');
+      localStorage.removeItem('token');
+
+      // Tambahkan flag untuk menandai bahwa user baru saja logout
+      sessionStorage.setItem('recently_logged_out', 'true');
+
+      // Reset state di App.jsx
+      setPosts([]);
+      setEditingPost(null);
+      setSearchTerm('');
+
+      // Panggil fungsi logout dan tunggu sampai selesai
+      const result = await logout();
+      console.log('Logout API call completed with result:', result);
+
+      // Dispatch event untuk memberitahu komponen lain
+      window.dispatchEvent(new Event('app:logout'));
+
+      return true;
     } catch (error) {
       console.error('Logout failed:', error);
+      // Tetap hapus data meskipun API call gagal
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_persistent');
+      localStorage.removeItem('token');
+
+      // Tambahkan flag untuk menandai bahwa user baru saja logout
+      sessionStorage.setItem('recently_logged_out', 'true');
+      return false;
     }
-  }, [logout, navigate]);
+  }, [logout, setPosts]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   if (error) {
@@ -237,34 +293,45 @@ function AppContent() {
         <div id="general-container" className="general-container">
           <main className="flex-grow pb-8">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/spotlight" element={<SpotlightPage />} />
+              <Route path="/" element={<Suspense fallback={null}><Home /></Suspense>} />
+              <Route path="/spotlight" element={<Suspense fallback={null}><SpotlightPage /></Suspense>} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-              <Route path="/post/:slugOrId" element={<FullPostView />} />
-              <Route path="/label/:labelSlug" element={<LabelPostsPage />} />
-              <Route path="/posts" element={<LabelPostsPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/login" element={<Login onLogin={handleLogin} />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify-email/:token" element={<VerifyEmail />} />
-              <Route path="/verify/:token" element={<VerifyEmail />} />
+              <Route path="/post/:slugOrId" element={<Suspense fallback={null}><FullPostView /></Suspense>} />
+              <Route path="/carousel-post/:slug" element={<Suspense fallback={null}><CarouselPostView /></Suspense>} />
+              <Route path="/admin/add-carousel-post" element={<PrivateRoute adminOnly><Suspense fallback={null}><AddCarouselPost /></Suspense></PrivateRoute>} />
+              <Route path="/admin/edit-carousel-post/:id" element={<PrivateRoute adminOnly><Suspense fallback={null}><AddCarouselPost /></Suspense></PrivateRoute>} />
+              <Route path="/label/:labelSlug" element={<Suspense fallback={null}><LabelPostsPage /></Suspense>} />
+              <Route path="/posts" element={<Suspense fallback={null}><LabelPostsPage /></Suspense>} />
+              <Route path="/search" element={<Suspense fallback={null}><SearchPage /></Suspense>} />
+              <Route path="/login" element={<Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>} />
+              {/* Legacy routes - akan digantikan oleh /page/:slug */}
+              <Route path="/privacy-policy" element={<Suspense fallback={null}><PrivacyPolicy /></Suspense>} />
+              <Route path="/terms-of-service" element={<Suspense fallback={null}><TermsOfService /></Suspense>} />
+
+              {/* Static Page route */}
+              <Route path="/page/:slug" element={<Suspense fallback={null}><StaticPage /></Suspense>} />
+              <Route path="/forgot-password" element={<Suspense fallback={null}><ForgotPassword /></Suspense>} />
+              <Route path="/reset-password/:token" element={<Suspense fallback={null}><ResetPassword /></Suspense>} />
+              <Route path="/register" element={<Suspense fallback={null}><Register /></Suspense>} />
+              <Route path="/register-user" element={<Suspense fallback={null}><RegisterUser /></Suspense>} />
+              <Route path="/verify-email/:token" element={<Suspense fallback={null}><VerifyEmail /></Suspense>} />
+              <Route path="/verify/:token" element={<Suspense fallback={null}><VerifyEmail /></Suspense>} />
               <Route path="/admin/dashboard" element={<Navigate to="/admin/posts" replace />} />
-              <Route path="/admin/approve-writers" element={<PrivateRoute adminOnly><AdminPosts initialTab="pendingWriters" /></PrivateRoute>} />
-              <Route path="/admin/manager-users" element={<PrivateRoute adminOnly><AdminManagerUsers /></PrivateRoute>} />
-              <Route path="/api/auth/google/callback" element={<GoogleAuthCallback />} />
+              <Route path="/admin/approve-writers" element={<PrivateRoute adminOnly><Suspense fallback={null}><AdminPosts initialTab="pendingWriters" /></Suspense></PrivateRoute>} />
+              <Route path="/admin/manager-users" element={<PrivateRoute adminOnly><Suspense fallback={null}><AdminManagerUsers /></Suspense></PrivateRoute>} />
+              <Route path="/oauth2callback" element={<Suspense fallback={null}><GoogleAuthCallback /></Suspense>} />
+              <Route path="/google-login-success" element={<Suspense fallback={null}><GoogleLoginSuccess /></Suspense>} />
               <Route
                 path="/admin/posts"
                 element={
                   <PrivateRoute adminOnly>
-                    <AdminPosts
-                      posts={posts}
-                      onDelete={deletePost}
-                      onEdit={handleEdit}
-                    />
+                    <Suspense fallback={null}>
+                      <AdminPosts
+                        posts={posts}
+                        onDelete={deletePost}
+                        onEdit={handleEdit}
+                      />
+                    </Suspense>
                   </PrivateRoute>
                 }
               />
@@ -272,12 +339,14 @@ function AppContent() {
                 path="/admin/add-post"
                 element={
                   <PrivateRoute adminOnly>
-                    <AddPostForm
-                      isEditing={false}
-                      onAddPost={addPost}
-                      role="admin"
-                      onError={(error) => { if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') { navigate('/login'); } }}
-                    />
+                    <Suspense fallback={null}>
+                      <AddPostForm
+                        isEditing={false}
+                        onAddPost={addPost}
+                        role="admin"
+                        onError={(error) => { if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') { navigate('/login'); } }}
+                      />
+                    </Suspense>
                   </PrivateRoute>
                 }
               />
@@ -285,45 +354,7 @@ function AppContent() {
                 path="/admin/edit-post/:id"
                 element={
                 <PrivateRoute adminOnly>
-                  <AddPostForm
-                    isEditing={true}
-                    onUpdatePost={handleUpdatePost}
-                    editingPost={editingPost}
-                    onCancelEdit={handleCancelEdit}
-                    onError={(error) => {
-                      if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') {
-                        navigate('/login');
-                      }
-                    }}
-                  />
-                </PrivateRoute>
-                }
-              />
-              <Route
-                path="/writer/posts"
-                element={
-                  <PrivateRoute writerOnly>
-                    <WriterPostsPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/writer/add-post"
-                element={
-                  <PrivateRoute writerOnly>
-                    <AddPostForm
-                      isEditing={false}
-                      onAddPost={addPost}
-                      role="writer"
-                      onError={(error) => { if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') { navigate('/login'); } }}
-                    />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/writer/edit-post/:id"
-                element={
-                  <PrivateRoute writerOnly>
+                  <Suspense fallback={null}>
                     <AddPostForm
                       isEditing={true}
                       onUpdatePost={handleUpdatePost}
@@ -335,17 +366,63 @@ function AppContent() {
                         }
                       }}
                     />
+                  </Suspense>
+                </PrivateRoute>
+                }
+              />
+              <Route
+                path="/writer/posts"
+                element={
+                  <PrivateRoute writerOnly>
+                    <Suspense fallback={null}>
+                      <WriterPostsPage />
+                    </Suspense>
                   </PrivateRoute>
                 }
               />
-              <Route path="/writer-not-approved" element={<WriterNotApproved />} />
-              <Route path="/profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+              <Route
+                path="/writer/add-post"
+                element={
+                  <PrivateRoute writerOnly>
+                    <Suspense fallback={null}>
+                      <AddPostForm
+                        isEditing={false}
+                        onAddPost={addPost}
+                        role="writer"
+                        onError={(error) => { if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') { navigate('/login'); } }}
+                      />
+                    </Suspense>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/writer/edit-post/:id"
+                element={
+                  <PrivateRoute writerOnly>
+                    <Suspense fallback={null}>
+                      <AddPostForm
+                        isEditing={true}
+                        onUpdatePost={handleUpdatePost}
+                        editingPost={editingPost}
+                        onCancelEdit={handleCancelEdit}
+                        onError={(error) => {
+                          if (error.message === 'Sesi Anda telah berakhir. Silakan login kembali.') {
+                            navigate('/login');
+                          }
+                        }}
+                      />
+                    </Suspense>
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/writer-not-approved" element={<Suspense fallback={null}><WriterNotApproved /></Suspense>} />
+              <Route path="/profile" element={<PrivateRoute><Suspense fallback={null}><MyProfile /></Suspense></PrivateRoute>} />
 
               {/* Rute khusus untuk label, harus ditempatkan setelah semua rute spesifik */}
-              <Route path="/:labelSlug" element={<LabelPostsPage />} />
+              <Route path="/:labelSlug" element={<Suspense fallback={null}><LabelPostsPage /></Suspense>} />
 
               {/* Rute 404 harus selalu berada di paling bawah */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
             </Routes>
           </main>
         </div>
@@ -368,14 +445,27 @@ function AppContent() {
 }
 
 function App() {
+  // Log Client ID dan origin untuk debugging
+  console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  console.log('Current origin:', window.location.origin);
+  console.log('Current URL:', window.location.href);
+
+  // Tambahkan variabel untuk Client ID agar lebih mudah di-debug
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  console.log('App component - Using Google Client ID:', googleClientId);
+
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={googleClientId} onScriptLoadError={(error) => {
+      console.error('Google OAuth script load error:', error);
+    }}>
       <Router>
-        <AuthProvider>
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
-        </AuthProvider>
+        <HelmetProvider>
+          <AuthProvider>
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
+          </AuthProvider>
+        </HelmetProvider>
       </Router>
       <SpeedInsights />
     </GoogleOAuthProvider>

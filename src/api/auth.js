@@ -48,6 +48,18 @@ export const logout = async () => {
 
 export const login = async (email, password, rememberMe = true) => {
   try {
+    // Validasi input
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      throw new Error('Email tidak valid');
+    }
+
+    if (!password || typeof password !== 'string' || !password.trim()) {
+      throw new Error('Password tidak valid');
+    }
+
+    // Log untuk debugging
+    console.log(`Login attempt for email: ${email}, remember me: ${rememberMe}`);
+
     // Pastikan kita memiliki CSRF token yang valid
     let token;
     try {
@@ -65,6 +77,9 @@ export const login = async (email, password, rememberMe = true) => {
 
     const attemptLogin = async () => {
       try {
+        // Log untuk debugging
+        console.log(`Sending login request to /api/auth/login with email: ${email}`);
+
         return await api.post('/api/auth/login',
           {
             email,
@@ -80,6 +95,13 @@ export const login = async (email, password, rememberMe = true) => {
           }
         );
       } catch (error) {
+        // Log error untuk debugging
+        console.error('Login request error:', {
+          status: error.response?.status,
+          message: error.response?.data?.message || error.message,
+          data: error.response?.data
+        });
+
         // Jika error CSRF atau rate limit dan masih bisa retry
         if ((error.response?.status === 403 || error.response?.status === 429) && retryCount < MAX_LOGIN_RETRY) {
           retryCount++;
@@ -96,6 +118,15 @@ export const login = async (email, password, rememberMe = true) => {
           // Retry login
           return attemptLogin();
         }
+
+        // Jika error 401 (Unauthorized), kemungkinan password salah
+        if (error.response?.status === 401) {
+          console.log('Login failed with 401 Unauthorized - likely invalid password');
+          // Tambahkan informasi tambahan ke error untuk penanganan di UI
+          error.invalidPassword = true;
+          error.message = 'Password yang Anda masukkan salah. Silakan coba lagi.';
+        }
+
         throw error;
       }
     };

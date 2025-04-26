@@ -1,7 +1,7 @@
-import React, { Fragment, useState, useEffect, useRef } from 'react'
+import React, { Fragment, useState, useEffect, useRef, useMemo } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon, HomeIcon } from '@heroicons/react/24/outline'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './Navbar.css'
 import { getAllLabels } from '../api/labelApi'
 
@@ -11,6 +11,19 @@ function classNames(...classes) {
 
 // Komponen DropdownItem untuk menangani item dropdown biasa dan nested dropdown
 function DropdownItem({ child }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Handler untuk navigasi label yang aman
+  const handleLabelClick = (e, href) => {
+    e.preventDefault(); // Mencegah navigasi default
+    // Jika href dimulai dengan /label/, ini adalah navigasi label
+    if (href.startsWith('/label/')) {
+      // Navigasi langsung ke halaman label
+      navigate(href);
+    }
+  };
+
   // Jika child memiliki children, maka ini adalah nested dropdown
   if (child.children && child.children.length > 0) {
     const [isNestedOpen, setIsNestedOpen] = useState(false);
@@ -78,8 +91,9 @@ function DropdownItem({ child }) {
                   {({ active }) => (
                     <Link
                       to={nestedChild.href}
+                      onClick={(e) => handleLabelClick(e, nestedChild.href)}
                       className={`${
-                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                        location.pathname === nestedChild.href || location.pathname.startsWith(nestedChild.href + '/') ? 'bg-blue-600 text-white' : active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                       } block px-4 py-2 text-sm`}
                     >
                       {nestedChild.name}
@@ -95,13 +109,16 @@ function DropdownItem({ child }) {
   }
 
   // Jika tidak memiliki children, tampilkan sebagai item biasa
+  const isActive = location.pathname === child.href || location.pathname.startsWith(child.href + '/');
+
   return (
     <Menu.Item>
       {({ active }) => (
         <Link
           to={child.href}
+          onClick={(e) => handleLabelClick(e, child.href)}
           className={`${
-            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+            isActive ? 'bg-blue-600 text-white' : active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
           } block px-4 py-2 text-sm`}
         >
           {child.name}
@@ -115,6 +132,33 @@ function Dropdown({ item }) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
   const timeoutRef = useRef(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // Handler untuk navigasi label yang aman
+  const handleLabelClick = (e, href) => {
+    e.preventDefault(); // Mencegah navigasi default
+    // Jika href dimulai dengan /label/, ini adalah navigasi label
+    if (href.startsWith('/label/')) {
+      // Navigasi langsung ke halaman label
+      navigate(href);
+    }
+  };
+
+  // Periksa apakah item ini atau salah satu childrennya aktif
+  const isActive = useMemo(() => {
+    if (location.pathname === item.href || location.pathname.startsWith(item.href + '/')) {
+      return true;
+    }
+
+    if (item.children) {
+      return item.children.some(child =>
+        location.pathname === child.href || location.pathname.startsWith(child.href + '/')
+      );
+    }
+
+    return false;
+  }, [location.pathname, item])
 
   // Fungsi untuk menangani hover
   const handleMouseEnter = () => {
@@ -157,7 +201,7 @@ function Dropdown({ item }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <Menu.Button className="inline-flex w-full justify-center rounded-md px-3 py-1 text-sm font-bold text-gray-300 hover:bg-gray-700 hover:text-white">
+        <Menu.Button className={`inline-flex w-full justify-center rounded-md px-3 py-1 text-sm font-bold ${isActive ? 'navbar-active-link' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}>
           {item.name}
           <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
         </Menu.Button>
@@ -195,10 +239,21 @@ function Dropdown({ item }) {
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isFloating, setIsFloating] = useState(false);
   const [shouldSlideDown, setShouldSlideDown] = useState(false);
   const navRef = useRef(null);
   const [navItems, setNavItems] = useState([]);
+
+  // Handler untuk navigasi label yang aman
+  const handleLabelClick = (e, href) => {
+    e.preventDefault(); // Mencegah navigasi default
+    // Jika href dimulai dengan /label/, ini adalah navigasi label
+    if (href.startsWith('/label/')) {
+      // Navigasi langsung ke halaman label
+      navigate(href);
+    }
+  };
 
   // Efek untuk scroll navbar
   useEffect(() => {
@@ -224,29 +279,98 @@ export default function Navbar() {
   useEffect(() => {
     const fetchLabels = async () => {
       try {
-        const allLabels = await getAllLabels();
+        const labelsData = await getAllLabels();
+        console.log('Raw labels data from API:', labelsData);
 
         // Buat array untuk item navigasi
         const updatedNavItems = [];
 
-        // Filter hanya label utama (tanpa parent_id)
-        const mainLabels = allLabels.filter(label => !label.parent_id);
+        // Proses data label berdasarkan format yang diterima
+        let processedLabels = [];
+
+        // Jika data sudah dalam format label dengan sublabel
+        if (Array.isArray(labelsData) && labelsData.length > 0 && 'sublabels' in labelsData[0]) {
+          console.log('Data sudah dalam format label dengan sublabel');
+          processedLabels = labelsData;
+        }
+        // Jika data dalam format datar (flat)
+        else if (Array.isArray(labelsData)) {
+          console.log('Data dalam format datar, perlu diproses');
+
+          // Filter label utama (tanpa parent_id)
+          const mainLabels = labelsData.filter(label => !label.parent_id);
+
+          // Buat Map untuk menyimpan label utama dan sublabelnya
+          const mainLabelsMap = new Map();
+
+          // Inisialisasi mainLabelsMap dengan label utama
+          mainLabels.forEach(label => {
+            mainLabelsMap.set(label.id, {
+              ...label,
+              sublabels: [],
+              name: label.name || label.label || '',
+              label: label.label || label.name || '',
+              slug: label.slug || label.name || label.label || ''
+            });
+          });
+
+          // Tambahkan sublabel ke label utama
+          labelsData.forEach(label => {
+            if (label.parent_id && mainLabelsMap.has(label.parent_id)) {
+              const mainLabel = mainLabelsMap.get(label.parent_id);
+              mainLabel.sublabels.push({
+                ...label,
+                name: label.name || label.label || '',
+                label: label.label || label.name || '',
+                slug: label.slug || label.name || label.label || '',
+                href: `/label/${label.slug || label.name || label.label || ''}`
+              });
+            }
+          });
+
+          processedLabels = Array.from(mainLabelsMap.values());
+        }
 
         // Urutkan label berdasarkan nama
-        const sortedLabels = mainLabels.sort((a, b) => {
+        const sortedLabels = processedLabels.sort((a, b) => {
           const nameA = (a.name || a.label || '').toLowerCase();
           const nameB = (b.name || b.label || '').toLowerCase();
           return nameA.localeCompare(nameB);
         });
 
+        console.log('Processed and sorted labels:', sortedLabels);
+
         // Tambahkan label ke item navigasi
         sortedLabels.forEach(label => {
           // Pastikan kita selalu menggunakan nama label, bukan ID
           const labelName = label.name || label.label;
-          updatedNavItems.push({
-            name: labelName,
-            href: `/label/${labelName}`
-          });
+          const labelSlug = label.slug || labelName;
+
+          // Konversi sublabels menjadi format children untuk dropdown
+          const hasSubLabels = label.sublabels && label.sublabels.length > 0;
+
+          if (hasSubLabels) {
+            const children = label.sublabels.map(sublabel => ({
+              name: sublabel.name || sublabel.label || '',
+              href: `/label/${sublabel.slug || sublabel.name || sublabel.label || ''}`,
+              id: sublabel.id,
+              slug: sublabel.slug || sublabel.name || sublabel.label || ''
+            }));
+
+            updatedNavItems.push({
+              name: labelName,
+              href: `/label/${labelSlug}`,
+              children: children,
+              slug: labelSlug
+            });
+          } else {
+            // Jika tidak memiliki sublabel, tambahkan sebagai link biasa
+            updatedNavItems.push({
+              name: labelName,
+              href: `/label/${labelSlug}`,
+              slug: labelSlug
+            });
+          }
         });
 
         // Tambahkan item Spotlight (dengan path khusus, bukan format label)
@@ -257,10 +381,31 @@ export default function Navbar() {
         });
 
         // Log untuk debugging
-        console.log('Labels from server:', allLabels);
-        console.log('Main labels:', mainLabels);
+        console.log('Labels data:', labelsData);
+        console.log('Processed labels:', processedLabels);
         console.log('Sorted labels:', sortedLabels);
         console.log('Updated nav items:', updatedNavItems);
+
+        // Log khusus untuk memeriksa struktur dropdown
+        const dropdownItems = updatedNavItems.filter(item => item.children && item.children.length > 0);
+        console.log('Dropdown items:', dropdownItems);
+
+        // Periksa apakah ada label yang memiliki sublabel tetapi tidak ditampilkan sebagai dropdown
+        const mainLabelsWithSublabels = sortedLabels.filter(label =>
+          label.sublabels && label.sublabels.length > 0
+        );
+
+        console.log('Main labels with sublabels from processed data:', mainLabelsWithSublabels);
+
+        // Periksa apakah semua main label dengan sublabel sudah ditampilkan sebagai dropdown
+        const missingDropdowns = mainLabelsWithSublabels.filter(mainLabel =>
+          !dropdownItems.some(item =>
+            item.name === (mainLabel.name || mainLabel.label) ||
+            item.slug === (mainLabel.slug || mainLabel.name || mainLabel.label)
+          )
+        );
+
+        console.log('Missing dropdowns:', missingDropdowns);
 
         // Update state
         setNavItems(updatedNavItems);
@@ -290,7 +435,7 @@ export default function Navbar() {
                       to="/"
                       className={classNames(
                         'text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-sm font-medium mr-3',
-                        location.pathname === '/' ? 'bg-blue-600 text-white' : ''
+                        location.pathname === '/' ? 'navbar-active-link' : ''
                       )}
                     >
                       <HomeIcon className="h-6 w-6" /> {/* Memperbesar ukuran icon */}
@@ -303,9 +448,10 @@ export default function Navbar() {
                           <Link
                             key={item.name}
                             to={item.href}
+                            onClick={(e) => item.href.startsWith('/label/') ? handleLabelClick(e, item.href) : null}
                             className={classNames(
                               'text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-1 rounded-md text-sm font-bold',
-                              location.pathname === item.href ? 'bg-blue-600 text-white' : ''
+                              location.pathname === item.href || location.pathname.startsWith(item.href + '/') ? 'navbar-active-link' : ''
                             )}
                           >
                             {item.name}
@@ -338,7 +484,9 @@ export default function Navbar() {
                     <Disclosure key={item.name}>
                       {({ open }) => (
                         <>
-                          <Disclosure.Button className="flex w-full items-center justify-between rounded-md bg-gray-800 px-3 py-3 text-base text-gray-300 hover:bg-gray-700 hover:text-white text-bold">
+                          <Disclosure.Button
+                            className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-base text-bold ${location.pathname.startsWith(item.href) ? 'navbar-active-link' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                          >
                             <span>{item.name}</span>
                             <ChevronDownIcon
                               className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 text-gray-300`}
@@ -350,7 +498,8 @@ export default function Navbar() {
                                 key={child.name}
                                 as="a"
                                 href={child.href}
-                                className="block rounded-md px-3 py-3 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                                onClick={(e) => child.href.startsWith('/label/') ? handleLabelClick(e, child.href) : null}
+                                className={`block rounded-md px-3 py-3 text-base font-medium ${location.pathname === child.href || location.pathname.startsWith(child.href + '/') ? 'navbar-active-link' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
                               >
                                 {child.name}
                               </Disclosure.Button>
@@ -364,8 +513,9 @@ export default function Navbar() {
                       key={item.name}
                       as="a"
                       href={item.href}
+                      onClick={(e) => item.href.startsWith('/label/') ? handleLabelClick(e, item.href) : null}
                       className={classNames(
-                        location.pathname === item.href ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                        location.pathname === item.href || location.pathname.startsWith(item.href + '/') ? 'navbar-active-link' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                         'block rounded-md px-3 py-3 text-base font-bold'
                       )}
                     >

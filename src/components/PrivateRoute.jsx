@@ -28,7 +28,7 @@ const PrivateRoute = ({ adminOnly = false, writerOnly = false }) => {
       try {
         const decoded = jwtDecode(token);
         const isExpired = decoded.exp * 1000 < Date.now();
-        
+
         if (isExpired) {
           console.warn('Token expired detected');
           refreshUserData();
@@ -48,7 +48,11 @@ const PrivateRoute = ({ adminOnly = false, writerOnly = false }) => {
   }
 
   if (!isLoggedIn) {
-    toast.error('Silakan login untuk mengakses halaman ini');
+    // Hanya tampilkan toast jika bukan akses langsung ke halaman private
+    // Ini mencegah toast error saat redirect otomatis
+    if (location.state?.from) {
+      toast.error('Silakan login untuk mengakses halaman ini');
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

@@ -1,31 +1,35 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '../../utils/imageHelper';
+import LazyImage from '../common/LazyImage';
+import '../../styles/lazyImage.css';
 import './PostCard.css';
 
 const PostCard = ({ post }) => {
   // Pastikan post.image adalah string sebelum memanggil getImageUrl
   const imageUrl = React.useMemo(() => {
     if (!post.image) return null;
-    
+
     // Log untuk debugging
     if (typeof post.image === 'object') {
       console.warn('Post image is an object in PostCard:', post.image);
     }
-    
+
     return getImageUrl(post.image);
   }, [post.image]);
-  
+
   return (
     <div className="post-card">
       {imageUrl ? (
         <div className="post-card-image">
-          <img 
-            src={imageUrl} 
-            alt={post.title} 
-            onError={(e) => {
-              console.error('Error loading image:', e.target.src);
-              e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+          <LazyImage
+            src={imageUrl}
+            alt={post.title}
+            height="200px"
+            width="100%"
+            objectFit="cover"
+            onError={() => {
+              console.error('Error loading image:', imageUrl);
             }}
           />
         </div>
@@ -34,7 +38,7 @@ const PostCard = ({ post }) => {
           <span>No Image</span>
         </div>
       )}
-      
+
       <div className="post-card-content">
         <h3 className="post-card-title">
           <Link to={`/posts/${post.id}`}>{post.title}</Link>
@@ -53,4 +57,4 @@ const PostCard = ({ post }) => {
   );
 };
 
-export default PostCard; 
+export default PostCard;

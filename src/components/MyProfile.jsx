@@ -4,7 +4,7 @@ import { api } from '../api/axios';
 import { toast } from 'react-hot-toast';
 import { FiUser, FiLock, FiSave } from 'react-icons/fi';
 import ProfileImage from './ProfileImage';
-import { validateImage, getImageUrl } from '../utils/imageHelper';
+import { validateImage, getProfileImageUrl } from '../utils/imageHelper';
 import './MyProfile.css';
 
 function MyProfile() {
@@ -31,60 +31,51 @@ function MyProfile() {
     speed: 0
   });
 
-  // Fungsi untuk memeriksa keberadaan file gambar
-  const checkImageExists = async (url) => {
-    try {
-      console.log('Checking if image exists:', url);
-      const response = await fetch(url, { method: 'HEAD' });
-      const exists = response.ok;
-      console.log('Image exists:', exists, 'Status:', response.status);
-      return exists;
-    } catch (error) {
-      console.error('Error checking image:', error);
-      return false;
-    }
-  };
+  // Fungsi checkImageExists telah dihapus karena tidak digunakan lagi
 
   useEffect(() => {
     console.log('MyProfile component mounted or user changed:', user);
 
+    // Fungsi untuk mengatur data pengguna
+    const setupUserData = async (userData) => {
+      try {
+        console.log('Setting up user data:', userData);
+
+        // Set user data
+        setUserData({
+          name: userData.name || '',
+          email: userData.email || '',
+          profile_picture: userData.profile_picture || null
+        });
+
+        // Set preview image jika ada profile_picture
+        if (userData.profile_picture) {
+          // Jika URL Google, gunakan langsung
+          if (userData.profile_picture.includes('googleusercontent.com') || userData.profile_picture.includes('lh3.google')) {
+            console.log('Using Google profile image directly:', userData.profile_picture);
+            setPreviewImage(userData.profile_picture);
+          } else {
+            // Gunakan helper function untuk mendapatkan URL gambar
+            const imageUrl = getProfileImageUrl(userData.profile_picture);
+            console.log('Setting preview image URL:', imageUrl);
+            setPreviewImage(imageUrl);
+          }
+        } else {
+          console.log('No profile picture found');
+          setPreviewImage(null);
+        }
+      } catch (error) {
+        console.error('Error setting up user data:', error);
+      } finally {
+        // Selalu akhiri loading
+        setLoading(false);
+      }
+    };
+
     // Jika user sudah ada dari context, gunakan data tersebut
     if (user && user.name) {
       console.log('Using user data from context:', user);
-      setUserData({
-        name: user.name || '',
-        email: user.email || '',
-        profile_picture: user.profile_picture || null
-      });
-
-      if (user.profile_picture) {
-        // Gunakan helper function untuk mendapatkan URL gambar
-        const imageUrl = getImageUrl(user.profile_picture);
-        console.log('Setting preview image URL from context:', imageUrl);
-
-        // Periksa keberadaan file gambar
-        checkImageExists(imageUrl).then(exists => {
-          if (exists) {
-            console.log('Image exists, setting preview image');
-            setPreviewImage(imageUrl);
-          } else {
-            console.warn('Image does not exist, not setting preview image');
-            // Coba URL alternatif
-            const alternativeUrl = `/uploads/${user.profile_picture}`;
-            console.log('Trying alternative URL:', alternativeUrl);
-            checkImageExists(alternativeUrl).then(altExists => {
-              if (altExists) {
-                console.log('Alternative image exists, setting preview image');
-                setPreviewImage(alternativeUrl);
-              } else {
-                console.warn('Alternative image does not exist either');
-                setPreviewImage(null);
-              }
-            });
-          }
-        });
-      }
-      // Jika data sudah ada dari context, tidak perlu fetch dari API
+      setupUserData(user);
       return;
     }
 
@@ -92,84 +83,35 @@ function MyProfile() {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        console.log('Fetching user profile data...');
         const response = await api.get('/api/auth/user-profile');
-        console.log('API response:', response.data);
 
         if (response.data && response.data.success) {
           const userData = response.data.user;
-          console.log('User data received:', userData);
-
-          setUserData({
-            name: userData.name || '',
-            email: userData.email || '',
-            // bio: userData.bio || '', // Kolom bio tidak ada di database
-            profile_picture: userData.profile_picture || null
-          });
-          console.log('userData state updated:', {
-            name: userData.name || '',
-            email: userData.email || '',
-            profile_picture: userData.profile_picture || null
-          });
-
-          if (userData.profile_picture) {
-            // Gunakan helper function untuk mendapatkan URL gambar
-            const imageUrl = getImageUrl(userData.profile_picture);
-            console.log('Setting preview image URL:', imageUrl);
-
-            // Periksa keberadaan file gambar
-            checkImageExists(imageUrl).then(exists => {
-              if (exists) {
-                console.log('Image exists, setting preview image');
-                setPreviewImage(imageUrl);
-              } else {
-                console.warn('Image does not exist, not setting preview image');
-                // Coba URL alternatif
-                const alternativeUrl = `/uploads/${userData.profile_picture}`;
-                console.log('Trying alternative URL:', alternativeUrl);
-                checkImageExists(alternativeUrl).then(altExists => {
-                  if (altExists) {
-                    console.log('Alternative image exists, setting preview image');
-                    setPreviewImage(alternativeUrl);
-                  } else {
-                    console.warn('Alternative image does not exist either');
-                    setPreviewImage(null);
-                  }
-                });
-              }
-            });
-          } else {
-            console.log('No profile picture found');
-            // Reset preview image jika tidak ada gambar profil
-            setPreviewImage(null);
-          }
+          setupUserData(userData);
         } else {
           console.warn('API response success is false or missing user data');
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
         toast.error('Gagal memuat data profil');
-      } finally {
         setLoading(false);
       }
     };
 
     if (user) {
       fetchUserData();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Input changed: ${name} = ${value}`);
-    setUserData(prev => {
-      const newData = {
-        ...prev,
-        [name]: value
-      };
-      console.log('Updated userData:', newData);
-      return newData;
-    });
+    setUserData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handlePasswordChange = (e) => {
@@ -183,7 +125,7 @@ function MyProfile() {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('File selected:', file.name, file.type, file.size);
+      // File selected for upload
 
       // Validasi file
       const validation = await validateImage(file);
@@ -197,7 +139,6 @@ function MyProfile() {
       // Buat preview image
       const reader = new FileReader();
       reader.onloadend = () => {
-        console.log('File read complete, setting preview image');
         setPreviewImage(reader.result);
       };
       reader.onerror = (error) => {
@@ -243,7 +184,7 @@ function MyProfile() {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    console.log('Submitting profile update with data:', userData);
+    // Submitting profile update
 
     try {
       setSaving(true);
@@ -255,10 +196,7 @@ function MyProfile() {
 
       // Jika ada gambar profil baru, tambahkan ke FormData
       if (profileImage) {
-        console.log('Adding profile image to form data:', profileImage.name, profileImage.type, profileImage.size);
         formData.append('profile_picture', profileImage);
-      } else {
-        console.log('No new profile image to upload');
       }
 
       // Kirim request update profil dengan progress tracking
@@ -280,7 +218,7 @@ function MyProfile() {
           const uploadedMB = progressEvent.loaded / (1024 * 1024);
           const speed = timeElapsed > 0 ? (uploadedMB / timeElapsed).toFixed(2) : 0;
 
-          console.log(`Upload progress: ${progress}%, Speed: ${speed} MB/s`);
+          // Upload progress tracking
 
           setUploadStatus({
             isUploading: true,
@@ -290,19 +228,14 @@ function MyProfile() {
         }
       });
 
-      console.log('Profile update response:', response.data);
-
       if (response.data.success) {
         toast.success('Profil berhasil diperbarui');
 
         // Refresh data user di context tanpa me-reload halaman
-        console.log('Refreshing user data in context...');
-        const refreshedUser = await refreshUserData();
-        console.log('User data refreshed:', refreshedUser);
+        await refreshUserData();
 
         // Trigger event untuk memberitahu komponen lain bahwa data user telah diperbarui
         window.dispatchEvent(new Event('user:dataUpdated'));
-        console.log('Dispatched user:dataUpdated event');
 
         // Perbarui state lokal dengan data terbaru
         const updatedUserData = {
@@ -310,49 +243,18 @@ function MyProfile() {
           email: response.data.user.email || '',
           profile_picture: response.data.user.profile_picture || null
         };
-        console.log('Updating local state with:', updatedUserData);
         setUserData(updatedUserData);
 
         // Perbarui preview gambar jika ada
         if (response.data.user.profile_picture) {
-          // Gunakan helper function untuk mendapatkan URL gambar
-          const imageUrl = getImageUrl(response.data.user.profile_picture);
-          console.log('Setting new preview image URL:', imageUrl);
-
-          // Periksa keberadaan file gambar
-          checkImageExists(imageUrl).then(exists => {
-            if (exists) {
-              console.log('Image exists, setting preview image');
-              setPreviewImage(imageUrl);
-            } else {
-              console.warn('Image does not exist, not setting preview image');
-              // Coba URL alternatif
-              // 1. Coba akses langsung dari direktori uploads
-              const alternativeUrl = `/uploads/${response.data.user.profile_picture}`;
-              // 2. Coba akses dari direktori backend/uploads
-              const alternativeUrl2 = `/backend/uploads/profiles/${response.data.user.profile_picture}`;
-              console.log('Trying alternative URL:', alternativeUrl);
-              checkImageExists(alternativeUrl).then(altExists => {
-                if (altExists) {
-                  console.log('Alternative image exists, setting preview image');
-                  setPreviewImage(alternativeUrl);
-                } else {
-                  console.warn('First alternative image does not exist, trying second alternative');
-
-                  // Coba URL alternatif kedua
-                  checkImageExists(alternativeUrl2).then(alt2Exists => {
-                    if (alt2Exists) {
-                      console.log('Second alternative image exists, setting preview image');
-                      setPreviewImage(alternativeUrl2);
-                    } else {
-                      console.warn('No alternative image exists');
-                      setPreviewImage(null);
-                    }
-                  });
-                }
-              });
-            }
-          });
+          // Jika URL Google, gunakan langsung
+          if (response.data.user.profile_picture.includes('googleusercontent.com') || response.data.user.profile_picture.includes('lh3.google')) {
+            setPreviewImage(response.data.user.profile_picture);
+          } else {
+            // Gunakan helper function untuk mendapatkan URL gambar
+            const imageUrl = getProfileImageUrl(response.data.user.profile_picture);
+            setPreviewImage(imageUrl);
+          }
         }
       } else {
         console.error('Profile update failed:', response.data);
@@ -405,14 +307,7 @@ function MyProfile() {
     }
   };
 
-  // Log current state for debugging
-  console.log('Rendering MyProfile with state:', {
-    userData,
-    previewImage,
-    loading,
-    saving,
-    activeTab
-  });
+  // Tidak perlu log state untuk production
 
   if (loading) {
     return (
@@ -454,6 +349,12 @@ function MyProfile() {
               onImageChange={handleImageChange}
               onRemoveImage={handleRemoveImage}
             />
+
+            {userData.profile_picture && userData.profile_picture.includes('googleusercontent.com') && (
+              <div className="user-profile-google-notice">
+                <p>Anda menggunakan foto profil dari Google. Anda dapat mengganti dengan foto lain jika diinginkan.</p>
+              </div>
+            )}
 
             <div className="user-profile-form-group">
               <label htmlFor="name" className="user-profile-label">Nama</label>

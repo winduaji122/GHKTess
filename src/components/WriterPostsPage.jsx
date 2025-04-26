@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Spinner, Form } from 'react-bootstrap';
+/*  */import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Button, Form } from 'react-bootstrap';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { FaEdit, FaTrash, FaSearch, FaEye, FaPlus, FaCalendarAlt, FaUndo, FaFilter, FaTimes } from 'react-icons/fa';
+import PostStats from './PostStats';
+import LazyImage from './common/LazyImage';
+import '../styles/lazyImage.css';
 import { toast } from 'react-toastify';
 import { getMyPosts, restorePost, getMyDeletedPosts, softDeletePost } from '../api/postApi';
 import { getLabels } from '../api/labelApi';
@@ -683,14 +688,14 @@ const WriterPostsPage = () => {
         className={`writer-post-item ${activeTab === 'deleted-posts' ? 'deleted' : ''}`}
       >
         <div className="writer-post-thumbnail">
-          <LazyLoadImage
-            alt={post.title}
+          <LazyImage
             src={imageUrl}
-            effect="blur"
-            onError={() => handleImageError(post.id)}
-            placeholderSrc="/placeholder-image.jpg"
+            alt={post.title}
             className="writer-post-image"
-            key={`${post.id}-${imageVersions[post.id] || 'default'}`}
+            height="140px"
+            width="180px"
+            objectFit="cover"
+            onError={() => handleImageError(post.id)}
           />
         </div>
         <div className="writer-post-content">
@@ -719,12 +724,15 @@ const WriterPostsPage = () => {
               )}
             </div>
 
-            <div className="writer-post-stats">
-              {post.view_count !== undefined && (
-                <span className="writer-post-views">
-                  <FaEye /> {post.view_count} views
-                </span>
-              )}
+            <div className="writer-post-stats-container">
+              <PostStats
+                postId={post.id}
+                compact={true}
+                viewCount={post.views || post.view_count || 0}
+                commentCount={post.comments_count || 0}
+                likeCount={post.likes_count || 0}
+                className="writer-post-stats"
+              />
 
               <span className="writer-post-created">
                 <FaCalendarAlt /> {formatDate(post.created_at)}
@@ -740,13 +748,13 @@ const WriterPostsPage = () => {
                   disabled={post.status !== 'published'}
                   title={post.status !== 'published' ? 'Post belum dipublikasikan' : 'Lihat post'}
                 >
-                  <FaEye /> Lihat
+                  <FaEye /> <span>Lihat</span>
                 </button>
                 <button
                   className="writer-action-button writer-edit-button"
                   onClick={() => handleEditPost(post.id)}
                 >
-                  <FaEdit /> Edit
+                  <FaEdit /> <span>Edit</span>
                 </button>
                 <button
                   className="writer-action-button writer-delete-button"
@@ -754,7 +762,7 @@ const WriterPostsPage = () => {
                   disabled={post.status !== 'draft'}
                   title={post.status !== 'draft' ? 'Hanya post draft yang dapat dihapus' : 'Hapus post'}
                 >
-                  <FaTrash /> Hapus
+                  <FaTrash /> <span>Hapus</span>
                 </button>
               </>
             ) : (
@@ -762,7 +770,7 @@ const WriterPostsPage = () => {
                 className="writer-action-button writer-restore-button"
                 onClick={() => handleRestorePost(post.id)}
               >
-                <FaUndo /> Pulihkan
+                <FaUndo /> <span>Pulihkan</span>
               </button>
             )}
           </div>
@@ -823,6 +831,12 @@ const WriterPostsPage = () => {
   return (
     <div className="writer-posts-container">
       <nav className="writer-nav">
+        <Link
+          to="/dashboard"
+          className="writer-nav-button"
+        >
+          Dashboard
+        </Link>
         <button
           className={`writer-nav-button ${activeTab === 'posts' ? 'active' : ''}`}
           onClick={() => setActiveTab('posts')}
@@ -854,7 +868,7 @@ const WriterPostsPage = () => {
 
             {activeTab === 'posts' && (
               <Button variant="primary" className="writer-new-post-button" onClick={handleAddPost}>
-                <FaPlus className="me-2" /> Buat Post Baru
+                <FaPlus /> <span>Buat Post Baru</span>
               </Button>
             )}
           </div>
@@ -887,7 +901,7 @@ const WriterPostsPage = () => {
                     className="writer-filter-btn"
                     type="button"
                   >
-                    <FaFilter /> {showFilters ? 'Sembunyikan Filter' : 'Tampilkan Filter'}
+                    <FaFilter /> <span>{showFilters ? 'Sembunyikan Filter' : 'Tampilkan Filter'}</span>
                   </Button>
                 </div>
               </div>
@@ -936,7 +950,7 @@ const WriterPostsPage = () => {
 
                   <div className="writer-filter-actions">
                     <Button type="submit" className="writer-search-button">
-                      <FaSearch /> Terapkan Filter
+                      <FaSearch /> <span>Terapkan Filter</span>
                     </Button>
 
                     <Button
@@ -944,7 +958,7 @@ const WriterPostsPage = () => {
                       className="writer-reset-button"
                       onClick={handleResetFilters}
                     >
-                      <FaTimes /> Reset Filter
+                      <FaTimes /> <span>Reset Filter</span>
                     </Button>
                   </div>
                 </div>
@@ -953,10 +967,19 @@ const WriterPostsPage = () => {
           </div>
 
           {contentLoading ? (
-            <div className="text-center my-5">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </Spinner>
+            <div className="writer-posts-skeleton my-5">
+              {Array(5).fill(0).map((_, index) => (
+                <div key={index} className="writer-post-item-skeleton d-flex mb-3">
+                  <div className="writer-post-thumbnail-skeleton me-3">
+                    <Skeleton height={140} width={180} />
+                  </div>
+                  <div className="writer-post-content-skeleton flex-grow-1">
+                    <Skeleton height={24} width="80%" className="mb-2" />
+                    <Skeleton height={16} width="60%" className="mb-2" />
+                    <Skeleton height={16} width="40%" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (activeTab === 'deleted-posts' ? deletedPosts.length === 0 : regularPosts.length === 0) ? (
             <div className="empty-state my-5">
@@ -974,8 +997,8 @@ const WriterPostsPage = () => {
                   : 'Anda belum memiliki post. Mulai menulis sekarang!'}
               </p>
               {activeTab === 'posts' && (
-                <Button variant="primary" onClick={handleAddPost} className="mt-3">
-                  <FaPlus /> Buat Post Pertama Anda
+                <Button variant="primary" onClick={handleAddPost} className="mt-3 writer-new-post-button">
+                  <FaPlus /> <span>Buat Post Pertama Anda</span>
                 </Button>
               )}
             </div>

@@ -1,12 +1,35 @@
 .label-navbar-container {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin: 20px 0;
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  z-index: 1000; /* Memastikan z-index sama dengan navbar */
+  z-index: 50; /* Menurunkan z-index agar tidak konflik dengan navbar utama */
+  overflow: hidden;
+}
+
+.label-navbar-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #1a5f7a;
+  color: white;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.label-navbar-header h2 {
+  font-size: 1rem;
+  margin: 0;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.label-icon {
+  font-size: 0.9rem;
 }
 
 .label-navbar {
@@ -15,10 +38,11 @@
   scroll-behavior: smooth;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
-  padding: 0 10px;
   flex-grow: 1;
   position: relative;
-  z-index: 1001; /* Memastikan z-index sama dengan dropdown-container */
+  z-index: 51; /* Menurunkan z-index agar tidak konflik dengan navbar utama */
+  width: 100%;
+  padding: 5px 10px 10px;
 }
 
 .label-navbar::-webkit-scrollbar {
@@ -26,7 +50,7 @@
 }
 
 .label-nav-item {
-  padding: 12px 20px;
+  padding: 8px 15px;
   white-space: nowrap;
   color: #555;
   font-weight: 500;
@@ -37,18 +61,22 @@
   align-items: center;
   gap: 8px;
   position: relative;
-  z-index: 1001; /* Memastikan z-index sama dengan dropdown-container */
+  z-index: 51; /* Menurunkan z-index agar tidak konflik dengan navbar utama */
+  font-size: 0.9rem;
+  border-radius: 4px;
+  margin: 0 2px;
 }
 
 .label-nav-item:hover {
   color: #1a5f7a;
-  background-color: rgba(26, 95, 122, 0.05);
+  background-color: rgba(26, 95, 122, 0.1);
 }
 
 .label-nav-item.active {
-  color: #1a5f7a;
-  border-bottom-color: #1a5f7a;
+  color: white;
+  background-color: #1a5f7a;
   font-weight: 600;
+  border-bottom: none;
 }
 
 .home-icon {
@@ -66,7 +94,7 @@
   cursor: pointer;
   color: #555;
   transition: all 0.3s ease;
-  z-index: 1002; /* Memastikan z-index sama dengan navbar-dropdown-menu */
+  z-index: 52; /* Menurunkan z-index agar tidak konflik dengan navbar utama */
 }
 
 .nav-arrow:hover {
@@ -87,8 +115,8 @@
 }
 
 /* Styling untuk dropdown menu di label navbar */
-.navbar-dropdown-menu {
-  z-index: 1002 !important; /* Memastikan dropdown menu selalu di atas komponen lain */
+.label-navbar-dropdown-menu {
+  z-index: 55 !important; /* Menurunkan z-index agar tidak konflik dengan navbar utama, tapi tetap di atas komponen label-navbar */
   position: absolute !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Shadow yang lebih kuat */
   margin-top: 0 !important; /* Menghilangkan margin atas */
@@ -98,12 +126,12 @@
 
 .dropdown-container {
   position: relative;
-  z-index: 1001; /* Memastikan container dropdown juga memiliki z-index tinggi */
+  z-index: 51; /* Menurunkan z-index agar tidak konflik dengan navbar utama */
 }
 
 /* Memastikan dropdown tetap terlihat saat hover */
-.dropdown-container:hover .navbar-dropdown-menu,
-.navbar-dropdown-menu:hover {
+.dropdown-container:hover .label-navbar-dropdown-menu,
+.label-navbar-dropdown-menu:hover {
   display: block !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -112,26 +140,37 @@
 }
 
 /* Styling untuk item di dropdown menu */
-.navbar-dropdown-menu a,
-.navbar-dropdown-menu div[role="menuitem"] {
+.label-navbar-dropdown-menu a,
+.label-navbar-dropdown-menu div[role="menuitem"] {
   color: #333 !important;
   text-decoration: none !important;
   display: block !important; /* Memastikan link menempati seluruh area */
   padding: 8px 16px !important; /* Padding yang lebih besar untuk area klik yang lebih besar */
 }
 
-.navbar-dropdown-menu a:hover,
-.navbar-dropdown-menu div[role="menuitem"]:hover {
+.label-navbar-dropdown-menu a:hover,
+.label-navbar-dropdown-menu div[role="menuitem"]:hover {
   color: #1a5f7a !important;
   text-decoration: none !important;
   background-color: #f0f0f0 !important;
 }
 
 /* Responsive styles */
+@media (max-width: 992px) {
+  .label-navbar-container {
+    margin: 15px 0;
+  }
+
+  .label-nav-item {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 768px) {
   .label-nav-item {
-    padding: 10px 15px;
-    font-size: 0.9rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 
   .nav-arrow {
@@ -139,8 +178,28 @@
     height: 35px;
   }
 
-  .navbar-dropdown-menu {
+  .label-navbar-dropdown-menu {
     width: 100% !important;
     left: 0 !important;
+  }
+
+  .label-navbar-header h2 {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .label-navbar-container {
+    margin: 10px 0;
+  }
+
+  .label-nav-item {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .nav-arrow {
+    width: 30px;
+    height: 30px;
   }
 }

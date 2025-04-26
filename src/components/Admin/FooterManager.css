@@ -1,0 +1,506 @@
+.footer-manager {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.footer-manager-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.add-page-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-page-button:hover {
+  background-color: #45a049;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.page-form-container {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.page-form-container h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.page-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.footer-section-selector {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-section-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-section-button:hover {
+  background-color: #45a049;
+}
+
+.add-section-form {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border-left: 3px solid #4caf50;
+}
+
+.add-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.add-section-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.section-name-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.section-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-section-button,
+.cancel-section-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-section-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save-section-button:hover {
+  background-color: #45a049;
+}
+
+.cancel-section-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-section-button:hover {
+  background-color: #d32f2f;
+}
+
+.form-group small {
+  font-size: 12px;
+  color: #777;
+  margin-top: 5px;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.editor-container {
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* ReactQuill Styling */
+.quill-editor {
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.quill-editor .ql-toolbar {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  background-color: #f9f9f9;
+  border-color: #ddd;
+}
+
+.quill-editor .ql-container {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-color: #ddd;
+  min-height: 250px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.quill-editor .ql-editor {
+  min-height: 250px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.quill-editor .ql-editor p,
+.quill-editor .ql-editor h1,
+.quill-editor .ql-editor h2,
+.quill-editor .ql-editor h3,
+.quill-editor .ql-editor ul,
+.quill-editor .ql-editor ol {
+  margin-bottom: 10px;
+}
+
+.quill-editor .ql-editor img {
+  max-width: 100%;
+  height: auto;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.save-button,
+.cancel-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #1976d2;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+.pages-container {
+  margin-top: 20px;
+}
+
+.no-pages {
+  text-align: center;
+  padding: 40px 0;
+  color: #777;
+}
+
+.no-pages p {
+  margin-bottom: 20px;
+}
+
+.footer-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.footer-section {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.section-title-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: normal;
+  margin-right: 5px;
+}
+
+.pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.page-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-info {
+  flex: 1;
+}
+
+.page-title {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.page-external-link {
+  margin-top: 8px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.external-link-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.external-link-value {
+  color: #3498db;
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.2s;
+}
+
+.external-link-value:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.page-slug {
+  color: #666;
+}
+
+.page-status,
+.footer-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.page-status.published {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.page-status.draft {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.footer-status.shown {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.footer-status.hidden {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.page-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button,
+.delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #1976d2;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .footer-manager-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .page-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-actions {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}

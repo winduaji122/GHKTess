@@ -1,0 +1,224 @@
+/* LabelDropdown.css - Styling untuk dropdown label */
+
+.label-dropdown {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-height: 400px; /* Tingkatkan max-height untuk menampilkan lebih banyak label */
+  overflow-y: auto;
+  width: 100%;
+  min-width: 430px; /* Tetapkan lebar minimum yang sedikit lebih kecil dari container (450px) */
+  max-width: 450px; /* Tetapkan lebar maksimum yang sama dengan container */
+  scrollbar-width: thin;
+  padding: 8px; /* Tingkatkan padding untuk tampilan yang lebih baik */
+}
+
+.label-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.label-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.label-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.label-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.label-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  width: 100%;
+}
+
+.label-group {
+  margin-bottom: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%; /* Pastikan lebar 100% */
+}
+
+.main-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px; /* Perlebar padding horizontal */
+  background-color: #f9fafb;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  margin-bottom: 6px; /* Tambahkan margin untuk jarak antar label */
+  border: 1px solid transparent; /* Border transparan untuk efek hover */
+  width: 100%; /* Pastikan lebar 100% */
+}
+
+.main-label:hover {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb; /* Tambahkan border saat hover untuk efek yang lebih baik */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Tambahkan shadow ringan saat hover */
+}
+
+.label-checkbox {
+  display: flex;
+  align-items: center;
+  flex: 0.75; /* Kurangi dari 0.8 menjadi 0.75 untuk memberikan lebih banyak ruang untuk tombol aksi */
+  min-width: 0; /* Memungkinkan truncation jika perlu */
+  overflow: hidden; /* Mencegah overflow */
+}
+
+.label-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  width: 18px; /* Sedikit lebih besar untuk visibilitas yang lebih baik */
+  height: 18px; /* Sedikit lebih besar untuk visibilitas yang lebih baik */
+  accent-color: #3b82f6;
+  cursor: pointer;
+  vertical-align: middle; /* Memastikan checkbox sejajar dengan teks */
+}
+
+.label-checkbox label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4; /* Meningkatkan line-height untuk keterbacaan */
+  padding: 2px 0; /* Sedikit padding untuk area klik yang lebih besar */
+  white-space: nowrap; /* Mencegah text wrapping */
+  overflow: hidden; /* Mencegah overflow */
+  text-overflow: ellipsis; /* Menampilkan ellipsis jika text terlalu panjang */
+  flex: 1; /* Mengambil semua ruang yang tersedia */
+  min-width: 0; /* Memungkinkan truncation */
+}
+
+.label-icon {
+  margin-right: 8px; /* Sedikit lebih besar untuk jarak yang lebih baik */
+  color: #4b5563;
+  font-size: 16px; /* Sedikit lebih besar untuk visibilitas yang lebih baik */
+  min-width: 16px; /* Memastikan ikon memiliki lebar minimum yang konsisten */
+}
+
+.sublabel-icon {
+  margin-right: 8px; /* Sedikit lebih besar untuk jarak yang lebih baik */
+  color: #6b7280;
+  font-size: 14px;
+  min-width: 14px; /* Memastikan ikon memiliki lebar minimum yang konsisten */
+}
+
+.label-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0.2; /* Tetapkan flex: 0.2 untuk memberikan ruang yang cukup */
+  min-width: 120px; /* Sesuaikan lebar minimum untuk tombol-tombol aksi */
+  justify-content: flex-end; /* Ratakan tombol ke kanan */
+}
+
+.label-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; /* Perbesar sedikit ukuran tombol */
+  height: 30px; /* Perbesar sedikit ukuran tombol */
+  border: none;
+  background-color: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.label-action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toggle-btn {
+  color: #6b7280;
+  font-size: 16px; /* Perbesar ukuran ikon */
+}
+
+.add-btn {
+  color: #10b981;
+  font-size: 16px; /* Perbesar ukuran ikon */
+}
+
+.edit-btn {
+  color: #3b82f6;
+  font-size: 16px; /* Perbesar ukuran ikon */
+}
+
+.delete-btn {
+  color: #ef4444;
+  font-size: 16px; /* Perbesar ukuran ikon */
+}
+
+.sublabel-list {
+  margin-left: 24px;
+  padding-left: 8px;
+  border-left: 2px solid #e5e7eb;
+  width: calc(100% - 24px); /* Pastikan lebar 100% dikurangi margin-left */
+}
+
+.sublabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px; /* Perlebar padding horizontal */
+  margin-top: 4px;
+  margin-bottom: 4px; /* Tambahkan margin-bottom untuk jarak yang konsisten */
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent; /* Border transparan untuk efek hover */
+  width: calc(100% - 8px); /* Pastikan lebar 100% dengan sedikit margin */
+}
+
+.sublabel:hover {
+  background-color: #e5e7eb;
+  border-color: #d1d5db; /* Tambahkan border saat hover untuk efek yang lebih baik */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Tambahkan shadow ringan saat hover */
+}
+
+.sublabel-new {
+  animation: highlight 2s ease-in-out;
+  border-left: 3px solid #3b82f6;
+}
+
+@keyframes highlight {
+  0%, 100% { background-color: #f3f4f6; }
+  50% { background-color: #dbeafe; }
+}
+
+.empty-message {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .label-dropdown {
+    max-height: 250px;
+  }
+
+  .main-label,
+  .sublabel {
+    padding: 8px;
+  }
+
+  .label-checkbox label {
+    font-size: 13px;
+  }
+
+  .label-action-btn {
+    width: 24px;
+    height: 24px;
+  }
+}

@@ -8,10 +8,31 @@ import {
 } from '../utils/tokenManager';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-console.log('API Base URL being used:', BASE_URL);
+
+// Tambahkan logging yang lebih detail untuk membantu debugging
+console.log('%c API Base URL being used: ' + BASE_URL, 'background: #222; color: #bada55; font-size: 14px; padding: 5px;');
 console.log('Environment variables:', {
-  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  NODE_ENV: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD
 });
+
+// Cek apakah server dapat diakses
+fetch(BASE_URL + '/api/health')
+  .then(response => {
+    if (response.ok) {
+      console.log('%c Backend server is reachable! ✅', 'background: green; color: white; font-size: 14px; padding: 5px;');
+      return response.json();
+    } else {
+      throw new Error(`Server responded with status: ${response.status}`);
+    }
+  })
+  .then(data => console.log('Server health check:', data))
+  .catch(error => {
+    console.error('%c Backend server is NOT reachable! ❌', 'background: red; color: white; font-size: 14px; padding: 5px;');
+    console.error('Error connecting to backend:', error);
+  });
 const DEFAULT_TIMEOUT = 15000;
 
 // Base config
@@ -81,7 +102,10 @@ publicApi.interceptors.request.use(
 api.interceptors.request.use(
   async (config) => {
     // Handle auth token
-    if (!config.url?.includes('/auth/')) {
+    // Jangan tambahkan token untuk endpoint login, register, dan refresh-token
+    if (!config.url?.includes('/api/auth/login') &&
+        !config.url?.includes('/api/auth/register') &&
+        !config.url?.includes('/api/auth/refresh-token')) {
       const token = getAccessToken();
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
@@ -147,6 +171,13 @@ const createResponseInterceptor = (instance, name) => {
     try {
       // Dapatkan token saat ini untuk logging
       const currentToken = getAccessToken();
+
+      // Jika tidak ada token, jangan coba refresh
+      if (!currentToken) {
+        console.log(`${name}: Tidak ada token yang tersedia, skip refresh token`);
+        throw new Error('No token available');
+      }
+
       const userIdentity = getUserIdentityFromToken(currentToken);
 
       console.log(`${name}: [${userIdentity}] Memanggil refreshToken dari tokenManager...`);
@@ -200,8 +231,25 @@ const createResponseInterceptor = (instance, name) => {
       // Jika bukan error 401 atau request sudah di-retry, langsung reject
       if (error.response?.status !== 401 ||
           originalRequest?._retry ||
-          originalRequest?.url?.includes('/api/auth/refresh-token')) {
+          originalRequest?.url?.includes('/api/auth/refresh-token') ||
+          originalRequest?.url?.includes('/auth/refresh-token')) {
         return Promise.reject(error);
+      }
+
+      // Jika ini adalah publicApi, jangan coba refresh token untuk endpoint publik
+      if (name === 'Public API' && (
+          originalRequest?.url?.includes('/api/posts/public') ||
+          originalRequest?.url?.includes('/api/posts/label') ||
+          originalRequest?.url?.includes('/api/search/labels') ||
+          originalRequest?.headers?.['X-Public-Request'] === 'true'
+      )) {
+        console.log(`${name}: [${userIdentity}] Tidak mencoba refresh token untuk endpoint publik: ${originalRequest?.url}`);
+        return Promise.reject(error);
+      }
+
+      // Jika ini adalah endpoint label yang memerlukan autentikasi admin, pastikan refresh token berjalan
+      if (originalRequest?.url?.includes('/api/labels') && !originalRequest?.url?.includes('/api/labels/with-sublabels')) {
+        console.log(`${name}: [${userIdentity}] Mencoba refresh token untuk endpoint label admin: ${originalRequest?.url}`);
       }
 
       // Tandai request sebagai sudah di-retry

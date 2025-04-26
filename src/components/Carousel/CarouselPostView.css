@@ -1,0 +1,241 @@
+/* Hero Image Styles */
+.carousel-post-hero-image {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.carousel-post-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-post-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 50px;
+}
+
+.carousel-post-hero-content {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 15px;
+  color: white;
+}
+
+.carousel-post-badge {
+  display: inline-block;
+  background-color: #1a5f7a;
+  color: white;
+  padding: 6px 15px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.carousel-post-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 15px;
+  line-height: 1.2;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Container Styles */
+.carousel-post-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 15px 30px;
+}
+
+.carousel-post-meta {
+  color: #718096;
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+}
+
+.carousel-post-date {
+  margin-right: 10px;
+}
+
+.carousel-post-author {
+  font-style: italic;
+}
+
+/* Content Wrapper for Side-by-Side Layout */
+.carousel-post-content-wrapper {
+  display: flex;
+  gap: 30px;
+}
+
+.carousel-post-content {
+  flex: 1;
+  margin-bottom: 40px;
+}
+
+/* Side Image Styles */
+.carousel-post-side-image {
+  width: 300px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  align-self: flex-start;
+  position: sticky;
+  top: 20px;
+}
+
+.carousel-post-side-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.carousel-post-body {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #4a5568;
+}
+
+.carousel-post-body p {
+  margin-bottom: 1.5rem;
+}
+
+.carousel-post-body h2,
+.carousel-post-body h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.carousel-post-body img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border-radius: 6px;
+}
+
+.carousel-post-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.carousel-post-back-button {
+  display: inline-flex;
+  align-items: center;
+  color: #1a5f7a;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.carousel-post-back-button:hover {
+  color: #134a5f;
+  text-decoration: underline;
+}
+
+.carousel-post-loading {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 15px;
+}
+
+.carousel-post-loading-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.carousel-post-error {
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 30px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-post-error h2 {
+  color: #dc3545;
+  margin-bottom: 15px;
+}
+
+.carousel-post-error p {
+  margin-bottom: 25px;
+  color: #6c757d;
+}
+
+.back-button {
+  background-color: #1a5f7a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #134a5f;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .carousel-post-hero-image {
+    height: 350px;
+  }
+
+  .carousel-post-title {
+    font-size: 1.8rem;
+  }
+
+  .carousel-post-container {
+    padding: 0 10px 20px;
+  }
+
+  .carousel-post-content-wrapper {
+    flex-direction: column;
+  }
+
+  .carousel-post-side-image {
+    width: 100%;
+    margin-top: 20px;
+    position: static;
+  }
+
+  .carousel-post-badge {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-post-hero-image {
+    height: 250px;
+  }
+
+  .carousel-post-title {
+    font-size: 1.5rem;
+  }
+
+  .carousel-post-hero-overlay {
+    padding-bottom: 30px;
+  }
+}

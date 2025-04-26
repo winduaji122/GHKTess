@@ -1,55 +1,27 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import LazyImage from './common/LazyImage';
+import '../styles/lazyImage.css';
 import './RelatedPostWidget.css';
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'Tanggal tidak tersedia';
-
-  try {
-    // Parse tanggal
-    const date = new Date(dateString);
-
-    // Validasi tanggal
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date:', dateString);
-      return 'Tanggal tidak tersedia';
-    }
-
-    // Format tanggal ke Indonesia
-    return new Intl.DateTimeFormat('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
-
-  } catch (error) {
-    console.error('Error formatting date:', error, dateString);
-    return 'Tanggal tidak tersedia';
-  }
-};
 
 // Fungsi untuk mendapatkan tanggal yang valid
 const getValidDate = (post) => {
-  console.log('Post data for date formatting:', post);
-
   // Prioritaskan publish_date, lalu created_at
-  if (post.publish_date) {
-    const formattedDate = formatDate(post.publish_date);
-    console.log('Using publish_date:', formattedDate);
-    return formattedDate;
-  }
+  const formattedDate = post.publish_date
+    ? new Date(post.publish_date).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+    : post.created_at
+      ? new Date(post.created_at).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+      : 'Tanggal tidak tersedia';
 
-  if (post.created_at) {
-    const formattedDate = formatDate(post.created_at);
-    console.log('Using created_at:', formattedDate);
-    return formattedDate;
-  }
-
-  // Jika tidak ada tanggal, gunakan tanggal saat ini
-  console.log('No valid date found for post:', post.title);
-  console.log('Using current date as fallback');
-  const currentDate = new Date();
-  return formatDate(currentDate.toISOString());
+  return formattedDate;
 };
 
 // Dalam komponen RelatedPostItem, tambahkan logging
@@ -60,47 +32,27 @@ function RelatedPostItem({ post, onClick }) {
     return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
-  // Debug untuk melihat data post
-  console.log('Related post data:', post);
-
-  // Tambahkan console.log untuk debugging
-  console.log('Post data received:', {
-    post_date: post.post_date,
-    publish_date: post.publish_date,
-    published_date: post.published_date,
-    created_at: post.created_at,
-    createdAt: post.createdAt
-  });
-
-  // Debug untuk format tanggal
-  console.log('Post data for display:', {
+  // Debug tanggal
+  console.log('Related post data for date:', {
     title: post.title,
     publish_date: post.publish_date,
     created_at: post.created_at
   });
 
-  // Jika tidak ada tanggal, tambahkan tanggal saat ini
-  if (!post.publish_date && !post.created_at) {
-    console.log('Adding current date as fallback for post:', post.title);
-    post.created_at = new Date().toISOString();
-  }
-
-  // Cek apakah menggunakan tanggal fallback
-  const isFallbackDate = !post.publish_date && !post.created_at;
+  // Dapatkan tanggal untuk ditampilkan
   const dateForDisplay = getValidDate(post);
-  console.log('Final date for display:', dateForDisplay, 'isFallback:', isFallbackDate);
+  const isFallbackDate = dateForDisplay === 'Tanggal tidak tersedia';
 
   return (
     <div className="related-post-item" onClick={() => onClick(post.slug || post.id)}>
       <div className="related-post-image-container">
-        <img
+        <LazyImage
           src={getImageUrl(post.image)}
           alt={post.title}
           className="related-post-image"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = '/default-fallback-image.jpg';
-          }}
+          height="180px"
+          width="100%"
+          objectFit="cover"
         />
       </div>
       <div className="related-post-content">

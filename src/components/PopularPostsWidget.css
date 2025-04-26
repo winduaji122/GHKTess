@@ -1,0 +1,232 @@
+.popular-posts-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3498db;
+  color: #2c3e50;
+}
+
+/* Container for list and featured */
+.popular-posts-container {
+  display: flex;
+  gap: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1100px;
+}
+
+/* Left side - list of popular posts */
+.popular-posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 3; /* Takes 60% of the space */
+}
+
+/* Right side - featured post */
+.popular-featured {
+  flex: 2; /* Takes 40% of the space */
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: transparent;
+  transition: transform 0.2s ease;
+}
+
+.popular-featured:hover {
+  transform: translateY(-3px);
+}
+
+.popular-featured-image {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.popular-featured-content {
+  padding: 15px 0 0 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.popular-featured-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+  color: #333;
+}
+
+.popular-featured-excerpt {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #666;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* Regular post items */
+.popular-post-item {
+  display: flex;
+  gap: 15px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.popular-post-item:hover {
+  transform: translateY(-2px);
+}
+
+.popular-post-image {
+  position: relative;
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.popular-post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.popular-post-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.popular-post-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.popular-post-date {
+  font-size: 0.75rem;
+  color: #777;
+  margin: 0;
+}
+
+/* Skeleton loaders */
+.popular-post-item-skeleton {
+  display: flex;
+  gap: 15px;
+}
+
+.popular-post-image-skeleton {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.popular-post-content-skeleton {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.popular-featured-skeleton {
+  flex: 2;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+.popular-posts-error {
+  color: #e74c3c;
+  text-align: center;
+  padding: 15px;
+  background-color: #fef2f2;
+  border-radius: 6px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .popular-posts-container {
+    padding: 15px;
+    flex-direction: column;
+  }
+
+  .popular-posts-title {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+
+  .popular-post-title {
+    font-size: 0.9rem;
+  }
+
+  .popular-featured {
+    margin-top: 20px;
+  }
+
+  .popular-featured-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .popular-post-image,
+  .popular-post-image-skeleton {
+    width: 70px;
+    height: 70px;
+  }
+
+  .popular-post-title {
+    font-size: 0.85rem;
+  }
+
+  .popular-post-date {
+    font-size: 0.7rem;
+  }
+
+  .popular-featured {
+    height: auto;
+  }
+
+  .popular-featured-image {
+    height: 180px;
+  }
+
+  .popular-featured-content {
+    padding: 12px 0 0 0;
+  }
+
+  .popular-featured-title {
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+
+  .popular-featured-excerpt {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 1;
+  }
+}

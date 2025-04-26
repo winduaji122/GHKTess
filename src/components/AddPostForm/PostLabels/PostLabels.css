@@ -1,0 +1,254 @@
+/* PostLabels.css - Styling untuk komponen PostLabels */
+
+.post-labels-container {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Pusatkan secara horizontal */
+  width: 100%;
+}
+
+.post-labels-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 450px; /* Kurangi dari 550px menjadi 450px */
+  text-align: left;
+}
+
+.post-labels-wrapper {
+  position: relative;
+  width: 100%; /* Pastikan lebar 100% */
+  display: flex; /* Gunakan flexbox */
+  flex-direction: column; /* Arah kolom */
+  align-items: center; /* Pusatkan secara horizontal */
+}
+
+.post-labels-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 450px; /* Kurangi dari 550px menjadi 450px */
+  padding: 10px 16px; /* Perlebar padding horizontal */
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 42px; /* Tetapkan tinggi yang konsisten */
+  font-weight: 500; /* Sedikit lebih tebal untuk keterbacaan yang lebih baik */
+}
+
+.post-labels-toggle:hover {
+  border-color: #9ca3af;
+}
+
+.post-labels-toggle:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+.post-labels-toggle-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-labels-toggle-placeholder {
+  color: #9ca3af;
+}
+
+.post-labels-toggle-icon {
+  margin-left: 8px;
+  color: #6b7280;
+}
+
+.post-labels-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px); /* Menampilkan di atas tombol */
+  left: 50%; /* Posisikan dari tengah parent */
+  transform: translateX(-50%); /* Geser ke kiri sebesar 50% dari lebar sendiri */
+  z-index: 10;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  overflow: visible; /* Ubah dari hidden menjadi visible */
+  width: 450px; /* Kurangi dari 550px menjadi 450px */
+  min-width: 450px; /* Tetapkan lebar minimum */
+  max-width: 100%; /* Pastikan tidak melebihi lebar parent */
+  border: 1px solid #e5e7eb; /* Tambahkan border untuk tampilan yang lebih baik */
+  animation: dropdown-appear 0.2s ease-out; /* Animasi dropdown */
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.post-labels-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  width: 100%; /* Pastikan lebar 100% */
+}
+
+.post-labels-content.open {
+  max-height: 600px; /* Tingkatkan max-height untuk menampilkan lebih banyak konten */
+  width: 100%; /* Pastikan lebar 100% */
+  min-width: 450px; /* Tetapkan lebar minimum */
+}
+
+.post-labels-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.post-labels-add-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px; /* Perlebar padding horizontal */
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px; /* Tetapkan tinggi yang konsisten */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Tambahkan shadow ringan */
+}
+
+.post-labels-add-btn:hover {
+  background-color: #2563eb;
+}
+
+.post-labels-add-btn-icon {
+  margin-right: 6px;
+}
+
+.post-labels-back-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px; /* Perlebar padding horizontal */
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 36px; /* Tetapkan tinggi yang konsisten */
+}
+
+.post-labels-back-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.post-labels-back-btn-icon {
+  margin-right: 6px;
+}
+
+.post-labels-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+  max-width: 450px; /* Kurangi dari 550px menjadi 450px */
+}
+
+.post-labels-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px; /* Sedikit lebih besar untuk area klik yang lebih baik */
+  background-color: #e5e7eb;
+  color: #4b5563;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent; /* Border transparan untuk efek hover */
+}
+
+.post-labels-badge:hover {
+  background-color: #d1d5db;
+  border-color: #9ca3af; /* Tambahkan border saat hover untuk efek yang lebih baik */
+}
+
+.post-labels-badge-icon {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.post-labels-undo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  margin-top: 8px;
+  width: 100%;
+  max-width: 450px; /* Kurangi dari 550px menjadi 450px */
+}
+
+.post-labels-undo-text {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.post-labels-undo-btn {
+  padding: 4px 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.post-labels-undo-btn:hover {
+  background-color: #2563eb;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .post-labels-toggle {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .post-labels-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .post-labels-add-btn,
+  .post-labels-back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

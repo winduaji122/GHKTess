@@ -3,10 +3,10 @@ import FeaturedPost from './FeaturedPost';
 import PostCard from './PostCard';
 import Pagination from './Pagination';
 import SpotlightWidget from './SpotlightWidget';
+import PopularPostsWidget from './PopularPostsWidget';
 import Carousel from './Carousel/Carousel';
 import './Home.css';
 import { getAllPosts, getFeaturedPosts, getSpotlightPosts } from '../api/postApi';
-import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Home() {
@@ -25,11 +25,8 @@ function Home() {
     setError(null);
 
     try {
-      const [postsData, featuredPostData, spotlightData] = await Promise.all([
-        getAllPosts(currentPage, postsPerPage),
-        getFeaturedPosts(),
-        getSpotlightPosts()
-      ]);
+      // Prioritaskan permintaan penting terlebih dahulu
+      const postsData = await getAllPosts(currentPage, postsPerPage);
 
       console.log('Posts data received:', postsData);
 
@@ -40,6 +37,12 @@ function Home() {
       } else {
         console.error('Invalid posts data structure:', postsData);
       }
+
+      // Kemudian buat permintaan lain secara bersamaan dengan batasan
+      const [featuredPostData, spotlightData] = await Promise.all([
+        getFeaturedPosts(),
+        getSpotlightPosts()
+      ]);
 
       if (featuredPostData?.success && featuredPostData?.data?.length > 0) {
         setFeaturedPost(featuredPostData.data[0]);
@@ -72,7 +75,7 @@ function Home() {
     setCurrentPage(pageNumber);
   }, []);
 
-  if (loading) return <div className="loading">Memuat...</div>;
+  if (loading) return null;
   if (error) return <div className="error">{error}</div>;
 
   return (
@@ -121,6 +124,13 @@ function Home() {
           <SpotlightWidget posts={spotlightPosts} limit={4} />
         </aside>
       </div>
+
+      {/* Popular Section */}
+      <section className="popular-section">
+        <div className="writer-popular-container">
+          <PopularPostsWidget limit={4} />
+        </div>
+      </section>
     </div>
   );
 }

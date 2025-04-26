@@ -42,6 +42,7 @@ export const endpoints = {
   myPosts: '/api/posts/my-posts',
   postsByAuthor: (authorId) => `/api/posts/author/${authorId}`,
   incrementViews: (id) => `/api/posts/${id}/increment-views`,
+  postStats: (id) => `/api/posts/${id}/stats`,
   postVersions: (id) => `/api/posts/${id}/versions`,
   previewPost: '/api/posts/preview',
   postAnalytics: (id) => `/api/posts/${id}/analytics`,

@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { highlightText } from '../utils/highlightText.jsx';
 import './SearchPage.css';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import DOMPurify from 'dompurify';
 import { getLabels } from '../api/labelApi';
 import { searchPosts } from '../api/postApi';
 import SearchBar from './SearchBar';
+import { FaSort, FaCalendarAlt, FaEye, FaComment } from 'react-icons/fa';
 
 function SearchPage() {
   const navigate = useNavigate();
@@ -198,13 +201,48 @@ function SearchPage() {
               Filter Label: {labels.find(l => l.id === selectedLabel)?.name || 'Label tidak ditemukan'}
             </div>
           )}
+
+          {!loading && searchResults.length > 0 && (
+            <div className="search-info">
+              <div className="search-stats">
+                <span>Ditemukan {totalResults} hasil dalam {searchInfo.searchTime} detik</span>
+              </div>
+              <div className="sort-by">
+                <label><FaSort /> Urutkan:</label>
+                <select value={sortBy} onChange={handleSortChange}>
+                  <option value="relevance">Relevansi</option>
+                  <option value="date_desc">Terbaru</option>
+                  <option value="date_asc">Terlama</option>
+                  <option value="views_desc">Terbanyak Dilihat</option>
+                  <option value="comments_desc">Terbanyak Komentar</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {loading ? (
-        <div className="loading">Mencari...</div>
+        <div className="search-results-skeleton">
+          {Array(5).fill(0).map((_, index) => (
+            <div key={index} className="search-result-skeleton">
+              <div className="search-result-image-skeleton">
+                <Skeleton height={120} width={120} />
+              </div>
+              <div className="search-result-content-skeleton">
+                <Skeleton height={24} width="80%" className="mb-2" />
+                <Skeleton height={16} width="60%" className="mb-2" />
+                <Skeleton height={16} width="40%" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : error ? (
-        <div className="error">{error}</div>
+        <div className="error">
+          <div className="error-icon">⚠️</div>
+          <div className="error-message">{error}</div>
+          <button className="retry-button" onClick={fetchResults}>Coba Lagi</button>
+        </div>
       ) : Array.isArray(searchResults) && searchResults.length > 0 ? (
         searchResults.map((post) => (
           <div
@@ -236,9 +274,9 @@ function SearchPage() {
                 {(post.is_featured === true || post.is_featured === 1) && <span className="featured-badge">Featured</span>}
               </div>
               <div className="result-meta">
-                <span className="result-date">{formatDate(post.publish_date)}</span>
-                <span className="result-views"><i className="fas fa-eye"></i> {post.views || 0}</span>
-                <span className="result-comments"><i className="fas fa-comment"></i> {post.comments_count || 0}</span>
+                <span className="result-date"><FaCalendarAlt className="meta-icon" /> {formatDate(post.publish_date)}</span>
+                <span className="result-views"><FaEye className="meta-icon" /> {post.views || 0}</span>
+                <span className="result-comments"><FaComment className="meta-icon" /> {post.comments_count || 0}</span>
               </div>
               <div className="result-labels">
                 {getLabelsFromPost(post).map((label) => (
@@ -252,7 +290,16 @@ function SearchPage() {
           </div>
         ))
       ) : (
-        <div className="no-results">Tidak ada hasil yang ditemukan.</div>
+        <div className="no-results">
+          <div className="no-results-icon">🔍</div>
+          <h3>Tidak ada hasil yang ditemukan</h3>
+          <p>Coba gunakan kata kunci yang berbeda atau hapus filter untuk melihat lebih banyak hasil.</p>
+          {(searchQuery || selectedLabel) && (
+            <button className="reset-search-button" onClick={() => handleSearch('', '')}>
+              Hapus Semua Filter
+            </button>
+          )}
+        </div>
       )}
       {totalPages > 1 && (
         <div className="pagination">

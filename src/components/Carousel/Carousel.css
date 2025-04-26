@@ -10,15 +10,28 @@
 
 .writer-carousel-container {
   border-radius: 8px;
+  height: 400px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.writer-carousel-image {
+.writer-carousel-image-container {
   height: 400px;
-  background-size: cover;
-  background-position: center;
   position: relative;
+  overflow: hidden;
+}
+
+.writer-carousel-lazy-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.writer-carousel-image-placeholder {
+  width: 100%;
+  height: 400px;
+  background-color: #f0f0f0;
 }
 
 .writer-carousel-caption {
@@ -65,33 +78,20 @@
   text-decoration: none !important;
 }
 
-/* Styling untuk indikator carousel */
-.carousel-indicators {
-  margin-bottom: 1rem;
-}
-
-.carousel-indicators button {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
-  margin: 0 5px;
-}
-
-.carousel-indicators button.active {
-  background-color: white;
-}
+/* Styling untuk indikator carousel dipindahkan ke carousel-fix.css */
 
 /* Styling untuk kontrol carousel */
 .carousel-control-prev,
 .carousel-control-next {
-  width: 5%;
-  opacity: 0.7;
-  z-index: 10; /* Memastikan kontrol berada di bawah tombol */
   height: calc(100% - 80px); /* Mengurangi tinggi kontrol agar tidak menutupi tombol */
   top: 0; /* Memastikan kontrol dimulai dari atas */
   bottom: auto; /* Menghapus posisi bottom default */
+  z-index: 10; /* Memastikan kontrol berada di bawah tombol */
 }
+
+/* Aturan transisi slide horizontal dipindahkan ke carousel-fix.css */
+
+/* Styling untuk carousel-inner dipindahkan ke carousel-fix.css */
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
@@ -105,6 +105,16 @@
   height: 30px;
   background-size: 100%;
   z-index: 11; /* Memastikan ikon kontrol berada di atas kontrol tapi di bawah tombol */
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.7)); /* Menambahkan bayangan untuk meningkatkan visibilitas */
+}
+
+/* Memperjelas arah kontrol */
+.carousel-control-prev-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z'/%3e%3c/svg%3e") !important;
+}
+
+.carousel-control-next-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
 }
 
 /* Loading dan error states */

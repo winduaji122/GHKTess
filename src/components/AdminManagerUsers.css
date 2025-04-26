@@ -23,6 +23,37 @@
   font-weight: 600;
 }
 
+.admin-refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.admin-refresh-button:hover {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-refresh-button .spinning {
+  animation: spin 1s linear infinite;
+}
+
 .admin-manager-stats {
   display: flex;
   gap: 20px;
@@ -76,18 +107,19 @@
   min-width: 200px;
 }
 
-.admin-search-icon {
+.admin-users-search-icon {
   position: absolute;
-  left: 12px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #666;
   font-size: 1rem;
+  cursor: pointer;
 }
 
 .admin-search-input {
   width: 100%;
-  padding: 10px 15px 10px 40px;
+  padding: 10px 40px 10px 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
@@ -107,23 +139,39 @@
 
 .admin-filter-icon {
   position: absolute;
-  left: 12px;
+  right: 35px; /* Posisikan di sebelah kanan, tetapi berikan ruang untuk dropdown arrow */
   top: 50%;
   transform: translateY(-50%);
   color: #666;
   font-size: 0.9rem;
   z-index: 1;
+  pointer-events: none; /* Pastikan ikon tidak menghalangi klik pada select */
+}
+
+/* CSS untuk ikon filter telah dihapus karena tidak digunakan lagi */
+
+/* Wrapper untuk select di dalam tabel */
+.table-select-wrapper {
+  min-width: 120px;
+  margin: 0;
+}
+
+/* Select di dalam tabel */
+.table-role-select {
+  font-size: 0.85rem;
+  padding: 6px 30px 6px 10px;
+  background-position: right 8px center;
 }
 
 .admin-filter-select {
   width: 100%;
-  padding: 10px 15px 10px 40px;
+  padding: 8px 30px 8px 12px; /* Padding kanan hanya untuk dropdown arrow */
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: white;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888888' d='M6 8.825L1.175 4 2.238 2.938 6 6.7 9.763 2.938 10.825 4z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 15px center;
+  background-position: right 10px center;
   font-size: 0.95rem;
   appearance: none;
   cursor: pointer;
@@ -249,11 +297,32 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.btn-delete {
+  background-color: #555555;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.btn-delete:hover {
+  background-color: #333333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
 .btn-icon {
   font-size: 1.1rem;
 }
 
-.btn-approve:disabled, .btn-reject:disabled {
+.btn-approve:disabled, .btn-reject:disabled, .btn-delete:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -352,7 +421,7 @@
     flex-direction: column;
   }
 
-  .btn-approve, .btn-reject, .btn-edit {
+  .btn-approve, .btn-reject, .btn-delete, .btn-edit {
     padding: 6px 10px;
     font-size: 0.85rem;
   }

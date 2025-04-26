@@ -74,3 +74,23 @@
 .error {
   color: #e74c3c;
 }
+
+/* Popular Posts Section */
+.popular-section {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.writer-popular-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .writer-popular-container {
+    width: 100%;
+    max-width: 1100px;
+  }
+}

@@ -15,31 +15,31 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
     { value: 'title:asc', label: 'Judul (A-Z)' },
     { value: 'title:desc', label: 'Judul (Z-A)' },
     { value: 'is_featured:desc', label: 'Featured' },
-    { value: 'label:asc', label: 'Label (A-Z)' }, 
+    { value: 'label:asc', label: 'Label (A-Z)' },
     { value: 'label:desc', label: 'Label (Z-A)' }
   ];
 
   // Fungsi untuk mengecek apakah ada filter aktif
   const hasActiveFilters = () => {
     return !!(
-      currentFilters?.status !== 'all' || 
-      currentFilters?.label || 
-      currentFilters?.featured || 
+      currentFilters?.status !== 'all' ||
+      currentFilters?.label ||
+      currentFilters?.featured ||
       currentFilters?.sort
     );
   };
 
   // Modifikasi fungsi getActiveFilterLabel
   const getActiveFilterLabel = () => {
-    if (isLoading) return 'Loading...';
-    
+    if (isLoading) return 'Filter & Sort';
+
     if (!currentFilters) return 'Filter & Sort';
-    
+
     // Hanya tampilkan satu label aktif (yang paling prioritas)
     if (currentFilters.status && currentFilters.status !== 'all') {
       return `Status: ${currentFilters.status}`;
     }
-    
+
     if (currentFilters.label) {
       const activeLabel = labels.find(l => l.id === currentFilters.label);
       if (activeLabel) return `Label: ${activeLabel.label}`;
@@ -60,7 +60,7 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
   // Perbaiki handleFilterSelect
   const handleFilterSelect = (type, value) => {
     if (!onFilterChange) return;
-    
+
     console.log('Selecting filter:', type, value);
     onFilterChange(type, value);
     setIsOpen(false);
@@ -69,14 +69,14 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
 
   const renderLabelSubmenu = () => (
     <div className="submenu">
-      <div 
+      <div
         className={!currentFilters.label ? 'active' : ''}
         onClick={() => handleFilterSelect('label', '')}
       >
         Semua Label
       </div>
       {labels.map(label => (
-        <div 
+        <div
           key={label.id}
           className={currentFilters.label === label.id ? 'active' : ''}
           onClick={() => handleFilterSelect('label', label.id)}
@@ -91,7 +91,7 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
   const renderSortSubmenu = () => (
     <div className="submenu">
       {sortOptions.map(option => (
-        <div 
+        <div
           key={option.value}
           className={currentFilters.sort === option.value ? 'active' : ''}
           onClick={() => handleFilterSelect('sort', option.value)}
@@ -104,7 +104,7 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
 
   return (
     <div className="nested-dropdown" ref={dropdownRef}>
-      <button 
+      <button
         className={`dropdown-toggle ${hasActiveFilters() ? 'has-filters' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
@@ -114,36 +114,36 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
           <span className="filter-indicator">•</span>
         )}
       </button>
-      
+
       {isOpen && (
         <div className="dropdown-menu">
           {/* Status Filter */}
-          <div 
+          <div
             className="dropdown-item has-submenu"
             onMouseEnter={() => setActiveSubmenu('status')}
           >
             <span>Status Post</span>
             {activeSubmenu === 'status' && (
               <div className="submenu">
-                <div 
+                <div
                   className={currentFilters.status === 'all' ? 'active' : ''}
                   onClick={() => handleFilterSelect('status', 'all')}
                 >
                   Semua Status
                 </div>
-                <div 
+                <div
                   className={currentFilters.status === 'published' ? 'active' : ''}
                   onClick={() => handleFilterSelect('status', 'published')}
                 >
                   Published
                 </div>
-                <div 
+                <div
                   className={currentFilters.status === 'draft' ? 'active' : ''}
                   onClick={() => handleFilterSelect('status', 'draft')}
                 >
                   Draft
                 </div>
-                <div 
+                <div
                   className={currentFilters.status === 'archived' ? 'active' : ''}
                   onClick={() => handleFilterSelect('status', 'archived')}
                 >
@@ -154,7 +154,7 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
           </div>
 
           {/* Label Filter dengan penanganan yang lebih baik */}
-          <div 
+          <div
             className="dropdown-item has-submenu"
             onMouseEnter={() => setActiveSubmenu('label')}
           >
@@ -163,7 +163,7 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
           </div>
 
           {/* Sort Filter */}
-          <div 
+          <div
             className="dropdown-item has-submenu"
             onMouseEnter={() => setActiveSubmenu('sort')}
           >
@@ -172,32 +172,32 @@ const NestedDropdown = ({ labels = [], onFilterChange, currentFilters, isLoading
           </div>
 
           {/* Featured Status */}
-          <div 
+          <div
             className="dropdown-item has-submenu"
             onMouseEnter={() => setActiveSubmenu('featured')}
           >
             <span>Status Featured</span>
             {activeSubmenu === 'featured' && (
               <div className="submenu">
-                <div 
+                <div
                   className={!currentFilters.featured ? 'active' : ''}
                   onClick={() => handleFilterSelect('featured', '')}
                 >
                   Semua Post
                 </div>
-                <div 
+                <div
                   className={currentFilters.featured === 'featured' ? 'active' : ''}
                   onClick={() => handleFilterSelect('featured', 'featured')}
                 >
                   Featured
                 </div>
-                <div 
+                <div
                   className={currentFilters.featured === 'spotlight' ? 'active' : ''}
                   onClick={() => handleFilterSelect('featured', 'spotlight')}
                 >
                   Spotlight
                 </div>
-                <div 
+                <div
                   className={currentFilters.featured === 'regular' ? 'active' : ''}
                   onClick={() => handleFilterSelect('featured', 'regular')}
                 >

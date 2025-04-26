@@ -1,0 +1,93 @@
+.writer-popular-featured {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.writer-popular-featured-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1a5f7a;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.writer-popular-featured-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.writer-popular-featured-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.writer-popular-featured-views {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  text-align: center;
+}
+
+.writer-popular-featured-post-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.writer-popular-featured-excerpt {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.writer-popular-featured-date {
+  font-size: 0.8rem;
+  color: #777;
+  margin: 0;
+}
+
+.writer-popular-featured-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .writer-popular-featured {
+    padding: 15px;
+  }
+  
+  .writer-popular-featured-title {
+    font-size: 1.3rem;
+  }
+  
+  .writer-popular-featured-post-title {
+    font-size: 1.1rem;
+  }
+  
+  .writer-popular-featured-excerpt {
+    font-size: 0.85rem;
+  }
+}

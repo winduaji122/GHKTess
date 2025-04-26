@@ -146,7 +146,13 @@
   animation: slideDown 0.8s ease-out forwards;
 }
 
-/* Styling untuk dropdown menu di navbar */
+/* Styling untuk active state di navbar */
+.navbar-active-link {
+  background-color: #2563eb !important; /* bg-blue-600 */
+  color: white !important;
+}
+
+/* Styling untuk dropdown menu di navbar - PERHATIAN: Jangan gunakan nama kelas ini di komponen lain untuk menghindari konflik CSS */
 .navbar-dropdown-menu {
   z-index: 1000 !important; /* Memastikan dropdown menu selalu di atas komponen lain */
   position: absolute !important;
@@ -173,17 +179,17 @@
 /* Memastikan dropdown menu selalu di atas komponen lain */
 .navbar, .navbar-container {
   position: relative;
-  z-index: 1000; /* Meningkatkan z-index navbar */
+  z-index: 1000; /* Memastikan z-index navbar lebih tinggi dari label-navbar */
 }
 
 .dropdown-container {
   position: relative;
-  z-index: 1001; /* Meningkatkan z-index container dropdown */
+  z-index: 1001; /* Memastikan z-index dropdown container lebih tinggi dari label-navbar */
 }
 
 .navbar-dropdown-menu {
   position: absolute !important;
-  z-index: 1002 !important; /* Memastikan z-index dropdown menu lebih tinggi dari semua komponen */
+  z-index: 1002 !important; /* Memastikan z-index dropdown menu lebih tinggi dari semua komponen termasuk label-navbar */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 

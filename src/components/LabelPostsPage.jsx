@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PostCardLabel from './PostCardLabel';
-import LabelNavbar from './LabelNavbar';
+import LabelSearchBar from './LabelSearchBar';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import Pagination from './Pagination';
 import './LabelPostsPage.css';
 import './Pagination.css';
-import { FaSearch } from 'react-icons/fa';
 import { getPostsByLabel, getAllLabels } from '../api/labelApi';
+import { Helmet } from 'react-helmet-async';
 
 const LabelPostsPage = () => {
   const { labelSlug } = useParams();
@@ -171,9 +173,10 @@ const LabelPostsPage = () => {
     }
   }, [searchTerm, posts]);
 
-  const handleLabelClick = (slug) => {
-    navigate(`/label/${slug}`);
-  };
+  // Fungsi ini tidak lagi digunakan karena LabelNavbar telah dihapus
+  // const handleLabelClick = (slug) => {
+  //   navigate(`/label/${slug}`);
+  // };
 
   const handlePageChange = (page) => {
     // Scroll ke atas halaman
@@ -189,9 +192,28 @@ const LabelPostsPage = () => {
 
   if (loading) {
     return (
-      <div className="label-posts-loading">
-        <div className="loading-spinner"></div>
-        <p>Memuat artikel...</p>
+      <div className="label-posts-container">
+        <div className="label-posts-header">
+          <Skeleton height={40} width={200} className="mb-4" />
+        </div>
+
+        {/* Featured Post Skeleton */}
+        <div className="featured-post-skeleton">
+          <Skeleton height={400} width="100%" className="mb-3" />
+          <Skeleton height={32} width="80%" className="mb-3" />
+          <Skeleton height={20} width="60%" className="mb-2" />
+          <Skeleton height={20} width="40%" className="mb-2" />
+        </div>
+
+        <div className="posts-grid">
+          {Array(9).fill(0).map((_, index) => (
+            <div key={index} className="post-card-skeleton">
+              <Skeleton height={200} width="100%" className="mb-2" />
+              <Skeleton height={24} width="80%" className="mb-2" />
+              <Skeleton height={16} width="60%" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -205,8 +227,26 @@ const LabelPostsPage = () => {
     );
   }
 
+  // SEO title and description
+  const seoTitle = label ? `${label.label} - Artikel Terbaru` : 'Semua Artikel Terbaru';
+  const seoDescription = label ? label.description : 'Kumpulan artikel terbaru dari berbagai kategori';
+
+  // Separate featured post (first/latest post) from the rest
+  const featuredPost = filteredPosts.length > 0 ? filteredPosts[0] : null;
+  const remainingPosts = filteredPosts.length > 0 ? filteredPosts.slice(1) : [];
+
   return (
     <div className="label-posts-container">
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        {featuredPost && featuredPost.image && (
+          <meta property="og:image" content={featuredPost.image} />
+        )}
+      </Helmet>
+
       <div className="label-posts-header">
         <h1 className="label-posts-title">
           {label ? label.label : 'Semua Artikel'}
@@ -216,23 +256,18 @@ const LabelPostsPage = () => {
         </p>
       </div>
 
-      <LabelNavbar
-        labels={labels}
-        currentLabel={labelSlug}
-        onLabelClick={handleLabelClick}
-      />
-
-      <div className="label-posts-search">
-        <div className="search-input-container">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Cari artikel..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="label-search-input"
-          />
-        </div>
+      <div className="search-section">
+        <LabelSearchBar
+          searchTerm={searchTerm}
+          selectedLabel={labelSlug}
+          labels={labels}
+          onSearch={(term, label) => {
+            setSearchTerm(term);
+            if (label && label !== labelSlug) {
+              navigate(`/label/${label}`);
+            }
+          }}
+        />
       </div>
 
       {filteredPosts.length === 0 ? (
@@ -246,8 +281,27 @@ const LabelPostsPage = () => {
         </div>
       ) : (
         <>
+          {/* Featured Post (Main Post) */}
+          {featuredPost && (
+            <div className="featured-post-container">
+              <PostCardLabel
+                key={featuredPost.id}
+                post={featuredPost}
+                isFeatured={true}
+              />
+            </div>
+          )}
+
+          {/* Section Title for Remaining Posts */}
+          {remainingPosts.length > 0 && (
+            <div className="section-title">
+              <h2>Artikel Lainnya</h2>
+            </div>
+          )}
+
+          {/* Grid for Remaining Posts */}
           <div className="posts-grid">
-            {filteredPosts.map(post => (
+            {remainingPosts.map(post => (
               <PostCardLabel
                 key={post.id}
                 post={post}

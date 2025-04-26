@@ -1,0 +1,34 @@
+#g_id_onload {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* Styling untuk container One Tap */
+.g_id_signin {
+  margin-top: 10px;
+}
+
+/* Styling untuk tombol One Tap */
+.g-signin2 {
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+/* Animasi untuk One Tap */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#g_id_onload {
+  animation: fadeIn 0.3s ease-out;
+}

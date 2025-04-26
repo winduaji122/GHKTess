@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaCloudUploadAlt, FaUser, FaCamera } from 'react-icons/fa';
-import { getImageUrl, validateImage } from '../../utils/imageHelper';
+import { getProfileImageUrl, validateImage } from '../../utils/imageHelper';
 import ImagePreview from './ImagePreview';
 import UploadProgress from './UploadProgress';
 import './ProfileImage.css';
@@ -18,28 +18,22 @@ const ProfileImage = ({
 
   // Menentukan URL gambar yang akan ditampilkan
   const imageUrl = useMemo(() => {
-    console.log('Determining image URL from:', { profileImage, previewImage });
-
     // Jika ada previewImage, gunakan itu
     if (previewImage) {
-      console.log('Using previewImage:', previewImage);
       return previewImage;
     }
 
     // Jika profileImage adalah File object (baru diupload)
     if (profileImage instanceof File) {
-      console.log('profileImage is File, creating object URL');
       const url = URL.createObjectURL(profileImage);
       return url;
     }
 
     // Jika profileImage adalah string (path)
     if (typeof profileImage === 'string') {
-      console.log('profileImage is string, using getImageUrl');
-      return getImageUrl(profileImage);
+      return getProfileImageUrl(profileImage);
     }
 
-    console.log('No valid image source found');
     return null;
   }, [profileImage, previewImage]);
 
@@ -97,7 +91,7 @@ const ProfileImage = ({
 
   // Fungsi crop telah dihapus
 
-  console.log('Rendering ProfileImage component with:', { profileImage, previewImage, uploadStatus });
+
 
   return (
     <div className="user-profile-image-section">
@@ -143,8 +137,7 @@ const ProfileImage = ({
           <div className="user-profile-image-preview-container">
             <ImagePreview
               src={imageUrl}
-              onError={(error) => {
-                console.error('Image load error:', error);
+              onError={() => {
                 toast.error('Gagal memuat gambar profil');
               }}
               isUploading={uploadStatus.isUploading}

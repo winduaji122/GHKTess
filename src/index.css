@@ -108,6 +108,12 @@ button:focus-visible {
 /* @tailwind components; */
 /* @tailwind utilities; */
 
+/* Global styles untuk avatar */
+.writer-like-avatar, .writer-liker-avatar, .writer-avatar, .writer-comment-avatar, .writer-avatar-fallback,
+.writer-like-avatar img, .writer-liker-avatar img, .writer-avatar img, .writer-comment-avatar img, .writer-avatar-img {
+  border: none !important;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -337,6 +343,8 @@ footer a:hover {
     padding-right: 10px;
   }
 }
+
+
 
 /* Memastikan footer selalu di bawah */
 .app-container {
