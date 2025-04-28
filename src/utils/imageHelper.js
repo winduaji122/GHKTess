@@ -196,6 +196,14 @@ export const getImageUrl = (imagePath, imageSource) => {
   if (path.startsWith('http')) {
     console.log('Path is already a full URL:', path);
 
+    // Jika URL menggunakan localhost, ganti dengan URL produksi
+    if (path.includes('localhost:5000')) {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+      const newPath = path.replace(/http:\/\/localhost:5000/g, apiUrl);
+      console.log('Replaced localhost URL with production URL:', newPath);
+      return newPath;
+    }
+
     // Periksa apakah ini adalah URL gambar profil yang salah (tanpa folder profiles/)
     if ((path.includes('/uploads/profile-') || path.includes('profile-')) && !path.includes('/uploads/profiles/')) {
       // Perbaiki URL dengan menambahkan folder profiles/
