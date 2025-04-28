@@ -24,6 +24,22 @@ export const getValidProfileUrl = (profilePath) => {
 
   // Jika sudah URL lengkap
   if (profilePath.startsWith('http')) {
+    // Jika URL menggunakan localhost, ganti dengan URL produksi
+    if (profilePath.includes('localhost:5000')) {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+      let newPath = profilePath.replace(/http:\/\/localhost:5000/g, apiUrl);
+
+      // Jika URL mengandung /uploads/ tapi tidak /profiles/ dan mengandung profile-
+      if (newPath.includes('/uploads/') && !newPath.includes('/profiles/') && newPath.includes('profile-')) {
+        newPath = newPath.replace('/uploads/', '/uploads/profiles/');
+        console.log('Fixed localhost URL path with profiles folder:', newPath);
+        return newPath;
+      }
+
+      console.log('Replaced localhost URL with production URL:', newPath);
+      return newPath;
+    }
+
     // Jika URL sudah benar (mengandung /uploads/profiles/)
     if (profilePath.includes('/uploads/profiles/')) {
       result = profilePath;
