@@ -172,6 +172,14 @@ function FullPostView() {
 
   const getImageUrl = useCallback((imagePath) => {
     if (!imagePath) return '/default-fallback-image.jpg';
+
+    // Jika URL menggunakan localhost, ganti dengan URL produksi
+    if (imagePath.startsWith('http') && imagePath.includes('localhost:5000')) {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+      return imagePath.replace(/http:\/\/localhost:5000/g, apiUrl);
+    }
+
+    // Jika sudah URL lengkap lainnya, gunakan langsung
     if (imagePath.startsWith('http')) return imagePath;
 
     // Fix double uploads in path
