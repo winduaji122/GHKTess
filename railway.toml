@@ -15,5 +15,5 @@ nodejs = { version = "18" }
 [variables]
 VITE_API_BASE_URL = "https://nodejs-production-0c33.up.railway.app"
 VITE_API_URL = "https://nodejs-production-0c33.up.railway.app"
-VITE_FRONTEND_URL = "https://frontend-production.up.railway.app"
-VITE_GOOGLE_REDIRECT_URI = "https://frontend-production.up.railway.app/oauth2callback"
+VITE_FRONTEND_URL = "https://react-frontend-production-c589.up.railway.app"
+VITE_GOOGLE_REDIRECT_URI = "https://react-frontend-production-c589.up.railway.app/oauth2callback"
