@@ -7,7 +7,8 @@ import {
   decodeToken as decodeJwtToken
 } from '../utils/tokenManager';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+// Base URL dari environment variable atau gunakan URL relatif untuk Netlify proxy
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // Tambahkan logging yang lebih detail untuk membantu debugging
 console.log('%c API Base URL being used: ' + BASE_URL, 'background: #222; color: #bada55; font-size: 14px; padding: 5px;');
@@ -18,44 +19,62 @@ console.log('Environment variables:', {
   PROD: import.meta.env.PROD
 });
 
-// Cek apakah server dapat diakses (menggunakan endpoint ping yang lebih sederhana)
-console.log('Checking backend connectivity with URL:', BASE_URL + '/ping');
-fetch(BASE_URL + '/ping', {
-  method: 'GET',
-  mode: 'cors',
-  headers: {
-    'Accept': 'text/plain'
-  }
-})
-  .then(response => {
-    if (response.ok) {
-      console.log('%c Backend server is reachable! ✅', 'background: green; color: white; font-size: 14px; padding: 5px;');
-      return response.text();
-    } else {
-      throw new Error(`Server responded with status: ${response.status}`);
-    }
-  })
-  .then(data => console.log('Server ping response:', data))
-  .catch(error => {
-    console.error('%c Backend server is NOT reachable! ❌', 'background: red; color: white; font-size: 14px; padding: 5px;');
-    console.error('Error connecting to backend:', error);
+// Log API configuration
+console.log('API Configuration:', {
+  BASE_URL,
+  TIMEOUT: import.meta.env.VITE_API_TIMEOUT || 15000,
+  ENV: import.meta.env.MODE,
+  FRONTEND_URL: import.meta.env.VITE_FRONTEND_URL
+});
 
-    // Coba endpoint alternatif
-    console.log('Trying alternative endpoint:', BASE_URL + '/api/health');
-    fetch(BASE_URL + '/api/health')
-      .then(response => {
-        if (response.ok) {
-          console.log('%c Backend server is reachable via /api/health! ✅', 'background: green; color: white; font-size: 14px; padding: 5px;');
-          return response.json();
-        } else {
-          throw new Error(`Server responded with status: ${response.status}`);
-        }
-      })
-      .then(data => console.log('Server health check:', data))
-      .catch(secondError => {
-        console.error('Error connecting to backend (second attempt):', secondError);
-      });
-  });
+// Try multiple endpoints to check backend connectivity
+const checkEndpoints = [
+  { url: '/cors-test', type: 'json' },
+  { url: '/ping', type: 'text' },
+  { url: '/api/health', type: 'json' }
+];
+
+// Function to try each endpoint
+const tryEndpoint = (index = 0) => {
+  if (index >= checkEndpoints.length) {
+    console.error('%c All backend connectivity checks failed! ❌', 'background: red; color: white; font-size: 14px; padding: 5px;');
+    return;
+  }
+
+  const endpoint = checkEndpoints[index];
+  const fullUrl = BASE_URL + endpoint.url;
+
+  console.log(`Trying endpoint ${index + 1}/${checkEndpoints.length}: ${fullUrl}`);
+
+  fetch(fullUrl, {
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+      'Accept': endpoint.type === 'json' ? 'application/json' : 'text/plain',
+      'Cache-Control': 'no-cache'
+    },
+    cache: 'no-store'
+  })
+    .then(response => {
+      if (response.ok) {
+        console.log(`%c Backend server is reachable via ${endpoint.url}! ✅`, 'background: green; color: white; font-size: 14px; padding: 5px;');
+        return endpoint.type === 'json' ? response.json() : response.text();
+      } else {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+    })
+    .then(data => {
+      console.log(`Server response from ${endpoint.url}:`, data);
+    })
+    .catch(error => {
+      console.error(`Error connecting to backend via ${endpoint.url}:`, error);
+      // Try next endpoint
+      tryEndpoint(index + 1);
+    });
+};
+
+// Start checking endpoints
+tryEndpoint();
 const DEFAULT_TIMEOUT = 15000;
 
 // Base config

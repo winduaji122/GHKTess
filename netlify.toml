@@ -3,6 +3,31 @@
   publish = "dist"
   command = "npm run build"
 
+# Proxy API requests to Railway backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://nodejs-production-0c33.up.railway.app/api/:splat"
+  status = 200
+  force = true
+  headers = {Access-Control-Allow-Origin = "*"}
+
+# Proxy ping requests to Railway backend
+[[redirects]]
+  from = "/ping"
+  to = "https://nodejs-production-0c33.up.railway.app/ping"
+  status = 200
+  force = true
+  headers = {Access-Control-Allow-Origin = "*"}
+
+# Proxy cors-test requests to Railway backend
+[[redirects]]
+  from = "/cors-test"
+  to = "https://nodejs-production-0c33.up.railway.app/cors-test"
+  status = 200
+  force = true
+  headers = {Access-Control-Allow-Origin = "*"}
+
+# Handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
