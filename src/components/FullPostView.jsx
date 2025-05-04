@@ -357,9 +357,6 @@ function FullPostView() {
     return false; // Mencegah browser membuka link di tab baru
   };
 
-
-
-
   return (
     <div className="full-post-container">
       <div className="full-post-content">
