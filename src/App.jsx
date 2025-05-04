@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { SpeedInsights } from '@vercel/speed-insights/react';
+// Removed Vercel Speed Insights import
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { api, refreshCsrfToken } from './api/auth';
@@ -467,7 +467,7 @@ function App() {
           </AuthProvider>
         </HelmetProvider>
       </Router>
-      <SpeedInsights />
+      {/* Removed Vercel Speed Insights component */}
     </GoogleOAuthProvider>
   );
 }
