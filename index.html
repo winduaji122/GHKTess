@@ -3,18 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Gema Hati Kudus - Portal Berita dan Informasi" />
     <meta name="google-signin-client_id" content="%VITE_GOOGLE_CLIENT_ID%">
     <meta name="google-signin-scope" content="profile email">
+    <meta name="theme-color" content="#000000" />
     <title>GHK</title>
     <link rel="icon" href="/favicon.png" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://accounts.google.com" />
+    <link rel="preconnect" href="%VITE_API_BASE_URL%" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <!-- Google One Tap Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="preload" href="/src/main.jsx" as="script">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root">
       <!-- Semua konten React akan dirender di sini, termasuk header, navbar, konten utama, dan footer -->
+      <!-- Loading indicator -->
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%;">
+        <div style="text-align: center;">
+          <h2>Memuat Gema Hati Kudus...</h2>
+          <p>Mohon tunggu sebentar</p>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -1,14 +1,11 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import LazyImage from './common/LazyImage';
 import './FeaturedPost.css';
 
 function FeaturedPost({ post }) {
-  useEffect(() => {
-    console.log('FeaturedPost rendered with post:', post);
-  }, [post]);
-
+  // Hapus log yang tidak perlu untuk meningkatkan performa
   if (!post || typeof post !== 'object') {
-    console.log('FeaturedPost received invalid post:', post);
     return null;
   }
 
@@ -44,23 +41,21 @@ function FeaturedPost({ post }) {
     return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
   };
 
-  console.log('Rendering FeaturedPost with:', {
-    id: post.id,
-    title: post.title,
-    image: post.image,
-    contentPreview: post.content ? post.content.substring(0, 50) : 'No content'
-  });
+  // Hapus log yang tidak perlu untuk meningkatkan performa
 
   return (
     <Link to={`/post/${post.id}`} className="featured-post">
       <div className="featured-image-container">
-        <img
+        <LazyImage
           src={getImageUrl(post.image)}
           alt={post.title}
           className="featured-image"
+          height="100%"
+          width="100%"
+          objectFit="cover"
+          priority={true} // Prioritaskan pemuatan gambar featured
           onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = '/default-fallback-image.jpg'; // Ganti dengan path gambar fallback Anda
+            console.error('Error loading featured image:', post.image);
           }}
         />
         <div className="featured-label">Headline</div>

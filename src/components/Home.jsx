@@ -17,7 +17,6 @@ function Home() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalPosts, setTotalPosts] = useState(0);
   const postsPerPage = 6;
 
   const fetchAllData = useCallback(async () => {
@@ -25,37 +24,46 @@ function Home() {
     setError(null);
 
     try {
-      // Prioritaskan permintaan penting terlebih dahulu
-      const postsData = await getAllPosts(currentPage, postsPerPage);
-
-      console.log('Posts data received:', postsData);
-
-      if (postsData?.posts && Array.isArray(postsData.posts)) {
-        setLatestPosts(postsData.posts);
-        setTotalPages(postsData.pagination?.totalPages || 1);
-        setTotalPosts(postsData.pagination?.totalCount || 0);
-      } else {
-        console.error('Invalid posts data structure:', postsData);
-      }
-
-      // Kemudian buat permintaan lain secara bersamaan dengan batasan
-      const [featuredPostData, spotlightData] = await Promise.all([
+      // Buat semua permintaan secara paralel untuk meningkatkan performa
+      const [postsData, featuredPostData, spotlightData] = await Promise.all([
+        getAllPosts(currentPage, postsPerPage),
         getFeaturedPosts(),
         getSpotlightPosts()
       ]);
 
+      // Proses data posts
+      if (postsData?.posts && Array.isArray(postsData.posts)) {
+        setLatestPosts(postsData.posts);
+        setTotalPages(postsData.pagination?.totalPages || 1);
+      } else {
+        console.error('Invalid posts data structure:', postsData);
+      }
+
+      // Proses data featured post
       if (featuredPostData?.success && featuredPostData?.data?.length > 0) {
         setFeaturedPost(featuredPostData.data[0]);
       } else {
         setFeaturedPost(null);
       }
 
+      // Proses data spotlight
       if (spotlightData) {
         setSpotlightPosts(spotlightData);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Gagal mengambil data. Silakan coba lagi nanti.');
+
+      // Jika terjadi error, coba ambil data secara terpisah untuk meningkatkan ketahanan
+      try {
+        const postsData = await getAllPosts(currentPage, postsPerPage);
+        if (postsData?.posts && Array.isArray(postsData.posts)) {
+          setLatestPosts(postsData.posts);
+          setTotalPages(postsData.pagination?.totalPages || 1);
+        }
+      } catch (postsError) {
+        console.error('Error fetching posts:', postsError);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,11 +73,12 @@ function Home() {
     fetchAllData();
   }, [fetchAllData]);
 
-  useEffect(() => {
-    console.log('Latest posts:', latestPosts);
-    console.log('Featured post:', featuredPost);
-    console.log('Spotlight posts:', spotlightPosts);
-  }, [latestPosts, featuredPost, spotlightPosts]);
+  // Hapus log yang tidak perlu untuk meningkatkan performa
+  // useEffect(() => {
+  //   console.log('Latest posts:', latestPosts);
+  //   console.log('Featured post:', featuredPost);
+  //   console.log('Spotlight posts:', spotlightPosts);
+  // }, [latestPosts, featuredPost, spotlightPosts]);
 
   const handlePageChange = useCallback((pageNumber) => {
     setCurrentPage(pageNumber);

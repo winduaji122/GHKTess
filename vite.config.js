@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
+// Komentar: Plugin compression akan ditambahkan setelah instalasi
+// import viteCompression from 'vite-plugin-compression'
 
 // Plugin untuk mengganti variabel lingkungan di HTML
 function htmlEnvPlugin() {
@@ -22,7 +24,17 @@ function htmlEnvPlugin() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), htmlEnvPlugin()],
+  plugins: [
+    react(),
+    htmlEnvPlugin(),
+    // Komentar: Plugin compression akan ditambahkan setelah instalasi
+    // viteCompression({
+    //   algorithm: 'gzip',
+    //   ext: '.gz',
+    //   threshold: 10240, // Hanya kompres file yang lebih besar dari 10kb
+    //   deleteOriginFile: false
+    // })
+  ],
   server: {
     port: 5173,
     proxy: {
@@ -64,13 +76,21 @@ export default defineConfig({
   //   }
   // },
   build: {
-    sourcemap: true,
+    sourcemap: false, // Matikan sourcemap untuk produksi
+    minify: 'esbuild', // Gunakan esbuild untuk minifikasi yang lebih cepat
+    target: 'es2015', // Target ES2015 untuk kompatibilitas browser yang lebih luas
     chunkSizeWarningLimit: 800, // Meningkatkan batas peringatan ukuran chunk
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
+    cssCodeSplit: true, // Pisahkan CSS ke dalam file terpisah
+    reportCompressedSize: false, // Matikan pelaporan ukuran terkompresi untuk build yang lebih cepat
     rollupOptions: {
       output: {
+        // Mengoptimalkan nama file untuk caching yang lebih baik
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: (id) => {
           // React dan ekosistemnya
           if (id.includes('node_modules/react') ||

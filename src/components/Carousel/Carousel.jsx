@@ -133,6 +133,7 @@ const Carousel = () => {
                 height="400px"
                 width="100%"
                 objectFit="cover"
+                priority={true} // Prioritaskan pemuatan gambar carousel
                 onError={(e) => {
                   if (!e || !e.target) {
                     console.error('Error event or target is undefined');
