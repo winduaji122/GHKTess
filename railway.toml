@@ -1,16 +1,12 @@
 [build]
-builder = "nixpacks"
-buildCommand = "npm install && npm run build"
+builder = "DOCKERFILE"
+watchPatterns = ["Dockerfile"]
 
 [deploy]
-startCommand = "npm run preview"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 5
-
-[nixpacks]
-nodejs = { version = "18" }
 
 [variables]
 VITE_API_BASE_URL = "https://nodejs-production-0c33.up.railway.app"
