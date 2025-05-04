@@ -18,20 +18,43 @@ console.log('Environment variables:', {
   PROD: import.meta.env.PROD
 });
 
-// Cek apakah server dapat diakses
-fetch(BASE_URL + '/api/health')
+// Cek apakah server dapat diakses (menggunakan endpoint ping yang lebih sederhana)
+console.log('Checking backend connectivity with URL:', BASE_URL + '/ping');
+fetch(BASE_URL + '/ping', {
+  method: 'GET',
+  mode: 'cors',
+  headers: {
+    'Accept': 'text/plain'
+  }
+})
   .then(response => {
     if (response.ok) {
       console.log('%c Backend server is reachable! ✅', 'background: green; color: white; font-size: 14px; padding: 5px;');
-      return response.json();
+      return response.text();
     } else {
       throw new Error(`Server responded with status: ${response.status}`);
     }
   })
-  .then(data => console.log('Server health check:', data))
+  .then(data => console.log('Server ping response:', data))
   .catch(error => {
     console.error('%c Backend server is NOT reachable! ❌', 'background: red; color: white; font-size: 14px; padding: 5px;');
     console.error('Error connecting to backend:', error);
+
+    // Coba endpoint alternatif
+    console.log('Trying alternative endpoint:', BASE_URL + '/api/health');
+    fetch(BASE_URL + '/api/health')
+      .then(response => {
+        if (response.ok) {
+          console.log('%c Backend server is reachable via /api/health! ✅', 'background: green; color: white; font-size: 14px; padding: 5px;');
+          return response.json();
+        } else {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+      })
+      .then(data => console.log('Server health check:', data))
+      .catch(secondError => {
+        console.error('Error connecting to backend (second attempt):', secondError);
+      });
   });
 const DEFAULT_TIMEOUT = 15000;
 
