@@ -66,6 +66,9 @@ export default defineConfig({
   build: {
     sourcemap: true,
     chunkSizeWarningLimit: 800, // Meningkatkan batas peringatan ukuran chunk
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -120,5 +123,9 @@ export default defineConfig({
         }
       }
     }
+  },
+  // Tambahkan konfigurasi untuk Vercel
+  vercel: {
+    enabled: true
   }
 })
