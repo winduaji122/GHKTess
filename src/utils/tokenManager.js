@@ -292,12 +292,26 @@ export const refreshToken = async (silent = false) => {
         console.log('Calling refresh token endpoint: /api/auth/refresh-token');
         let response;
 
-        if (isVercelDeployment && storedRefreshToken) {
-          // Untuk deployment Vercel, gunakan token refresh dari localStorage
-          console.log('Using stored refresh token for Vercel deployment');
-          response = await axios.post('/api/auth/refresh-token',
-            { refreshToken: storedRefreshToken },
-            {
+        try {
+          if (isVercelDeployment && storedRefreshToken) {
+            // Untuk deployment Vercel, gunakan token refresh dari localStorage
+            console.log('Using stored refresh token for Vercel deployment');
+            response = await axios.post('/api/auth/refresh-token',
+              { refreshToken: storedRefreshToken },
+              {
+                withCredentials: true,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache',
+                  'X-Client-ID': generateClientId(),
+                  'X-User-Identity': userIdentity.displayString
+                }
+              }
+            );
+          } else {
+            // Untuk deployment lain, gunakan cookie
+            response = await axios.get('/api/auth/refresh-token', {
               withCredentials: true,
               headers: {
                 'Cache-Control': 'no-cache',
@@ -305,19 +319,25 @@ export const refreshToken = async (silent = false) => {
                 'X-Client-ID': generateClientId(),
                 'X-User-Identity': userIdentity.displayString
               }
-            }
-          );
-        } else {
-          // Untuk deployment lain, gunakan cookie
-          response = await axios.get('/api/auth/refresh-token', {
-            withCredentials: true,
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache',
-              'X-Client-ID': generateClientId(),
-              'X-User-Identity': userIdentity.displayString
-            }
-          });
+            });
+          }
+        } catch (error) {
+          // Jika POST gagal dengan 405 Method Not Allowed, coba dengan GET
+          if (error.response && error.response.status === 405 && isVercelDeployment && storedRefreshToken) {
+            console.log('POST method not allowed, trying GET with query parameter');
+            response = await axios.get(`/api/auth/refresh-token?refreshToken=${encodeURIComponent(storedRefreshToken)}`, {
+              withCredentials: true,
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'X-Client-ID': generateClientId(),
+                'X-User-Identity': userIdentity.displayString
+              }
+            });
+          } else {
+            // Jika bukan error 405 atau GET juga gagal, lempar error
+            throw error;
+          }
         }
 
         if (!response.data || !response.data.success) {
@@ -363,6 +383,27 @@ export const refreshToken = async (silent = false) => {
           data: error.response?.data,
           message: error.message
         });
+
+        // Log informasi tambahan untuk debugging
+        if (error.response) {
+          console.error(`Status: ${error.response.status}`);
+          console.error(`Headers:`, error.response.headers);
+          console.error(`Data:`, error.response.data);
+        }
+
+        // Jika error terkait dengan Vercel, tambahkan informasi khusus
+        if (window.location.hostname.includes('vercel.app')) {
+          console.log('Vercel deployment detected, consider using localStorage for token storage');
+
+          // Jika tidak ada refreshToken di localStorage, sarankan untuk login ulang
+          if (!localStorage.getItem('refreshToken')) {
+            console.log('No refresh token found in localStorage, user may need to login again');
+            // Redirect ke halaman login
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 2000);
+          }
+        }
 
         // Hapus token dan user data jika refresh gagal
         clearTokenState();

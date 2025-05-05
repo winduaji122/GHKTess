@@ -639,6 +639,13 @@ export default function Login() {
                   const result = await googleLogin(credentialResponse.credential);
 
                   if (result.success) {
+                    // Simpan refreshToken jika ada (untuk deployment Vercel)
+                    if (result.refreshToken) {
+                      console.log('Storing refresh token from Google login response');
+                      localStorage.setItem('refreshToken', result.refreshToken);
+                      localStorage.setItem('auth_persistent', 'true'); // Enable persistent login
+                    }
+
                     // Tampilkan toast sukses dengan styling yang lebih menarik
                     toast.success('Login berhasil! Selamat datang kembali.', {
                       icon: '👋',
@@ -665,7 +672,39 @@ export default function Login() {
                   }
                 } catch (error) {
                   console.error('Google login error:', error);
-                  toast.error('Login dengan Google gagal. Silakan coba lagi.');
+
+                  // Log informasi tambahan untuk debugging
+                  if (error.response) {
+                    console.error(`Status: ${error.response.status}`);
+                    console.error(`Headers:`, error.response.headers);
+                    console.error(`Data:`, error.response.data);
+                  }
+
+                  // Pesan error yang lebih informatif
+                  let errorMessage = 'Login dengan Google gagal. ';
+
+                  if (error.message === 'Network Error') {
+                    errorMessage += 'Terjadi masalah koneksi. Periksa koneksi internet Anda.';
+                  } else if (error.response && error.response.status === 405) {
+                    errorMessage += 'Metode tidak diizinkan. Coba refresh halaman.';
+                  } else if (error.response && error.response.status === 401) {
+                    errorMessage += 'Autentikasi gagal. Coba login kembali.';
+                  } else if (error.message.includes('timeout')) {
+                    errorMessage += 'Waktu permintaan habis. Server mungkin sedang sibuk.';
+                  } else {
+                    errorMessage += 'Silakan coba lagi.';
+                  }
+
+                  toast.error(errorMessage);
+
+                  // Jika error timeout, sarankan untuk mencoba lagi
+                  if (error.message.includes('timeout')) {
+                    setTimeout(() => {
+                      toast.info('Coba login kembali dalam beberapa saat', {
+                        autoClose: 10000
+                      });
+                    }, 2000);
+                  }
                 } finally {
                   setIsLoading(false);
                 }
