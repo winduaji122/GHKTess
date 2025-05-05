@@ -1,48 +1,55 @@
 /* CSS untuk memperbaiki transisi carousel di React Bootstrap */
 
-/* Konfigurasi transisi carousel */
+/* Konfigurasi transisi carousel dengan optimasi performa */
 .carousel-item {
-  transition: transform 0.6s ease-in-out !important;
-  -webkit-backface-visibility: visible !important;
-  backface-visibility: visible !important;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  transition: transform 0.4s ease-out !important;
+  will-change: transform;
+  contain: content;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
-/* Mengatur arah transisi */
+/* Mengatur arah transisi dengan optimasi performa */
 .carousel-item-next:not(.carousel-item-start) {
   transform: translateX(100%) !important;
+  will-change: transform;
 }
 
 .carousel-item-prev:not(.carousel-item-end) {
   transform: translateX(-100%) !important;
+  will-change: transform;
 }
 
-.carousel-item-next.carousel-item-start {
-  transform: translateX(0) !important;
-}
-
+.carousel-item-next.carousel-item-start,
 .carousel-item-prev.carousel-item-end {
   transform: translateX(0) !important;
+  will-change: transform;
 }
 
 .active.carousel-item-start {
   transform: translateX(-100%) !important;
+  will-change: transform;
 }
 
 .active.carousel-item-end {
   transform: translateX(100%) !important;
+  will-change: transform;
 }
 
-/* Kontrol carousel */
+/* Kontrol carousel dengan optimasi performa */
 .carousel-control-prev,
 .carousel-control-next {
-  width: 15%;
-  opacity: 0.5;
+  width: 10%;
+  opacity: 0.6;
   z-index: 20;
   transition: opacity 0.15s ease;
+  background: linear-gradient(to right, rgba(0,0,0,0.3), transparent);
+  backdrop-filter: blur(0px);
+}
+
+.carousel-control-next {
+  background: linear-gradient(to left, rgba(0,0,0,0.3), transparent);
 }
 
 .carousel-control-prev:hover,
@@ -54,12 +61,13 @@
 .carousel-control-next-icon {
   width: 2rem;
   height: 2rem;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
 }
 
-/* Indikator carousel */
+/* Indikator carousel dengan optimasi performa */
 .carousel-indicators {
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   left: 0;
   right: 0;
   z-index: 15;
@@ -68,55 +76,56 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  pointer-events: none; /* Mencegah indikator menangkap event mouse */
 }
 
 .carousel-indicators [data-bs-target] {
   box-sizing: border-box;
-  width: 12px;
-  height: 12px;
-  margin: 0 5px;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.6);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  opacity: 1;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  opacity: 0.8;
+  pointer-events: auto; /* Mengaktifkan event mouse hanya pada indikator */
 }
 
 .carousel-indicators .active {
   background-color: #fff;
   transform: scale(1.2);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 
-/* Caption carousel */
-.carousel-caption {
-  width: 70%;
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
-}
-
-/* Memperbaiki tampilan carousel selama transisi */
+/* Memperbaiki tampilan carousel selama transisi dengan optimasi performa */
 .carousel-inner {
   overflow: hidden;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-  -webkit-backface-visibility: visible !important;
-  backface-visibility: visible !important;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
+  contain: content;
+  will-change: transform;
 }
 
-.carousel-inner img {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+/* Optimasi gambar carousel */
+.writer-carousel-lazy-image {
+  contain: content;
+  will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* Memastikan tidak ada efek buram selama transisi */
-.carousel-item img {
-  transition: none !important;
-  -webkit-filter: blur(0) !important;
-  filter: blur(0) !important;
+/* Optimasi placeholder */
+.writer-carousel-image-placeholder {
+  background-color: #f0f0f0;
+  contain: strict;
+}
+
+/* Optimasi caption */
+.writer-carousel-caption {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: opacity;
+  contain: content;
 }

@@ -444,6 +444,44 @@ function AppContent() {
   );
 }
 
+// Fungsi untuk preload gambar carousel
+const preloadCarouselImages = async () => {
+  try {
+    // Hanya preload di halaman utama
+    if (window.location.pathname === '/') {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/carousel?_t=${Date.now()}`);
+      const data = await response.json();
+
+      if (data && data.success && data.slides && data.slides.length > 0) {
+        // Preload hanya 2 slide pertama untuk performa
+        const slidesToPreload = data.slides.slice(0, 2);
+
+        // Preload gambar secara asynchronous
+        slidesToPreload.forEach(slide => {
+          if (slide.image_url) {
+            const img = new Image();
+            let imageUrl = slide.image_url;
+
+            // Tambahkan domain jika URL relatif
+            if (!imageUrl.startsWith('http')) {
+              if (slide.image_source === 'carousel') {
+                imageUrl = `${apiUrl}/uploads/carousel/${imageUrl.split('/').pop()}`;
+              } else {
+                imageUrl = `${apiUrl}/uploads/${imageUrl.split('/').pop()}`;
+              }
+            }
+
+            img.src = imageUrl;
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to preload carousel images:', error);
+  }
+};
+
 function App() {
   // Log Client ID dan origin untuk debugging
   console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
@@ -453,6 +491,16 @@ function App() {
   // Tambahkan variabel untuk Client ID agar lebih mudah di-debug
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   console.log('App component - Using Google Client ID:', googleClientId);
+
+  // Preload carousel images setelah komponen dimuat
+  useEffect(() => {
+    // Gunakan requestIdleCallback jika tersedia, atau setTimeout sebagai fallback
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => preloadCarouselImages());
+    } else {
+      setTimeout(preloadCarouselImages, 1000);
+    }
+  }, []);
 
   return (
     <GoogleOAuthProvider clientId={googleClientId} onScriptLoadError={(error) => {
