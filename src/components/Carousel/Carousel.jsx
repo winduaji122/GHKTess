@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Carousel as BootstrapCarousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
@@ -34,24 +34,32 @@ const Carousel = () => {
     }
   }, [navigate]);
 
-  // Fungsi untuk mengambil data carousel dengan caching
+  // Fungsi untuk mengambil data carousel dengan caching yang dioptimalkan
   const fetchCarouselSlides = useCallback(async (bypassCache = false) => {
     try {
-      setLoading(true);
+      // Hanya set loading jika tidak ada slides yang ditampilkan
+      if (slides.length === 0) {
+        setLoading(true);
+      }
 
       // Cek cache terlebih dahulu jika tidak bypass
       if (!bypassCache) {
-        const cachedData = localStorage.getItem(CAROUSEL_CACHE_KEY);
-        if (cachedData) {
-          const { data, timestamp } = JSON.parse(cachedData);
-          const now = Date.now();
+        try {
+          const cachedData = localStorage.getItem(CAROUSEL_CACHE_KEY);
+          if (cachedData) {
+            const { data, timestamp } = JSON.parse(cachedData);
+            const now = Date.now();
 
-          // Gunakan cache jika belum kedaluwarsa
-          if (now - timestamp < CAROUSEL_CACHE_EXPIRY && data && data.length > 0) {
-            setSlides(data);
-            setLoading(false);
-            return;
+            // Gunakan cache jika belum kedaluwarsa
+            if (now - timestamp < CAROUSEL_CACHE_EXPIRY && data && data.length > 0) {
+              setSlides(data);
+              setLoading(false);
+              return;
+            }
           }
+        } catch (cacheError) {
+          // Tangani error cache tanpa mengganggu alur utama
+          localStorage.removeItem(CAROUSEL_CACHE_KEY);
         }
       }
 
@@ -61,39 +69,93 @@ const Carousel = () => {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         },
-        timeout: 3000 // 3 detik timeout
+        timeout: 5000 // Tingkatkan timeout menjadi 5 detik
       });
 
       if (response.data && response.data.success) {
-        const activeSlides = response.data.slides.filter(slide => slide.active !== false);
+        // Filter slide yang aktif dan valid
+        const activeSlides = response.data.slides
+          .filter(slide => slide && slide.active !== false)
+          .map(slide => ({
+            ...slide,
+            // Pastikan id selalu ada untuk optimasi rendering
+            id: slide.id || `slide-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
+          }));
 
-        // Simpan ke cache
-        localStorage.setItem(CAROUSEL_CACHE_KEY, JSON.stringify({
-          data: activeSlides,
-          timestamp: Date.now()
-        }));
+        // Simpan ke cache hanya jika ada slides
+        if (activeSlides.length > 0) {
+          try {
+            localStorage.setItem(CAROUSEL_CACHE_KEY, JSON.stringify({
+              data: activeSlides,
+              timestamp: Date.now()
+            }));
+          } catch (storageError) {
+            // Tangani error storage tanpa mengganggu alur utama
+          }
 
-        setSlides(activeSlides);
+          setSlides(activeSlides);
+          setError(null); // Reset error jika berhasil
+        } else {
+          // Jika tidak ada slides aktif, gunakan cache jika ada
+          const cachedData = localStorage.getItem(CAROUSEL_CACHE_KEY);
+          if (cachedData) {
+            try {
+              const { data } = JSON.parse(cachedData);
+              if (data && data.length > 0) {
+                setSlides(data);
+                return;
+              }
+            } catch (parseError) {
+              // Tangani error parsing tanpa mengganggu alur utama
+            }
+          }
+
+          setSlides([]);
+        }
       } else {
         setError('Gagal memuat slide carousel');
+
+        // Gunakan cache jika ada error
+        const cachedData = localStorage.getItem(CAROUSEL_CACHE_KEY);
+        if (cachedData) {
+          try {
+            const { data } = JSON.parse(cachedData);
+            if (data && data.length > 0) {
+              setSlides(data);
+              return;
+            }
+          } catch (parseError) {
+            // Tangani error parsing tanpa mengganggu alur utama
+          }
+        }
+
         setSlides([]);
       }
     } catch (err) {
       setError('Terjadi kesalahan saat memuat slide carousel');
-      setSlides([]);
 
       // Coba gunakan cache jika ada error, bahkan jika sudah kedaluwarsa
       const cachedData = localStorage.getItem(CAROUSEL_CACHE_KEY);
       if (cachedData) {
-        const { data } = JSON.parse(cachedData);
-        if (data && data.length > 0) {
-          setSlides(data);
+        try {
+          const { data } = JSON.parse(cachedData);
+          if (data && data.length > 0) {
+            setSlides(data);
+            return;
+          }
+        } catch (parseError) {
+          // Tangani error parsing tanpa mengganggu alur utama
         }
+      }
+
+      // Hanya set slides kosong jika tidak ada cache
+      if (slides.length === 0) {
+        setSlides([]);
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [slides.length]);
 
   // Effect untuk memuat data carousel
   useEffect(() => {
@@ -110,61 +172,80 @@ const Carousel = () => {
     };
   }, [fetchCarouselSlides]);
 
-  // Memoize URL gambar untuk menghindari perhitungan berulang
+  // Memoize URL gambar dengan implementasi yang lebih efisien
   const getProcessedImageUrl = useCallback((slide) => {
-    if (!slide || !slide.image_url) return null;
-    return getImageUrl(slide.image_url, slide.image_source);
+    if (!slide || !slide.image_url) {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      return `${apiUrl}/uploads/default-image.jpg`;
+    }
+
+    // Jika slide memiliki cached_url yang sudah diproses sebelumnya, gunakan langsung
+    if (slide.cached_url) return slide.cached_url;
+
+    // Gunakan fungsi getImageUrl dengan parameter yang benar
+    const imageUrl = getImageUrl(slide.image_url, slide.image_source);
+
+    // Cache URL yang sudah diproses ke dalam objek slide untuk penggunaan berikutnya
+    slide.cached_url = imageUrl;
+
+    return imageUrl;
   }, []);
 
-  // Handler error gambar yang disederhanakan
+  // Handler error gambar yang dioptimalkan
   const handleImageError = useCallback((e) => {
     if (!e || !e.target) return;
 
     const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-    // Langsung gunakan fallback image
+    // Gunakan fallback image dan hapus handler error untuk mencegah loop
     e.target.src = `${apiUrl}/uploads/default-image.jpg`;
+    e.target.onerror = null;
   }, []);
 
-  // Render carousel item sebagai komponen terpisah untuk optimasi
-  const CarouselItem = useCallback(({ slide, index }) => (
-    <BootstrapCarousel.Item key={slide.id || index}>
-      <div className="writer-carousel-image-container">
-        <LazyImage
-          src={getProcessedImageUrl(slide)}
-          alt={slide.title || 'Carousel slide'}
-          className="writer-carousel-lazy-image"
-          height="400px"
-          width="100%"
-          objectFit="cover"
-          priority={true} // Prioritaskan pemuatan gambar carousel
-          onError={handleImageError}
-          customPlaceholder={
-            <div className="writer-carousel-image-placeholder">
-              <Skeleton height="400px" width="100%" />
-            </div>
-          }
-        />
-        <div className="writer-carousel-caption">
-          <h3>{slide.title}</h3>
-          <p>{slide.description}</p>
-          <button
-            onClick={() => handleSlideClick(slide)}
-            className="writer-carousel-button"
-          >
-            {slide.button_text || 'Selengkapnya'}
-          </button>
-        </div>
-      </div>
-    </BootstrapCarousel.Item>
-  ), [getProcessedImageUrl, handleImageError, handleSlideClick]);
+  // Render carousel item sebagai komponen terpisah dengan optimasi performa
+  const CarouselItem = useCallback(({ slide, index }) => {
+    // Pre-compute image URL untuk menghindari perhitungan berulang
+    const imageUrl = getProcessedImageUrl(slide);
 
-  // Render skeleton loader
+    return (
+      <BootstrapCarousel.Item key={slide.id || index}>
+        <div className="writer-carousel-image-container">
+          <LazyImage
+            src={imageUrl}
+            alt={slide.title || 'Carousel slide'}
+            className="writer-carousel-lazy-image"
+            height="400px"
+            width="100%"
+            objectFit="cover"
+            priority={index < 2} // Prioritaskan hanya 2 slide pertama untuk performa
+            onError={handleImageError}
+            customPlaceholder={
+              <div className="writer-carousel-image-placeholder">
+                <Skeleton height="400px" width="100%" enableAnimation={index < 2} />
+              </div>
+            }
+          />
+          <div className="writer-carousel-caption">
+            <h3>{slide.title}</h3>
+            <p>{slide.description}</p>
+            <button
+              onClick={() => handleSlideClick(slide)}
+              className="writer-carousel-button"
+            >
+              {slide.button_text || 'Selengkapnya'}
+            </button>
+          </div>
+        </div>
+      </BootstrapCarousel.Item>
+    );
+  }, [getProcessedImageUrl, handleImageError, handleSlideClick]);
+
+  // Render skeleton loader dengan optimasi performa
   if (loading && slides.length === 0) {
     return (
       <div className="writer-carousel-container">
         <div className="writer-carousel-skeleton">
-          <Skeleton height={400} width="100%" />
+          <Skeleton height={400} width="100%" enableAnimation={true} />
         </div>
       </div>
     );
@@ -180,21 +261,24 @@ const Carousel = () => {
     return null;
   }
 
-  // Render carousel dengan slides yang sudah difilter
+  // Batasi jumlah slide untuk performa yang lebih baik
+  const limitedSlides = slides.length > 5 ? slides.slice(0, 5) : slides;
+
+  // Render carousel dengan slides yang sudah difilter dan dibatasi
   return (
     <div className="writer-carousel-container">
       <BootstrapCarousel
         slide={true}
-        indicators={true}
-        controls={true}
+        indicators={limitedSlides.length > 1} // Tampilkan indikator hanya jika ada lebih dari 1 slide
+        controls={limitedSlides.length > 1} // Tampilkan kontrol hanya jika ada lebih dari 1 slide
         interval={5000}
-        pause={false}
+        pause="hover" // Pause saat hover untuk UX yang lebih baik
         touch={true}
         wrap={true}
       >
-        {slides.map((slide, index) => (
+        {limitedSlides.map((slide, index) => (
           <CarouselItem
-            key={slide.id || index}
+            key={slide.id || `slide-${index}`}
             slide={slide}
             index={index}
           />
