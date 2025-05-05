@@ -293,26 +293,49 @@ export const refreshToken = async (silent = false) => {
         let response;
 
         try {
+          // Tambahkan baseURL ke konfigurasi
+          const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://nodejs-production-0c33.up.railway.app';
+
           if (isVercelDeployment && storedRefreshToken) {
             // Untuk deployment Vercel, gunakan token refresh dari localStorage
             console.log('Using stored refresh token for Vercel deployment');
-            response = await axios.post('/api/auth/refresh-token',
-              { refreshToken: storedRefreshToken },
-              {
+
+            // Coba dengan GET terlebih dahulu untuk menghindari masalah CORS dengan POST
+            try {
+              console.log('Trying GET method first with query parameter');
+              response = await axios.get(`${baseURL}/api/auth/refresh-token?refreshToken=${encodeURIComponent(storedRefreshToken)}`, {
                 withCredentials: true,
+                timeout: 30000, // 30 detik timeout
                 headers: {
-                  'Content-Type': 'application/json',
                   'Cache-Control': 'no-cache',
                   'Pragma': 'no-cache',
                   'X-Client-ID': generateClientId(),
                   'X-User-Identity': userIdentity.displayString
                 }
-              }
-            );
+              });
+            } catch (getError) {
+              console.log('GET method failed, trying POST method', getError);
+              // Jika GET gagal, coba dengan POST
+              response = await axios.post(`${baseURL}/api/auth/refresh-token`,
+                { refreshToken: storedRefreshToken },
+                {
+                  withCredentials: true,
+                  timeout: 30000, // 30 detik timeout
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'X-Client-ID': generateClientId(),
+                    'X-User-Identity': userIdentity.displayString
+                  }
+                }
+              );
+            }
           } else {
             // Untuk deployment lain, gunakan cookie
-            response = await axios.get('/api/auth/refresh-token', {
+            response = await axios.get(`${baseURL}/api/auth/refresh-token`, {
               withCredentials: true,
+              timeout: 30000, // 30 detik timeout
               headers: {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache',
@@ -322,28 +345,38 @@ export const refreshToken = async (silent = false) => {
             });
           }
         } catch (error) {
-          // Jika POST gagal dengan 405 Method Not Allowed, coba dengan GET
-          if (error.response && error.response.status === 405 && isVercelDeployment && storedRefreshToken) {
-            console.log('POST method not allowed, trying GET with query parameter');
-            response = await axios.get(`/api/auth/refresh-token?refreshToken=${encodeURIComponent(storedRefreshToken)}`, {
-              withCredentials: true,
-              headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
-                'X-Client-ID': generateClientId(),
-                'X-User-Identity': userIdentity.displayString
-              }
-            });
+          console.error('All refresh token attempts failed:', error);
+
+          // Log informasi detail untuk debugging
+          if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+            console.error('Response data:', error.response.data);
+          } else if (error.request) {
+            console.error('No response received:', error.request);
           } else {
-            // Jika bukan error 405 atau GET juga gagal, lempar error
-            throw error;
+            console.error('Error setting up request:', error.message);
           }
+
+          // Lempar error dengan informasi yang lebih jelas
+          throw new Error(`Refresh token failed: ${error.message}`)
         }
 
-        if (!response.data || !response.data.success) {
-          throw new Error(`[${userIdentity.displayString}] Refresh token gagal: Respons tidak valid`);
+        // Log respons untuk debugging
+        console.log('Refresh token response:', response.data);
+
+        // Validasi respons dengan penanganan error yang lebih baik
+        if (!response.data) {
+          throw new Error(`[${userIdentity.displayString}] Refresh token gagal: Tidak ada data dalam respons`);
         }
 
+        // Cek apakah respons berhasil
+        if (!response.data.success) {
+          console.error('Refresh token response error:', response.data);
+          throw new Error(`[${userIdentity.displayString}] Refresh token gagal: ${response.data.message || 'Respons tidak valid'}`);
+        }
+
+        // Ekstrak data dari respons
         const { accessToken, refreshToken, user } = response.data;
 
         if (!accessToken) {
