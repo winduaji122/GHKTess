@@ -636,9 +636,16 @@ export default function Login() {
                   sessionStorage.setItem('login_redirect_url', window.location.href);
 
                   // Panggil API untuk login dengan Google
+                  console.log('Received Google credential, calling googleLogin...');
+                  setIsLoading(true);
+
+                  // Tambahkan timeout yang lebih lama untuk Google login
                   const result = await googleLogin(credentialResponse.credential);
+                  console.log('Google login result:', result);
 
                   if (result.success) {
+                    console.log('Google login successful');
+
                     // Simpan refreshToken jika ada (untuk deployment Vercel)
                     if (result.refreshToken) {
                       console.log('Storing refresh token from Google login response');

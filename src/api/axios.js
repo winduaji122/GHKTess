@@ -75,7 +75,7 @@ const tryEndpoint = (index = 0) => {
 
 // Start checking endpoints
 tryEndpoint();
-const DEFAULT_TIMEOUT = 15000;
+const DEFAULT_TIMEOUT = 30000; // Meningkatkan timeout menjadi 30 detik untuk mengatasi masalah koneksi lambat
 
 // Base config
 const axiosConfig = {

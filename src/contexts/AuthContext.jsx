@@ -540,12 +540,25 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = useCallback(async (credential, role = 'user') => {
     try {
       console.log('Google login with role:', role);
-      const response = await api.post('/api/auth/google-login', {
-        token: credential,
-        role
-      });
+
+      // Tambahkan timeout yang lebih lama untuk Google login
+      const response = await api.post('/api/auth/google-login',
+        {
+          token: credential,
+          role
+        },
+        {
+          timeout: 60000, // 60 detik timeout khusus untuk Google login
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }
+      );
 
       if (response.data.accessToken) {
+        console.log('Google login successful, received tokens');
         // Simpan accessToken dan refreshToken (jika ada) menggunakan setAccessToken
         setAccessToken(response.data.accessToken, response.data.refreshToken);
 
