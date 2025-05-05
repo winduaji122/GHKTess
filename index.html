@@ -18,18 +18,14 @@
     <!-- Preload critical assets -->
     <link rel="preload" href="/src/index.css" as="style">
     <link rel="preload" href="/src/main.jsx" as="script">
+    <link rel="preload" href="/src/components/Carousel/Carousel.css" as="style">
+    <link rel="preload" href="/src/components/Carousel/carousel-fix.css" as="style">
+    <link rel="preload" href="/src/styles/lazyImage.css" as="style">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root">
       <!-- Semua konten React akan dirender di sini, termasuk header, navbar, konten utama, dan footer -->
-      <!-- Loading indicator -->
-      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%;">
-        <div style="text-align: center;">
-          <h2>Memuat Gema Hati Kudus...</h2>
-          <p>Mohon tunggu sebentar</p>
-        </div>
-      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

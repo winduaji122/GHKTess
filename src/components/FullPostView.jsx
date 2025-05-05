@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPublicPostBySlug, incrementViews } from '../api/postApi';
 import { FaTags, FaHome, FaChevronRight, FaUser, FaCalendarAlt, FaFacebookF, FaWhatsapp, FaEnvelope, FaLink, FaTwitter } from 'react-icons/fa';
@@ -8,7 +8,6 @@ import LazyImage from './common/LazyImage';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import RelatedPostWidget from './RelatedPostWidget';
-import { navigation } from '../config/navigation';
 import NotFound from './NotFound';
 import PostEngagement from './Comments/PostEngagement';
 import { toast } from 'react-toastify';
@@ -28,67 +27,69 @@ function FullPostView() {
   const { slugOrId } = useParams();
   const navigate = useNavigate();
   // Buat ref di level atas komponen
-  const viewCounted = React.useRef(false);
+  const viewCounted = useRef(false);
 
-  // Fungsi untuk mengubah URL YouTube menjadi embed URL dengan autoplay
-  const processContent = useCallback((content) => {
-    if (!content) return '';
+  // Fungsi untuk mengubah URL YouTube menjadi embed URL dengan autoplay - menggunakan useMemo
+  const processContent = useMemo(() => {
+    return (content) => {
+      if (!content) return '';
 
-    // Kita akan menggunakan pendekatan yang lebih aman dengan hanya memproses iframe YouTube yang sudah ada
-    // dan tidak mencoba mendeteksi URL YouTube dalam teks
+      // Regex untuk mendeteksi iframe YouTube yang sudah ada
+      const iframeYoutubeRegex = /<iframe[^>]*src=["'](?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[\?&][^"']*)?["'][^>]*><\/iframe>/g;
 
-    // Regex untuk mendeteksi iframe YouTube yang sudah ada
-    const iframeYoutubeRegex = /<iframe[^>]*src=["'](?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[\?&][^"']*)?["'][^>]*><\/iframe>/g;
+      // Proses iframe YouTube yang sudah ada
+      let processedContent = content.replace(iframeYoutubeRegex, (match, videoId) => {
+        // Jika iframe sudah memiliki autoplay, jangan ubah
+        if (match.includes('autoplay=1')) return match;
 
-    // Proses iframe YouTube yang sudah ada
-    let processedContent = content.replace(iframeYoutubeRegex, (match, videoId) => {
-      // Jika iframe sudah memiliki autoplay, jangan ubah
-      if (match.includes('autoplay=1')) return match;
+        // Tambahkan autoplay=1 ke URL
+        let updatedMatch = match.replace(`src="https://www.youtube.com/embed/${videoId}`, `src="https://www.youtube.com/embed/${videoId}?autoplay=1`);
+        updatedMatch = updatedMatch.replace(`src='https://www.youtube.com/embed/${videoId}`, `src='https://www.youtube.com/embed/${videoId}?autoplay=1`);
 
-      // Tambahkan autoplay=1 ke URL
-      let updatedMatch = match.replace(`src="https://www.youtube.com/embed/${videoId}`, `src="https://www.youtube.com/embed/${videoId}?autoplay=1`);
-      updatedMatch = updatedMatch.replace(`src='https://www.youtube.com/embed/${videoId}`, `src='https://www.youtube.com/embed/${videoId}?autoplay=1`);
+        // Tambahkan atribut allow jika belum ada
+        if (!updatedMatch.includes('allow=')) {
+          updatedMatch = updatedMatch.replace('></iframe>', ' allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>');
+        }
 
-      // Tambahkan atribut allow jika belum ada
-      if (!updatedMatch.includes('allow=')) {
-        updatedMatch = updatedMatch.replace('></iframe>', ' allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>');
-      }
+        // Tambahkan atribut allowfullscreen jika belum ada
+        if (!updatedMatch.includes('allowfullscreen')) {
+          updatedMatch = updatedMatch.replace('></iframe>', ' allowfullscreen></iframe>');
+        }
 
-      // Tambahkan atribut allowfullscreen jika belum ada
-      if (!updatedMatch.includes('allowfullscreen')) {
-        updatedMatch = updatedMatch.replace('></iframe>', ' allowfullscreen></iframe>');
-      }
+        // Bungkus dalam div.video-container jika belum dibungkus
+        if (!updatedMatch.includes('class="video-container"') && !updatedMatch.includes("class='video-container'")) {
+          updatedMatch = `<div class="video-container">${updatedMatch}</div>`;
+        }
 
-      // Bungkus dalam div.video-container jika belum dibungkus
-      if (!updatedMatch.includes('class="video-container"') && !updatedMatch.includes("class='video-container'")) {
-        updatedMatch = `<div class="video-container">${updatedMatch}</div>`;
-      }
+        return updatedMatch;
+      });
 
-      return updatedMatch;
-    });
-
-    return processedContent;
+      return processedContent;
+    };
   }, []);
 
   // Effect untuk increment views ketika post berubah
   useEffect(() => {
     if (post && post.id && !viewCounted.current) {
-      console.log('View effect triggered for post:', post.id);
       viewCounted.current = true; // Tandai bahwa view sudah dihitung
 
-      // Gunakan setTimeout untuk menunda sedikit agar tidak mengganggu rendering
-      setTimeout(() => {
-        incrementViews(post.id)
-          .then(viewResult => console.log('View count updated from effect:', viewResult))
-          .catch(viewError => console.error('Error incrementing views from effect:', viewError));
-      }, 500);
-    }
+      // Gunakan requestIdleCallback untuk menunda hingga browser idle
+      const incrementViewCount = () => {
+        incrementViews(post.id).catch(error => {
+          // Hanya log error jika benar-benar diperlukan
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Error incrementing views:', error);
+          }
+        });
+      };
 
-    // Cleanup function untuk reset viewCounted jika component unmount
-    return () => {
-      // Tidak perlu reset viewCounted di sini karena kita ingin view hanya dihitung sekali
-      // selama komponen hidup
-    };
+      // Gunakan requestIdleCallback jika tersedia, atau fallback ke setTimeout
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(incrementViewCount);
+      } else {
+        setTimeout(incrementViewCount, 1000);
+      }
+    }
   }, [post?.id]); // Hanya jalankan ketika post.id berubah
 
   useEffect(() => {
@@ -170,25 +171,29 @@ function FullPostView() {
     };
   }, [slugOrId, navigate]);
 
-  const getImageUrl = useCallback((imagePath) => {
-    if (!imagePath) return '/default-fallback-image.jpg';
+  // Menggunakan useMemo untuk getImageUrl
+  const getImageUrl = useMemo(() => {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
-    // Jika URL menggunakan localhost, ganti dengan URL produksi
-    if (imagePath.startsWith('http') && imagePath.includes('localhost:5000')) {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-      return imagePath.replace(/http:\/\/localhost:5000/g, apiUrl);
-    }
+    return (imagePath) => {
+      if (!imagePath) return '/default-fallback-image.jpg';
 
-    // Jika sudah URL lengkap lainnya, gunakan langsung
-    if (imagePath.startsWith('http')) return imagePath;
+      // Jika URL menggunakan localhost, ganti dengan URL produksi
+      if (imagePath.startsWith('http') && imagePath.includes('localhost:5000')) {
+        return imagePath.replace(/http:\/\/localhost:5000/g, apiUrl);
+      }
 
-    // Fix double uploads in path
-    if (imagePath.includes('/uploads/uploads/')) {
-      imagePath = imagePath.replace('/uploads/uploads/', '/uploads/');
-    }
+      // Jika sudah URL lengkap lainnya, gunakan langsung
+      if (imagePath.startsWith('http')) return imagePath;
 
-    if (imagePath.startsWith('/uploads/')) return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
-    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath}`;
+      // Fix double uploads in path
+      if (imagePath.includes('/uploads/uploads/')) {
+        imagePath = imagePath.replace('/uploads/uploads/', '/uploads/');
+      }
+
+      if (imagePath.startsWith('/uploads/')) return `${apiUrl}${imagePath}`;
+      return `${apiUrl}/uploads/${imagePath}`;
+    };
   }, []);
 
   const getBreadcrumbs = useCallback(async () => {
@@ -310,7 +315,8 @@ function FullPostView() {
     updateBreadcrumbs();
   }, [post, getBreadcrumbs]);
 
-  if (loading) return (
+  // Memoize skeleton loader untuk mencegah re-render yang tidak perlu
+  const SkeletonLoader = useMemo(() => (
     <div className="full-post-container">
       <div className="full-post-content">
         <Skeleton height={30} width={200} className="mb-2" />
@@ -323,7 +329,9 @@ function FullPostView() {
         <Skeleton height={400} className="mb-4" />
       </div>
     </div>
-  );
+  ), []);
+
+  if (loading) return SkeletonLoader;
 
   if (error) return <NotFound error={error} />;
   if (!post) return null;

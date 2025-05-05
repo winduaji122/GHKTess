@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PostCardLabel from './PostCardLabel';
 import LabelSearchBar from './LabelSearchBar';
@@ -30,60 +30,55 @@ const LabelPostsPage = () => {
     totalItems: 0
   });
 
+  // Fungsi untuk memproses hasil fetch
+  const processPostsResult = useCallback((result) => {
+    if (result.success) {
+      setPosts(result.posts);
+      setLabel(result.label || { label: 'Semua Artikel' });
+      setFilteredPosts(result.posts);
+      setPagination({
+        currentPage: result.pagination.currentPage,
+        totalPages: result.pagination.totalPages,
+        totalItems: result.pagination.totalItems
+      });
+      return true;
+    } else {
+      setError(result.error || 'Gagal memuat artikel. Silakan coba lagi nanti.');
+      return false;
+    }
+  }, []);
+
   // Fetch posts by label
   useEffect(() => {
+    let isMounted = true;
+
     const fetchPostsByLabel = async () => {
       setLoading(true);
       try {
-        console.log('Fetching posts for label slug:', labelSlug);
-
         // Jika labelSlug adalah '404' atau 'not-found', redirect ke halaman 404
         if (labelSlug === '404' || labelSlug === 'not-found') {
           navigate('/not-found', { replace: true });
           return;
         }
 
-        // Jika labelSlug adalah 'posts', ambil semua post
-        if (labelSlug === 'posts') {
-          const result = await getPostsByLabel('all', currentPage, 12);
-          if (result.success) {
-            setPosts(result.posts);
-            setLabel({ label: 'Semua Artikel' });
-            setFilteredPosts(result.posts);
-            setPagination({
-              currentPage: result.pagination.currentPage,
-              totalPages: result.pagination.totalPages,
-              totalItems: result.pagination.totalItems
-            });
-          } else {
-            setError(result.error || 'Gagal memuat artikel. Silakan coba lagi nanti.');
-          }
-        } else {
-          // Jika ada labelSlug, coba ambil post berdasarkan label
-          const result = await getPostsByLabel(labelSlug, currentPage, 12);
-          if (result.success) {
-            setPosts(result.posts);
-            setLabel(result.label);
-            setFilteredPosts(result.posts);
-            setPagination({
-              currentPage: result.pagination.currentPage,
-              totalPages: result.pagination.totalPages,
-              totalItems: result.pagination.totalItems
-            });
+        // Tentukan parameter fetch
+        const targetLabel = labelSlug === 'posts' ? 'all' : labelSlug;
 
-            // Jika ini adalah fallback, tampilkan pesan informasi
-            if (result.fallback) {
-              console.log('Using fallback data. Label mungkin tidak ditemukan:', labelSlug);
-            }
-          } else {
-            setError(result.error || 'Gagal memuat artikel. Silakan coba lagi nanti.');
-          }
-        }
-        setLoading(false);
+        // Fetch posts dengan cache busting
+        const timestamp = Date.now();
+        const result = await getPostsByLabel(targetLabel, currentPage, 12, { _t: timestamp });
+
+        if (!isMounted) return;
+
+        processPostsResult(result);
       } catch (err) {
-        console.error('Error fetching posts by label:', err);
-        setError('Gagal memuat artikel. Silakan coba lagi nanti.');
-        setLoading(false);
+        if (isMounted) {
+          setError('Gagal memuat artikel. Silakan coba lagi nanti.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -93,30 +88,29 @@ const LabelPostsPage = () => {
         setLoading(true);
         try {
           const result = await getPostsByLabel('all', currentPage, 12);
-          if (result.success) {
-            setPosts(result.posts);
-            setLabel({ label: 'Semua Artikel' });
-            setFilteredPosts(result.posts);
-            setPagination({
-              currentPage: result.pagination.currentPage,
-              totalPages: result.pagination.totalPages,
-              totalItems: result.pagination.totalItems
-            });
-          } else {
-            setError(result.error || 'Gagal memuat artikel. Silakan coba lagi nanti.');
-          }
-          setLoading(false);
+
+          if (!isMounted) return;
+
+          processPostsResult(result);
         } catch (err) {
-          console.error('Error fetching all posts:', err);
-          setError('Gagal memuat artikel. Silakan coba lagi nanti.');
-          setLoading(false);
+          if (isMounted) {
+            setError('Gagal memuat artikel. Silakan coba lagi nanti.');
+          }
+        } finally {
+          if (isMounted) {
+            setLoading(false);
+          }
         }
       };
       fetchAllPosts();
     } else {
       fetchPostsByLabel();
     }
-  }, [labelSlug, currentPage]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [labelSlug, currentPage, navigate, processPostsResult]);
 
   // Fetch all labels for the navbar
   useEffect(() => {
@@ -190,32 +184,35 @@ const LabelPostsPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="label-posts-container">
-        <div className="label-posts-header">
-          <Skeleton height={40} width={200} className="mb-4" />
-        </div>
-
-        {/* Featured Post Skeleton */}
-        <div className="featured-post-skeleton">
-          <Skeleton height={400} width="100%" className="mb-3" />
-          <Skeleton height={32} width="80%" className="mb-3" />
-          <Skeleton height={20} width="60%" className="mb-2" />
-          <Skeleton height={20} width="40%" className="mb-2" />
-        </div>
-
-        <div className="posts-grid">
-          {Array(9).fill(0).map((_, index) => (
-            <div key={index} className="post-card-skeleton">
-              <Skeleton height={200} width="100%" className="mb-2" />
-              <Skeleton height={24} width="80%" className="mb-2" />
-              <Skeleton height={16} width="60%" />
-            </div>
-          ))}
-        </div>
+  // Memoize skeleton loader untuk mencegah re-render yang tidak perlu
+  const SkeletonLoader = useMemo(() => (
+    <div className="label-posts-container">
+      <div className="label-posts-header">
+        <Skeleton height={40} width={200} className="mb-4" />
       </div>
-    );
+
+      {/* Featured Post Skeleton */}
+      <div className="featured-post-skeleton">
+        <Skeleton height={400} width="100%" className="mb-3" />
+        <Skeleton height={32} width="80%" className="mb-3" />
+        <Skeleton height={20} width="60%" className="mb-2" />
+        <Skeleton height={20} width="40%" className="mb-2" />
+      </div>
+
+      <div className="posts-grid">
+        {Array(6).fill(0).map((_, index) => (
+          <div key={index} className="post-card-skeleton">
+            <Skeleton height={200} width="100%" className="mb-2" />
+            <Skeleton height={24} width="80%" className="mb-2" />
+            <Skeleton height={16} width="60%" />
+          </div>
+        ))}
+      </div>
+    </div>
+  ), []);
+
+  if (loading) {
+    return SkeletonLoader;
   }
 
   if (error) {
@@ -327,4 +324,5 @@ const LabelPostsPage = () => {
   );
 };
 
-export default LabelPostsPage;
+// Memoize komponen untuk mencegah render ulang yang tidak perlu
+export default memo(LabelPostsPage);
