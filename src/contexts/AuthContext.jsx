@@ -546,7 +546,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.data.accessToken) {
-        setAccessToken(response.data.accessToken);
+        // Simpan accessToken dan refreshToken (jika ada) menggunakan setAccessToken
+        setAccessToken(response.data.accessToken, response.data.refreshToken);
 
         // Pastikan data user lengkap, terutama profile_picture
         const userData = response.data.user;
@@ -566,6 +567,7 @@ export const AuthProvider = ({ children }) => {
         // Simpan token di localStorage untuk persistensi
         localStorage.setItem('google_login_success', 'true');
         localStorage.setItem('google_login_timestamp', Date.now().toString());
+        localStorage.setItem('auth_persistent', 'true'); // Enable persistent login
 
         // Trigger event untuk memberitahu komponen lain bahwa data user telah diperbarui
         window.dispatchEvent(new Event('user:dataUpdated'));

@@ -90,7 +90,7 @@ const initStorageType = () => {
 initStorageType();
 
 // Token management
-export const setAccessToken = (token) => {
+export const setAccessToken = (token, refreshToken) => {
   if (!token) {
     clearTokenState();
     broadcastTokenUpdate(null);
@@ -112,6 +112,12 @@ export const setAccessToken = (token) => {
       token,
       expires_at: new Date(expiryTime).toISOString()
     }));
+
+    // Jika refreshToken disediakan, simpan di localStorage (untuk Vercel deployment)
+    if (refreshToken) {
+      console.log('Storing refresh token in localStorage');
+      localStorage.setItem('refreshToken', refreshToken);
+    }
 
     // Hapus dari storage lainnya untuk menghindari duplikasi
     const alternativeStorage = activeStorageType === STORAGE_TYPES.LOCAL ? sessionStorage : localStorage;
@@ -279,24 +285,46 @@ export const refreshToken = async (silent = false) => {
     refreshPromise = (async () => {
       try {
         // Panggil endpoint refresh token
-        // Gunakan GET request karena backend mengharapkan refresh token dari cookie
-        // Pastikan URL lengkap dengan /api/auth/refresh-token
+        // Cek apakah kita perlu menggunakan token refresh dari localStorage (untuk Vercel)
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        const isVercelDeployment = window.location.hostname.includes('vercel.app');
+
         console.log('Calling refresh token endpoint: /api/auth/refresh-token');
-        const response = await axios.get('/api/auth/refresh-token', {
-          withCredentials: true,
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'X-Client-ID': generateClientId(), // Tambahkan ID unik untuk setiap client
-            'X-User-Identity': userIdentity.displayString // Tambahkan identitas user untuk logging di server
-          }
-        });
+        let response;
+
+        if (isVercelDeployment && storedRefreshToken) {
+          // Untuk deployment Vercel, gunakan token refresh dari localStorage
+          console.log('Using stored refresh token for Vercel deployment');
+          response = await axios.post('/api/auth/refresh-token',
+            { refreshToken: storedRefreshToken },
+            {
+              withCredentials: true,
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'X-Client-ID': generateClientId(),
+                'X-User-Identity': userIdentity.displayString
+              }
+            }
+          );
+        } else {
+          // Untuk deployment lain, gunakan cookie
+          response = await axios.get('/api/auth/refresh-token', {
+            withCredentials: true,
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'X-Client-ID': generateClientId(),
+              'X-User-Identity': userIdentity.displayString
+            }
+          });
+        }
 
         if (!response.data || !response.data.success) {
           throw new Error(`[${userIdentity.displayString}] Refresh token gagal: Respons tidak valid`);
         }
 
-        const { accessToken, user } = response.data;
+        const { accessToken, refreshToken, user } = response.data;
 
         if (!accessToken) {
           throw new Error(`[${userIdentity.displayString}] Refresh token gagal: Token tidak ditemukan dalam respons`);
@@ -313,8 +341,8 @@ export const refreshToken = async (silent = false) => {
           setStorageType(STORAGE_TYPES.LOCAL);
         }
 
-        // Simpan access token baru
-        setAccessToken(accessToken);
+        // Simpan access token baru dan refresh token jika tersedia
+        setAccessToken(accessToken, refreshToken);
 
         // Simpan data user
         if (user) {
@@ -405,6 +433,9 @@ export const clearTokenState = () => {
   // Hapus dari kedua storage
   localStorage.removeItem('accessToken');
   sessionStorage.removeItem('accessToken');
+
+  // Hapus refreshToken dari localStorage
+  localStorage.removeItem('refreshToken');
 
   // Hapus header Authorization
   if (api && api.defaults && api.defaults.headers) {
