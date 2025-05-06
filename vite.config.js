@@ -42,6 +42,27 @@ function robotsAndSitemapPlugin() {
           robotsContent = robotsContent.replace(/\${VITE_FRONTEND_URL}/g, frontendUrl);
           fs.writeFileSync(robotsDistPath, robotsContent);
           console.log('✅ robots.txt processed successfully');
+        } else {
+          console.warn('⚠️ robots.txt not found in public directory');
+
+          // Buat robots.txt default jika tidak ada
+          const defaultRobotsContent = `# robots.txt for Gema Hati Kudus
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /writer/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+
+# Sitemap location
+Sitemap: ${frontendUrl}/sitemap.xml`;
+
+          fs.writeFileSync(robotsDistPath, defaultRobotsContent);
+          console.log('✅ Default robots.txt created');
         }
       } catch (error) {
         console.error('❌ Error processing robots.txt:', error);
@@ -51,12 +72,38 @@ function robotsAndSitemapPlugin() {
       try {
         const sitemapPath = path.resolve('public', 'sitemap.xml');
         const sitemapDistPath = path.resolve('dist', 'sitemap.xml');
+        const sitemapGeneratedPath = path.resolve('public', 'sitemap-generated.xml');
 
-        if (fs.existsSync(sitemapPath) && !fs.existsSync(sitemapDistPath)) {
+        // Cek apakah ada sitemap yang dihasilkan oleh script generate-sitemap
+        if (fs.existsSync(sitemapGeneratedPath)) {
+          // Gunakan sitemap yang dihasilkan oleh script
+          let sitemapContent = fs.readFileSync(sitemapGeneratedPath, 'utf8');
+          fs.writeFileSync(sitemapDistPath, sitemapContent);
+          console.log('✅ Generated sitemap.xml copied to dist');
+        } else if (fs.existsSync(sitemapPath) && !fs.existsSync(sitemapDistPath)) {
+          // Gunakan sitemap template
           let sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
           sitemapContent = sitemapContent.replace(/%VITE_FRONTEND_URL%/g, frontendUrl);
           fs.writeFileSync(sitemapDistPath, sitemapContent);
-          console.log('✅ sitemap.xml processed successfully');
+          console.log('✅ Template sitemap.xml processed successfully');
+        } else if (!fs.existsSync(sitemapDistPath)) {
+          // Buat sitemap default jika tidak ada
+          const defaultSitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${frontendUrl}</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${frontendUrl}/spotlight</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
+
+          fs.writeFileSync(sitemapDistPath, defaultSitemapContent);
+          console.log('✅ Default sitemap.xml created');
         }
       } catch (error) {
         console.error('❌ Error processing sitemap.xml:', error);
