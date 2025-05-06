@@ -5,15 +5,12 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { FaEdit, FaTrash, FaSearch, FaEye, FaPlus, FaCalendarAlt, FaUndo, FaFilter, FaTimes } from 'react-icons/fa';
 import PostStats from './PostStats';
-import LazyImage from './common/LazyImage';
-import '../styles/lazyImage.css';
+import WriterPostImage from './common/WriterPostImage';
 import { toast } from 'react-toastify';
 import { getMyPosts, restorePost, getMyDeletedPosts, softDeletePost } from '../api/postApi';
 import { getLabels } from '../api/labelApi';
 import { useAuth } from '../contexts/AuthContext';
 import './WriterPosts.css';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import { getImageUrl } from '../utils/imageHelper';
 import '../styles/custom-dialog.css';
 
@@ -32,98 +29,22 @@ const WriterPostsPage = () => {
   const [filterLabel, setFilterLabel] = useState('');
   const [activeTab, setActiveTab] = useState('posts');
   const [contentLoading, setContentLoading] = useState(false);
-  const [imageVersions, setImageVersions] = useState({});
   const [showFilters, setShowFilters] = useState(false);
   const [labels, setLabels] = useState([]);
 
-  // Tambahkan fungsi debugging ini di dalam komponen WriterPostsPage
-  const debugPostImage = (post) => {
-    console.group(`Debug Post Image (ID: ${post.id})`);
-    console.log('Post object:', post);
-    console.log('featured_image:', post.featured_image);
-
-    // Cek semua kemungkinan properti gambar
-    const possibleImageProps = ['featured_image', 'image', 'thumbnail', 'featured_img', 'cover_image'];
-    possibleImageProps.forEach(prop => {
-      if (post[prop]) {
-        console.log(`Found image in property "${prop}":`, post[prop]);
-      }
-    });
-
-    // Coba semua kemungkinan cara mendapatkan URL gambar
-    try {
-      if (post.featured_image) {
-        if (typeof post.featured_image === 'object') {
-          console.log('featured_image is object:', post.featured_image);
-          if (post.featured_image.path) {
-            console.log('Path found:', post.featured_image.path);
-            console.log('URL from path:', getImageUrl(post.featured_image.path));
-          }
-          if (post.featured_image.url) {
-            console.log('URL found:', post.featured_image.url);
-          }
-        } else if (typeof post.featured_image === 'string') {
-          console.log('featured_image is string:', post.featured_image);
-          console.log('URL from string:', getImageUrl(post.featured_image));
-        }
-      }
-    } catch (error) {
-      console.error('Error in image debugging:', error);
-    }
-
-    console.groupEnd();
-  };
-
-  // Debugging untuk melihat struktur post (hanya dijalankan sekali)
+  // useEffect untuk inisialisasi awal
   useEffect(() => {
-    const debugPostStructure = async () => {
+    // Jalankan fetch data awal saat komponen dimount
+    const fetchInitialData = async () => {
       try {
-        console.log('Debugging post structure...');
-        const response = await getMyPosts({ limit: 1 });
-
-        if (response && response.success && response.posts && response.posts.length > 0) {
-          const samplePost = response.posts[0];
-          console.log('Sample post structure:', samplePost);
-          console.log('Post properties:', Object.keys(samplePost));
-
-          // Periksa properti label
-          console.log('Post has labels property:', 'labels' in samplePost);
-          console.log('Post has tags property:', 'tags' in samplePost);
-
-          // Cek properti lain yang mungkin berisi label
-          const possibleLabelProps = ['labels', 'tags', 'categories', 'topics'];
-          possibleLabelProps.forEach(prop => {
-            if (prop in samplePost) {
-              console.log(`Found ${prop}:`, samplePost[prop]);
-            }
-          });
-        }
+        await fetchRegularPosts();
       } catch (err) {
-        console.error('Error in debug function:', err);
+        console.error('Error fetching initial data:', err);
       }
     };
 
-    // Jalankan debugging hanya sekali saat komponen dimount
-    debugPostStructure();
+    fetchInitialData();
   }, []);
-
-  // Tambahkan fungsi untuk debugging labels
-  useEffect(() => {
-    if (regularPosts.length > 0) {
-      console.log('Checking labels in posts:');
-      regularPosts.forEach(post => {
-        console.log(`Post "${post.title}" labels:`, post.labels);
-
-        // Cek properti lain yang mungkin berisi label
-        const possibleLabelProps = ['tags', 'categories', 'topics'];
-        possibleLabelProps.forEach(prop => {
-          if (post[prop]) {
-            console.log(`Post "${post.title}" ${prop}:`, post[prop]);
-          }
-        });
-      });
-    }
-  }, [regularPosts, deletedPosts, activeTab]);
 
   // Fetch regular posts
   const fetchRegularPosts = useCallback(async (options = {}) => {
@@ -511,35 +432,30 @@ const WriterPostsPage = () => {
     );
   };
 
-  // Modifikasi fungsi getPostImageUrl
+  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post
   const getPostImageUrl = (post) => {
     if (!post) {
-      console.error('Post is undefined');
       return '/placeholder-image.jpg';
     }
-
-    // Debug post object
-    debugPostImage(post);
 
     // Cek semua kemungkinan properti gambar
     const imageField = post.featured_image || post.image || post.thumbnail || post.featured_img || post.cover_image;
 
     if (!imageField) {
-      console.log(`No image field found for post ${post.id}`);
       return '/placeholder-image.jpg';
     }
 
     try {
-      // Jika imageField adalah object dengan path
+      // Jika imageField adalah object dengan path atau url
       if (typeof imageField === 'object') {
-        if (imageField.path) {
-          const url = getImageUrl(imageField.path);
-          console.log(`Generated URL from object.path: ${url}`);
-          return url;
-        }
+        // Prioritaskan URL langsung jika ada
         if (imageField.url) {
-          console.log(`Using direct URL from object.url: ${imageField.url}`);
           return imageField.url;
+        }
+
+        // Gunakan path jika ada
+        if (imageField.path) {
+          return getImageUrl(imageField.path);
         }
       }
 
@@ -547,18 +463,13 @@ const WriterPostsPage = () => {
       if (typeof imageField === 'string') {
         // Cek jika sudah URL lengkap
         if (imageField.startsWith('http')) {
-          console.log(`Using direct URL: ${imageField}`);
           return imageField;
         }
 
-        // Tambahkan version untuk mencegah cache
-        const version = imageVersions[post.id] || Date.now();
-        const imageUrl = getImageUrl(imageField);
-        console.log(`Generated URL from string: ${imageUrl}?v=${version}`);
-        return `${imageUrl}?v=${version}`;
+        // Gunakan getImageUrl untuk mendapatkan URL lengkap
+        return getImageUrl(imageField);
       }
 
-      console.log(`Falling back to placeholder for post ${post.id}`);
       return '/placeholder-image.jpg';
     } catch (error) {
       console.error('Error getting image URL:', error);
@@ -566,17 +477,12 @@ const WriterPostsPage = () => {
     }
   };
 
-  // Tambahkan log untuk melihat implementasi getImageUrl
-  console.log('getImageUrl implementation:', getImageUrl.toString());
+  // Fungsi getImageUrl digunakan untuk mendapatkan URL gambar dari path
 
   // Fungsi untuk menangani error gambar
   const handleImageError = (postId) => {
     console.log(`Image error for post ${postId}`);
-    // Update versi gambar untuk mencoba lagi
-    setImageVersions(prev => ({
-      ...prev,
-      [postId]: Date.now()
-    }));
+    // Tidak perlu melakukan apa-apa karena WriterPostImage sudah menangani retry
   };
 
   // Perbaiki fungsi getLabelText untuk menangani format label yang benar
@@ -688,13 +594,12 @@ const WriterPostsPage = () => {
         className={`writer-post-item ${activeTab === 'deleted-posts' ? 'deleted' : ''}`}
       >
         <div className="writer-post-thumbnail">
-          <LazyImage
+          <WriterPostImage
             src={imageUrl}
             alt={post.title}
             className="writer-post-image"
             height="140px"
             width="180px"
-            objectFit="cover"
             onError={() => handleImageError(post.id)}
           />
         </div>
@@ -779,45 +684,7 @@ const WriterPostsPage = () => {
     );
   };
 
-  // Tambahkan useEffect untuk debugging post dan labels
-  useEffect(() => {
-    const postsToCheck = activeTab === 'deleted-posts' ? deletedPosts : regularPosts;
-
-    if (postsToCheck.length > 0) {
-      console.log(`All ${activeTab} posts:`, postsToCheck);
-
-      // Ambil post pertama sebagai contoh
-      const samplePost = postsToCheck[0];
-      console.log('Sample post:', samplePost);
-
-      // Cek semua properti post
-      console.log('Post properties:', Object.keys(samplePost));
-
-      // Cek apakah ada properti yang berisi kata "label" atau "tag"
-      const labelRelatedProps = Object.keys(samplePost).filter(key =>
-        key.toLowerCase().includes('label') ||
-        key.toLowerCase().includes('tag') ||
-        key.toLowerCase().includes('categor')
-      );
-
-      if (labelRelatedProps.length > 0) {
-        console.log('Label-related properties found:', labelRelatedProps);
-        labelRelatedProps.forEach(prop => {
-          console.log(`${prop}:`, samplePost[prop]);
-        });
-      } else {
-        console.log('No label-related properties found');
-      }
-
-      // Coba getLabelText
-      const labelText = getLabelText(samplePost);
-      console.log('Label text from getLabelText:', labelText);
-    }
-  }, [activeTab, regularPosts, deletedPosts]);
-
-
-
-  // Reset state saat tab berubah
+  // useEffect untuk memperbarui data saat tab berubah
   useEffect(() => {
     // Reset state pagination dan filter saat tab berubah
     setCurrentPage(1);
@@ -825,8 +692,18 @@ const WriterPostsPage = () => {
     setFilterDateFrom('');
     setFilterDateTo('');
     setFilterLabel('');
-    console.log(`Tab changed to: ${activeTab}`);
+
+    // Fetch data berdasarkan tab aktif
+    if (activeTab === 'deleted-posts') {
+      fetchDeletedPosts();
+    } else {
+      fetchRegularPosts();
+    }
   }, [activeTab]);
+
+
+
+
 
   return (
     <div className="writer-posts-container">
