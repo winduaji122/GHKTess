@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && (node scripts/generate-sitemap.js || echo 'Sitemap generation failed, but build continues')",
+    "build": "vite build && (node scripts/generate-sitemap-from-routes.js || echo 'Sitemap generation failed, but build continues')",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "preview:prod-local": "vite preview --port 5173",
     "build:prod-local": "vite build",
     "start:prod-local": "npm run build:prod-local && npm run preview:prod-local",
     "test": "vitest",
-    "generate-sitemap": "node scripts/generate-sitemap.js"
+    "generate-sitemap": "node scripts/generate-sitemap-from-routes.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
