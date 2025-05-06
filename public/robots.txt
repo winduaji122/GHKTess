@@ -1,0 +1,28 @@
+# robots.txt for Gema Hati Kudus
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /writer/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /register-user
+Disallow: /forgot-password
+Disallow: /reset-password/
+Disallow: /verify-email/
+Disallow: /verify/
+Disallow: /writer-not-approved
+
+# Allow important content
+Allow: /post/
+Allow: /label/
+Allow: /page/
+Allow: /spotlight
+Allow: /carousel-post/
+Allow: /search
+
+# Sitemap location
+Sitemap: ${VITE_FRONTEND_URL}/sitemap.xml

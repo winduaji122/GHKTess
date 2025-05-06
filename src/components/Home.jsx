@@ -5,6 +5,7 @@ import Pagination from './Pagination';
 import SpotlightWidget from './SpotlightWidget';
 import PopularPostsWidget from './PopularPostsWidget';
 import Carousel from './Carousel/Carousel';
+import SEO from './SEO/SEO';
 import './Home.css';
 import { getAllPosts, getFeaturedPosts, getSpotlightPosts } from '../api/postApi';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -87,8 +88,29 @@ function Home() {
   if (loading) return null;
   if (error) return <div className="error">{error}</div>;
 
+  // Data terstruktur untuk halaman beranda
+  const homeStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Gema Hati Kudus",
+    "url": import.meta.env.VITE_FRONTEND_URL || window.location.origin,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <div className="home-container">
+      <SEO
+        title="Gema Hati Kudus - Portal Berita Katolik Indonesia"
+        description="Portal berita Katolik Indonesia yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan umat Katolik di Indonesia."
+        keywords="katolik, gereja katolik, berita katolik, spiritualitas, iman katolik, indonesia"
+        ogType="website"
+        structuredData={homeStructuredData}
+      />
+
       {/* Carousel Section */}
       <section className="carousel-section">
         <Carousel />

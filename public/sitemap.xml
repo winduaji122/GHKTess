@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Halaman Utama -->
+  <url>
+    <loc>%VITE_FRONTEND_URL%</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Halaman Spotlight -->
+  <url>
+    <loc>%VITE_FRONTEND_URL%/spotlight</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Halaman Pencarian -->
+  <url>
+    <loc>%VITE_FRONTEND_URL%/search</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Halaman Statis -->
+  <url>
+    <loc>%VITE_FRONTEND_URL%/page/privacy-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>%VITE_FRONTEND_URL%/page/terms-of-service</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>%VITE_FRONTEND_URL%/page/about-us</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>%VITE_FRONTEND_URL%/page/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Halaman Label akan ditambahkan secara dinamis oleh API -->
+  <!-- Halaman Post akan ditambahkan secara dinamis oleh API -->
+</urlset>

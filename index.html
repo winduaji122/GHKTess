@@ -1,23 +1,88 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Gema Hati Kudus - Portal Berita dan Informasi" />
+    <meta name="description" content="Gema Hati Kudus - Portal Berita Katolik Indonesia yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan umat Katolik di Indonesia." />
+    <meta name="keywords" content="katolik, gereja katolik, berita katolik, spiritualitas, iman katolik, indonesia" />
+    <meta name="author" content="Gema Hati Kudus" />
     <meta name="google-signin-client_id" content="%VITE_GOOGLE_CLIENT_ID%">
     <meta name="google-signin-scope" content="profile email">
     <meta name="theme-color" content="#000000" />
-    <title>GHK</title>
+    <meta name="robots" content="index, follow" />
+
+    <!-- Google Site Verification -->
+    <meta name="google-site-verification" content="REPLACE_WITH_YOUR_VERIFICATION_CODE" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%VITE_FRONTEND_URL%" />
+    <meta property="og:title" content="Gema Hati Kudus - Portal Berita Katolik Indonesia" />
+    <meta property="og:description" content="Portal berita Katolik Indonesia yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan umat Katolik di Indonesia." />
+    <meta property="og:image" content="%VITE_FRONTEND_URL%/og-image.jpg" />
+    <meta property="og:site_name" content="Gema Hati Kudus" />
+    <meta property="og:locale" content="id_ID" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="%VITE_FRONTEND_URL%" />
+    <meta name="twitter:title" content="Gema Hati Kudus - Portal Berita Katolik Indonesia" />
+    <meta name="twitter:description" content="Portal berita Katolik Indonesia yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan umat Katolik di Indonesia." />
+    <meta name="twitter:image" content="%VITE_FRONTEND_URL%/og-image.jpg" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="%VITE_FRONTEND_URL%" />
+
+    <title>Gema Hati Kudus - Portal Berita Katolik Indonesia</title>
     <link rel="icon" href="/favicon.png" />
+
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://accounts.google.com" />
     <link rel="preconnect" href="%VITE_API_BASE_URL%" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+
     <!-- Google One Tap Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <!-- Preload critical assets -->
     <link rel="preload" href="/src/index.css" as="style">
     <link rel="preload" href="/src/main.jsx" as="script">
+
+    <!-- Structured Data for Website -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Gema Hati Kudus",
+        "url": "%VITE_FRONTEND_URL%",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "%VITE_FRONTEND_URL%/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
+    <!-- Structured Data for Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Gema Hati Kudus",
+        "url": "%VITE_FRONTEND_URL%",
+        "logo": "%VITE_FRONTEND_URL%/logo.png",
+        "sameAs": [
+          "https://facebook.com/gemahati",
+          "https://twitter.com/gemahati",
+          "https://instagram.com/gemahati"
+        ]
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

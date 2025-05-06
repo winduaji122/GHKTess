@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
+import fs from 'fs'
+import path from 'path'
 // Komentar: Plugin compression akan ditambahkan setelah instalasi
 // import viteCompression from 'vite-plugin-compression'
 
@@ -22,11 +24,53 @@ function htmlEnvPlugin() {
   };
 }
 
+// Plugin untuk mengganti variabel lingkungan di robots.txt dan sitemap.xml
+function robotsAndSitemapPlugin() {
+  return {
+    name: 'robots-sitemap-plugin',
+    writeBundle() {
+      const env = loadEnv(process.env.NODE_ENV, process.cwd(), '');
+      const frontendUrl = env.VITE_FRONTEND_URL || 'http://localhost:5173';
+
+      // Proses robots.txt
+      try {
+        const robotsPath = path.resolve('public', 'robots.txt');
+        const robotsDistPath = path.resolve('dist', 'robots.txt');
+
+        if (fs.existsSync(robotsPath)) {
+          let robotsContent = fs.readFileSync(robotsPath, 'utf8');
+          robotsContent = robotsContent.replace(/\${VITE_FRONTEND_URL}/g, frontendUrl);
+          fs.writeFileSync(robotsDistPath, robotsContent);
+          console.log('✅ robots.txt processed successfully');
+        }
+      } catch (error) {
+        console.error('❌ Error processing robots.txt:', error);
+      }
+
+      // Proses sitemap.xml jika belum diproses oleh script generate-sitemap
+      try {
+        const sitemapPath = path.resolve('public', 'sitemap.xml');
+        const sitemapDistPath = path.resolve('dist', 'sitemap.xml');
+
+        if (fs.existsSync(sitemapPath) && !fs.existsSync(sitemapDistPath)) {
+          let sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
+          sitemapContent = sitemapContent.replace(/%VITE_FRONTEND_URL%/g, frontendUrl);
+          fs.writeFileSync(sitemapDistPath, sitemapContent);
+          console.log('✅ sitemap.xml processed successfully');
+        }
+      } catch (error) {
+        console.error('❌ Error processing sitemap.xml:', error);
+      }
+    }
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     htmlEnvPlugin(),
+    robotsAndSitemapPlugin(),
     // Komentar: Plugin compression akan ditambahkan setelah instalasi
     // viteCompression({
     //   algorithm: 'gzip',

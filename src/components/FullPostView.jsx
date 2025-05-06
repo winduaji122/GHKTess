@@ -10,7 +10,9 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import RelatedPostWidget from './RelatedPostWidget';
 import NotFound from './NotFound';
 import PostEngagement from './Comments/PostEngagement';
+import SEO from './SEO/SEO';
 import { toast } from 'react-toastify';
+import DOMPurify from 'dompurify';
 
 function FullPostView() {
   const [post, setPost] = useState(null);
@@ -365,8 +367,60 @@ function FullPostView() {
     return false; // Mencegah browser membuka link di tab baru
   };
 
+  // Ekstrak deskripsi dari konten HTML
+  const getMetaDescription = () => {
+    if (!post.content) return '';
+
+    // Bersihkan HTML dan ambil 160 karakter pertama
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = DOMPurify.sanitize(post.content);
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+  };
+
+  // Buat data terstruktur untuk artikel
+  const articleStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": getMetaDescription(),
+    "image": post.image ? getImageUrl(post.image) : null,
+    "datePublished": post.publish_date || post.created_at,
+    "dateModified": post.updated_at || post.created_at,
+    "author": {
+      "@type": "Person",
+      "name": post.author?.name || post.author_name || "Gema Hati Kudus"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Gema Hati Kudus",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/logo.png`
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": window.location.href
+    }
+  };
+
+  // Tambahkan keywords dari label
+  const keywords = post.labels && post.labels.length > 0
+    ? post.labels.map(label => label.label || label.name).join(', ')
+    : 'katolik, gereja katolik, berita katolik';
+
   return (
     <div className="full-post-container">
+      <SEO
+        title={`${post.title} - Gema Hati Kudus`}
+        description={getMetaDescription()}
+        keywords={keywords}
+        ogImage={post.image ? getImageUrl(post.image) : null}
+        ogType="article"
+        structuredData={articleStructuredData}
+      />
+
       <div className="full-post-content">
         <nav aria-label="breadcrumb">
           <ol className="writer-breadcrumb">
