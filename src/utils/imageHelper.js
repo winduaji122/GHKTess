@@ -136,103 +136,90 @@ export const getImageUrl = (imagePath, imageSource) => {
   return `${apiUrl}/uploads/${path}`;
 };
 
-  /**
-   * Helper function untuk memvalidasi file gambar
-   * @param {File} file - File yang akan divalidasi
-   * @returns {Promise} Promise dengan hasil validasi
-   */
-  export const validateImage = async (file) => {
-    return new Promise((resolve) => {
-      const validTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-      ];
+/**
+ * Helper function untuk memvalidasi file gambar
+ * @param {File} file - File yang akan divalidasi
+ * @returns {Promise} Promise dengan hasil validasi
+ */
+export const validateImage = async (file) => {
+  return new Promise((resolve) => {
+    const validTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ];
 
-      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const validation = {
+      isValid: true,
+      errors: []
+    };
 
-      const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validasi dasar file
+    if (!file) {
+      validation.isValid = false;
+      validation.errors.push('File tidak ditemukan');
+      resolve(validation);
+      return;
+    }
 
-      const validation = {
-        isValid: true,
-        errors: []
-      };
+    // Validasi tipe file berdasarkan ekstensi jika MIME type tidak terdeteksi
+    if (!file.type) {
+      const fileName = file.name.toLowerCase();
+      const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
 
-      // Debug log
-      console.log('Validating file:', {
-        file,
-        type: file?.type,
-        size: file?.size,
-        name: file?.name
-      });
-
-      // Validasi dasar file
-      if (!file) {
+      if (!hasValidExtension) {
         validation.isValid = false;
-        validation.errors.push('File tidak ditemukan');
+        validation.errors.push('Format file tidak didukung. Gunakan JPEG/JPG, PNG, GIF, atau WEBP');
         resolve(validation);
         return;
       }
 
-      // Validasi tipe file berdasarkan ekstensi jika MIME type tidak terdeteksi
-      if (!file.type) {
-        const fileName = file.name.toLowerCase();
-        const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-
-        if (!hasValidExtension) {
-          validation.isValid = false;
-          validation.errors.push('Format file tidak didukung. Gunakan JPEG/JPG, PNG, GIF, atau WEBP');
-          resolve(validation);
-          return;
-        }
-
-        // Tentukan tipe berdasarkan ekstensi
-        const ext = fileName.substring(fileName.lastIndexOf('.'));
-        let detectedType;
-        switch(ext) {
-          case '.jpg':
-          case '.jpeg':
-            detectedType = 'image/jpeg';
-            break;
-          case '.png':
-            detectedType = 'image/png';
-            break;
-          case '.gif':
-            detectedType = 'image/gif';
-            break;
-          case '.webp':
-            detectedType = 'image/webp';
-            break;
-        }
-
-        // Set tipe yang terdeteksi ke file object
-        Object.defineProperty(file, 'type', {
-          writable: true,
-          value: detectedType
-        });
-      } else {
-        // Validasi MIME type jika terdeteksi
-        const fileType = file.type.toLowerCase();
-        if (!validTypes.includes(fileType)) {
-          validation.isValid = false;
-          validation.errors.push(`Format file ${fileType} tidak didukung. Gunakan JPEG/JPG, PNG, GIF, atau WEBP`);
-        }
+      // Tentukan tipe berdasarkan ekstensi
+      const ext = fileName.substring(fileName.lastIndexOf('.'));
+      let detectedType;
+      switch(ext) {
+        case '.jpg':
+        case '.jpeg':
+          detectedType = 'image/jpeg';
+          break;
+        case '.png':
+          detectedType = 'image/png';
+          break;
+        case '.gif':
+          detectedType = 'image/gif';
+          break;
+        case '.webp':
+          detectedType = 'image/webp';
+          break;
       }
 
-      // Validasi ukuran
-      if (file.size > maxSize) {
+      // Set tipe yang terdeteksi ke file object
+      Object.defineProperty(file, 'type', {
+        writable: true,
+        value: detectedType
+      });
+    } else {
+      // Validasi MIME type jika terdeteksi
+      const fileType = file.type.toLowerCase();
+      if (!validTypes.includes(fileType)) {
         validation.isValid = false;
-        validation.errors.push(`Ukuran file (${(file.size/1024/1024).toFixed(2)}MB) terlalu besar. Maksimal 5MB`);
+        validation.errors.push(`Format file tidak didukung. Gunakan JPEG/JPG, PNG, GIF, atau WEBP`);
       }
+    }
 
-      // Debug log hasil validasi
-      console.log('Validation result:', validation);
+    // Validasi ukuran
+    if (file.size > maxSize) {
+      validation.isValid = false;
+      validation.errors.push(`Ukuran file terlalu besar. Maksimal 5MB`);
+    }
 
-      resolve(validation);
-    });
-  };
+    resolve(validation);
+  });
+};
 
   /**
    * Helper function untuk membersihkan nama file
@@ -245,84 +232,84 @@ export const getImageUrl = (imagePath, imageSource) => {
       .toLowerCase(); // Konversi ke lowercase
   };
 
-  /**
-   * Fungsi khusus untuk mendapatkan URL gambar profil
-   * @param {string} profilePath - Path gambar profil
-   * @returns {string} URL lengkap gambar profil
-   */
-  export const getProfileImageUrl = (profilePath) => {
-    if (!profilePath) return null;
+/**
+ * Fungsi khusus untuk mendapatkan URL gambar profil
+ * @param {string} profilePath - Path gambar profil
+ * @returns {string} URL lengkap gambar profil
+ */
+export const getProfileImageUrl = (profilePath) => {
+  if (!profilePath) return null;
 
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-    console.log('Getting profile image URL for:', profilePath);
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
-    // Deteksi URL Google (dengan atau tanpa http/https)
-    if (profilePath.includes('googleusercontent.com') || profilePath.includes('lh3.google')) {
-      // Jika sudah memiliki http/https, gunakan langsung
-      if (profilePath.startsWith('http')) {
-        console.log('Detected Google avatar URL with http, using directly:', profilePath);
-        return profilePath;
-      } else {
-        // Jika tidak memiliki http/https, tambahkan https://
-        console.log('Detected Google avatar URL without http prefix, adding https://');
-        return `https://${profilePath}`;
-      }
-    }
-
-    // Jika sudah URL lengkap
+  // Deteksi URL Google (dengan atau tanpa http/https)
+  if (profilePath.includes('googleusercontent.com') || profilePath.includes('lh3.google')) {
+    // Jika sudah memiliki http/https, gunakan langsung
     if (profilePath.startsWith('http')) {
-      // Jika ini adalah URL avatar lain dari pihak ketiga (seperti gravatar), gunakan langsung
-      if (profilePath.includes('gravatar.com') || profilePath.includes('avatar') || profilePath.includes('.jpg') || profilePath.includes('.png')) {
-        console.log('Detected third-party avatar URL, using directly:', profilePath);
-        return profilePath;
-      }
+      return profilePath;
+    } else {
+      // Jika tidak memiliki http/https, tambahkan https://
+      return `https://${profilePath}`;
+    }
+  }
 
-      // Periksa apakah URL sudah benar (mengandung /profiles/)
-      if (profilePath.includes('/uploads/profiles/')) {
-        return profilePath;
-      }
-
-      // Jika URL mengandung /uploads/ tapi tidak /profiles/ dan mengandung profile-
-      if (profilePath.includes('/uploads/') && !profilePath.includes('/profiles/') && profilePath.includes('profile-')) {
-        console.log('Fixing profile URL by adding profiles folder');
-        return profilePath.replace('/uploads/', '/uploads/profiles/');
-      }
-
+  // Jika sudah URL lengkap
+  if (profilePath.startsWith('http')) {
+    // Jika ini adalah URL avatar lain dari pihak ketiga (seperti gravatar), gunakan langsung
+    if (profilePath.includes('gravatar.com') || profilePath.includes('avatar') ||
+        profilePath.includes('.jpg') || profilePath.includes('.png')) {
       return profilePath;
     }
 
-    // Jika path dimulai dengan /uploads/profiles/
-    if (profilePath.startsWith('/uploads/profiles/')) {
-      return `${apiUrl}${profilePath}`;
+    // Periksa apakah URL sudah benar (mengandung /profiles/)
+    if (profilePath.includes('/uploads/profiles/')) {
+      return profilePath;
     }
 
-    // Jika path dimulai dengan uploads/profiles/
-    if (profilePath.startsWith('uploads/profiles/')) {
-      return `${apiUrl}/${profilePath}`;
+    // Jika URL mengandung /uploads/ tapi tidak /profiles/ dan mengandung profile-
+    if (profilePath.includes('/uploads/') && !profilePath.includes('/profiles/') &&
+        profilePath.includes('profile-')) {
+      return profilePath.replace('/uploads/', '/uploads/profiles/');
     }
 
-    // Jika path hanya berisi nama file (profile-xxx.jpg)
-    if (profilePath.startsWith('profile-')) {
-      console.log('Profile path contains only filename, adding /uploads/profiles/ prefix');
-      return `${apiUrl}/uploads/profiles/${profilePath}`;
+    // Jika URL menggunakan localhost, ganti dengan URL produksi
+    if (profilePath.includes('localhost:5000')) {
+      return profilePath.replace('http://localhost:5000', apiUrl);
     }
 
-    // Jika path dimulai dengan /uploads/ tapi tidak /profiles/ dan mengandung profile-
-    if (profilePath.startsWith('/uploads/') && !profilePath.includes('/profiles/') && profilePath.includes('profile-')) {
-      console.log('Profile path starts with /uploads/ but missing /profiles/, fixing path');
-      return `${apiUrl}${profilePath.replace('/uploads/', '/uploads/profiles/')}`;
-    }
+    return profilePath;
+  }
 
-    // Jika path dimulai dengan uploads/ tapi tidak profiles/ dan mengandung profile-
-    if (profilePath.startsWith('uploads/') && !profilePath.includes('profiles/') && profilePath.includes('profile-')) {
-      console.log('Profile path starts with uploads/ but missing profiles/, fixing path');
-      return `${apiUrl}/${profilePath.replace('uploads/', 'uploads/profiles/')}`;
-    }
+  // Jika path dimulai dengan /uploads/profiles/
+  if (profilePath.startsWith('/uploads/profiles/')) {
+    return `${apiUrl}${profilePath}`;
+  }
 
-    // Default case: tambahkan /uploads/profiles/
-    console.log('Using default case, adding /uploads/profiles/ prefix');
+  // Jika path dimulai dengan uploads/profiles/
+  if (profilePath.startsWith('uploads/profiles/')) {
+    return `${apiUrl}/${profilePath}`;
+  }
+
+  // Jika path hanya berisi nama file (profile-xxx.jpg)
+  if (profilePath.startsWith('profile-')) {
     return `${apiUrl}/uploads/profiles/${profilePath}`;
-  };
+  }
+
+  // Jika path dimulai dengan /uploads/ tapi tidak /profiles/ dan mengandung profile-
+  if (profilePath.startsWith('/uploads/') && !profilePath.includes('/profiles/') &&
+      profilePath.includes('profile-')) {
+    return `${apiUrl}${profilePath.replace('/uploads/', '/uploads/profiles/')}`;
+  }
+
+  // Jika path dimulai dengan uploads/ tapi tidak profiles/ dan mengandung profile-
+  if (profilePath.startsWith('uploads/') && !profilePath.includes('profiles/') &&
+      profilePath.includes('profile-')) {
+    return `${apiUrl}/${profilePath.replace('uploads/', 'uploads/profiles/')}`;
+  }
+
+  // Default case: tambahkan /uploads/profiles/
+  return `${apiUrl}/uploads/profiles/${profilePath}`;
+};
 
   export default {
     getImageUrl,

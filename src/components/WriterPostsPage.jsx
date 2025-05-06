@@ -432,7 +432,7 @@ const WriterPostsPage = () => {
     );
   };
 
-  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post
+  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post dengan perbaikan untuk produksi
   const getPostImageUrl = (post) => {
     if (!post) {
       return '/placeholder-image.jpg';
@@ -446,15 +446,32 @@ const WriterPostsPage = () => {
     }
 
     try {
+      // Ambil API URL dari environment variable
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+
       // Jika imageField adalah object dengan path atau url
       if (typeof imageField === 'object') {
         // Prioritaskan URL langsung jika ada
         if (imageField.url) {
+          // Perbaiki URL localhost
+          if (imageField.url.includes('localhost:5000')) {
+            return imageField.url.replace('http://localhost:5000', apiUrl);
+          }
           return imageField.url;
         }
 
         // Gunakan path jika ada
         if (imageField.path) {
+          // Jika path sudah berupa URL lengkap
+          if (typeof imageField.path === 'string' && imageField.path.startsWith('http')) {
+            // Perbaiki URL localhost
+            if (imageField.path.includes('localhost:5000')) {
+              return imageField.path.replace('http://localhost:5000', apiUrl);
+            }
+            return imageField.path;
+          }
+
+          // Gunakan getImageUrl untuk path relatif
           return getImageUrl(imageField.path);
         }
       }
@@ -463,6 +480,10 @@ const WriterPostsPage = () => {
       if (typeof imageField === 'string') {
         // Cek jika sudah URL lengkap
         if (imageField.startsWith('http')) {
+          // Perbaiki URL localhost
+          if (imageField.includes('localhost:5000')) {
+            return imageField.replace('http://localhost:5000', apiUrl);
+          }
           return imageField;
         }
 
@@ -472,7 +493,7 @@ const WriterPostsPage = () => {
 
       return '/placeholder-image.jpg';
     } catch (error) {
-      console.error('Error getting image URL:', error);
+      // Kurangi logging error
       return '/placeholder-image.jpg';
     }
   };

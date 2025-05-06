@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 /**
  * Komponen WriterPostImage yang dioptimalkan untuk halaman writer posts
  * Menghindari efek berkedip dengan pendekatan yang lebih sederhana
+ * Menangani URL localhost dengan lebih baik
  */
 const WriterPostImage = ({
   src,
@@ -14,29 +15,42 @@ const WriterPostImage = ({
   onError,
   fallbackSrc = '/placeholder-image.jpg'
 }) => {
-  const [imgSrc, setImgSrc] = useState(src);
+  const [imgSrc, setImgSrc] = useState('');
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const imgRef = useRef(null);
   const retryCount = useRef(0);
-  const MAX_RETRIES = 2;
+  const MAX_RETRIES = 1; // Kurangi jumlah retry untuk performa lebih baik
 
-  // Reset state saat src berubah
+  // Perbaiki URL localhost saat inisialisasi
   useEffect(() => {
-    setImgSrc(src);
+    if (!src) {
+      setImgSrc(fallbackSrc);
+      return;
+    }
+
+    // Perbaiki URL localhost jika ada
+    if (src.includes('localhost:5000')) {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+      const fixedSrc = src.replace('http://localhost:5000', apiUrl);
+      setImgSrc(fixedSrc);
+    } else {
+      setImgSrc(src);
+    }
+
+    // Reset state
     setHasError(false);
     setIsLoaded(false);
     retryCount.current = 0;
-  }, [src]);
+  }, [src, fallbackSrc]);
 
   // Handler untuk error loading gambar
   const handleError = () => {
     // Jika sudah mencapai batas retry, gunakan fallback
     if (retryCount.current >= MAX_RETRIES) {
-      console.log(`Image load failed after ${MAX_RETRIES} retries:`, src);
       setHasError(true);
       setImgSrc(fallbackSrc);
-      
+
       if (onError) {
         onError();
       }
@@ -45,10 +59,9 @@ const WriterPostImage = ({
 
     // Coba lagi dengan cache busting
     retryCount.current += 1;
-    console.log(`Retrying image load (${retryCount.current}/${MAX_RETRIES}):`, src);
-    
+
     // Tambahkan timestamp untuk cache busting
-    const cacheBuster = `${src}${src.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+    const cacheBuster = `${imgSrc}${imgSrc.includes('?') ? '&' : '?'}_v=${Date.now()}`;
     setImgSrc(cacheBuster);
   };
 
@@ -58,7 +71,7 @@ const WriterPostImage = ({
   };
 
   return (
-    <div 
+    <div
       className={`writer-post-image-container ${className}`}
       style={{
         width,
