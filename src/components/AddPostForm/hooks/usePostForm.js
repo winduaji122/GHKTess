@@ -540,8 +540,27 @@ export const usePostForm = (isEditing, postId, userRole) => {
           console.log('Upload response:', uploadResponse);
 
           if (uploadResponse.success) {
+            // Simpan path dan URL dari respons
+            const imageData = {
+              path: uploadResponse.path,
+              url: uploadResponse.url
+            };
+
+            console.log('Image uploaded successfully:', imageData);
+
+            // Update state post dengan data gambar baru
+            setPost(prev => ({
+              ...prev,
+              image: imageData
+            }));
+
+            // Gunakan path untuk form submission
             imagePath = uploadResponse.path;
-            console.log('Image uploaded successfully, path:', imagePath);
+
+            // Update preview jika ada URL
+            if (uploadResponse.url) {
+              setImagePreview(uploadResponse.url);
+            }
           } else {
             toast.error(uploadResponse.message || 'Gagal mengupload gambar');
             console.error('Upload failed:', uploadResponse.message);

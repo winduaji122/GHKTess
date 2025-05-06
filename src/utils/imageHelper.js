@@ -1,37 +1,24 @@
 /**
  * Helper function untuk menangani URL gambar
  * @param {string} imagePath - Path gambar yang akan diproses
- * @param {number} version - Version untuk cache busting
+ * @param {string} imageSource - Sumber gambar (optional: 'carousel', 'regular', dll)
  * @returns {string|null} URL lengkap gambar atau null jika tidak ada path
  */
 export const getImageUrl = (imagePath, imageSource) => {
-  console.log('getImageUrl input:', imagePath, 'source:', imageSource);
-
-  // Tambahkan stack trace untuk debugging
-  console.log('getImageUrl called from:', new Error().stack);
-
-  // Jika ada informasi image_source, gunakan untuk menentukan path
-  if (imageSource) {
-    console.log('Using image_source for path determination:', imageSource);
-  }
+  // Ambil base URL dari environment variable
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
   // Jika tidak ada path, gunakan gambar default
   if (!imagePath) {
-    console.log('No image path, returning default');
-    // Gunakan URL lengkap untuk gambar default
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
     return `${apiUrl}/uploads/default-image.jpg`;
   }
 
   // Jika path adalah objek, coba ambil properti path
   if (typeof imagePath === 'object' && imagePath !== null) {
-    console.warn('Image path is an object:', imagePath);
-
     // Coba berbagai properti yang mungkin berisi path
     const possiblePaths = ['path', 'filename', 'url', 'src'];
     for (const prop of possiblePaths) {
       if (imagePath[prop] && typeof imagePath[prop] === 'string') {
-        console.log(`Using object property ${prop}:`, imagePath[prop]);
         imagePath = imagePath[prop];
         break;
       }
@@ -39,60 +26,35 @@ export const getImageUrl = (imagePath, imageSource) => {
 
     // Jika masih objek, gunakan default
     if (typeof imagePath === 'object') {
-      console.error('Could not extract path from object, using default');
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
       return `${apiUrl}/uploads/default-image.jpg`;
     }
   }
 
   // Pastikan path adalah string
   const path = String(imagePath);
-  console.log('Path as string:', path);
 
   // Penanganan khusus untuk default-image.jpg
   if (path === 'default-image.jpg' || path === '/default-image.jpg' ||
       path === 'uploads/default-image.jpg' || path === '/uploads/default-image.jpg') {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-    const fullUrl = `${apiUrl}/uploads/default-image.jpg`;
-    console.log('Using default image URL:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}/uploads/default-image.jpg`;
+  }
+
+  // Jika path sudah berupa URL lengkap
+  if (path.startsWith('http')) {
+    // Jika URL menggunakan localhost, ganti dengan URL produksi
+    if (path.includes('localhost:5000')) {
+      return path.replace(/http:\/\/localhost:5000/g, apiUrl);
+    }
+    return path;
   }
 
   // Penanganan khusus berdasarkan image_source
   if (imageSource === 'carousel') {
     // Untuk gambar dari carousel post
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-
-    // Jika path adalah URL lengkap, ekstrak nama file
-    if (path.startsWith('http')) {
-      try {
-        const url = new URL(path);
-        const pathParts = url.pathname.split('/');
-
-        // Periksa apakah URL mengandung /carousel/carousel/
-        if (url.pathname.includes('/carousel/carousel/')) {
-          // Ekstrak nama file dari path
-          const fileName = pathParts[pathParts.length - 1];
-          // Hapus salah satu 'carousel/'
-          const fullUrl = `${apiUrl}/uploads/carousel/${fileName}`;
-          console.log('Fixed doubling carousel path in URL, returning:', fullUrl);
-          return fullUrl;
-        }
-
-        const fileName = pathParts[pathParts.length - 1];
-        const fullUrl = `${apiUrl}/uploads/carousel/${fileName}`;
-        console.log('Extracted carousel image from URL:', fullUrl);
-        return fullUrl;
-      } catch (error) {
-        console.error('Error parsing URL:', error);
-      }
-    }
 
     // Jika path sudah dimulai dengan uploads/, gunakan langsung
     if (path.startsWith('uploads/')) {
-      const fullUrl = `${apiUrl}/${path}`;
-      console.log('Carousel image with uploads/ prefix:', fullUrl);
-      return fullUrl;
+      return `${apiUrl}/${path}`;
     }
 
     // Jika path dimulai dengan carousel/, tambahkan uploads/
@@ -101,231 +63,77 @@ export const getImageUrl = (imagePath, imageSource) => {
       if (path.startsWith('carousel/carousel/')) {
         // Hapus salah satu 'carousel/'
         const fixedPath = path.replace('carousel/carousel/', 'carousel/');
-        const fullUrl = `${apiUrl}/uploads/${fixedPath}`;
-        console.log('Fixed doubling carousel path in image_source handler:', fullUrl);
-        return fullUrl;
+        return `${apiUrl}/uploads/${fixedPath}`;
       } else {
-        const fullUrl = `${apiUrl}/uploads/${path}`;
-        console.log('Carousel image with carousel/ prefix:', fullUrl);
-        return fullUrl;
+        return `${apiUrl}/uploads/${path}`;
       }
     }
 
     // Jika tidak ada prefix, tambahkan uploads/carousel/
-    const fullUrl = `${apiUrl}/uploads/carousel/${path}`;
-    console.log('Carousel image without prefix:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}/uploads/carousel/${path}`;
   } else if (imageSource === 'regular') {
     // Untuk gambar dari regular post
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-    console.log('Processing regular post image with path:', path);
-
-    // Jika path adalah URL lengkap, ekstrak nama file
-    if (path.startsWith('http')) {
-      try {
-        const url = new URL(path);
-        const pathParts = url.pathname.split('/');
-        const fileName = pathParts[pathParts.length - 1];
-
-        // Jika URL sudah mengandung /uploads/, gunakan langsung
-        if (url.pathname.includes('/uploads/')) {
-          console.log('URL already contains /uploads/, using as is:', path);
-          return path;
-        }
-
-        const fullUrl = `${apiUrl}/uploads/${fileName}`;
-        console.log('Extracted regular image from URL:', fullUrl);
-        return fullUrl;
-      } catch (error) {
-        console.error('Error parsing URL:', error);
-        // Fallback: gunakan URL asli
-        return path;
-      }
-    }
 
     // Jika path sudah dimulai dengan uploads/, gunakan langsung
     if (path.startsWith('uploads/')) {
-      // Jika path mengandung http://, ekstrak nama file
-      if (path.includes('http://') || path.includes('https://')) {
-        try {
-          const parts = path.split('/');
-          const fileName = parts[parts.length - 1];
-          const fullUrl = `${apiUrl}/uploads/${fileName}`;
-          console.log('Extracted filename from path with URL:', fullUrl);
-          return fullUrl;
-        } catch (error) {
-          console.error('Error extracting filename:', error);
-        }
-      }
-
-      const fullUrl = `${apiUrl}/${path}`;
-      console.log('Regular post image with uploads/ prefix:', fullUrl);
-      return fullUrl;
+      return `${apiUrl}/${path}`;
     }
 
     // Jika path dimulai dengan /, hapus
-    if (path.startsWith('/')) {
-      path = path.substring(1);
-    }
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 
     // Jika tidak ada prefix, tambahkan uploads/
-    const fullUrl = `${apiUrl}/uploads/${path}`;
-    console.log('Regular post image without prefix:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}/uploads/${cleanPath}`;
   }
 
   // Penanganan khusus untuk path yang dimulai dengan carousel/ (fallback)
   if (path.startsWith('carousel/')) {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-
     // Periksa apakah path mengandung doubling 'carousel/carousel/'
     if (path.startsWith('carousel/carousel/')) {
       // Hapus salah satu 'carousel/'
       const fixedPath = path.replace('carousel/carousel/', 'carousel/');
-      const fullUrl = `${apiUrl}/uploads/${fixedPath}`;
-      console.log('Fixed doubling carousel path in fallback handler:', fullUrl);
-      return fullUrl;
+      return `${apiUrl}/uploads/${fixedPath}`;
     } else {
-      const fullUrl = `${apiUrl}/uploads/${path}`;
-      console.log('Path starts with carousel/, returning:', fullUrl);
-      return fullUrl;
+      return `${apiUrl}/uploads/${path}`;
     }
   }
-
-  // Jika path sudah berupa URL lengkap
-  if (path.startsWith('http')) {
-    console.log('Path is already a full URL:', path);
-
-    // Jika URL menggunakan localhost, ganti dengan URL produksi
-    if (path.includes('localhost:5000')) {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-      const newPath = path.replace(/http:\/\/localhost:5000/g, apiUrl);
-      console.log('Replaced localhost URL with production URL:', newPath);
-      return newPath;
-    }
-
-    // Periksa apakah ini adalah URL gambar profil yang salah (tanpa folder profiles/)
-    if ((path.includes('/uploads/profile-') || path.includes('profile-')) && !path.includes('/uploads/profiles/')) {
-      // Perbaiki URL dengan menambahkan folder profiles/
-      let fixedUrl;
-      if (path.includes('/uploads/profile-')) {
-        fixedUrl = path.replace('/uploads/', '/uploads/profiles/');
-      } else if (path.startsWith('profile-')) {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-        fixedUrl = `${apiUrl}/uploads/profiles/${path}`;
-      } else {
-        fixedUrl = path.replace('profile-', 'profiles/profile-');
-      }
-      console.log('Fixed profile URL by adding profiles folder:', fixedUrl);
-      return fixedUrl;
-    }
-
-    return path;
-  }
-
-  // Ambil base URL dari environment variable
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-  console.log('API URL:', apiUrl);
 
   // Jika path dimulai dengan '/uploads/'
   if (path.startsWith('/uploads/')) {
-    const fullUrl = `${apiUrl}${path}`;
-    console.log('Path starts with /uploads/, returning:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}${path}`;
   }
 
   // Jika path dimulai dengan 'uploads/'
   if (path.startsWith('uploads/')) {
-    const fullUrl = `${apiUrl}/${path}`;
-    console.log('Path starts with uploads/, returning:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}/${path}`;
   }
 
-  // Jika path dimulai dengan '/storage/'
+  // Jika path dimulai dengan '/storage/' atau 'storage/'
   if (path.startsWith('/storage/')) {
-    const fullUrl = `${apiUrl}${path}`;
-    console.log('Path starts with /storage/, returning:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}${path}`;
   }
-
-  // Jika path dimulai dengan 'storage/'
   if (path.startsWith('storage/')) {
-    const fullUrl = `${apiUrl}/${path}`;
-    console.log('Path starts with storage/, returning:', fullUrl);
-    return fullUrl;
+    return `${apiUrl}/${path}`;
   }
 
-  // Jika path dimulai dengan 'carousel/'
-  if (path.startsWith('carousel/')) {
-    // Cek apakah path mengandung doubling 'carousel/carousel/'
-    if (path.startsWith('carousel/carousel/')) {
-      // Hapus salah satu 'carousel/'
-      const fixedPath = path.replace('carousel/carousel/', 'carousel/');
-      const fullUrl = `${apiUrl}/uploads/${fixedPath}`;
-      console.log('Fixed doubling carousel path in general handler, returning:', fullUrl);
-      return fullUrl;
-    } else {
-      // Path normal, tambahkan uploads/
-      const fullUrl = `${apiUrl}/uploads/${path}`;
-      console.log('Path starts with carousel/, returning:', fullUrl);
-      return fullUrl;
-    }
-  }
-
-  // Penanganan khusus untuk gambar post reguler
-  if (path.includes('featured_image') || path.includes('post-image')) {
-    // Jika path sudah mengandung /uploads/, jangan tambahkan lagi
-    if (path.includes('/uploads/')) {
-      console.log('Post image path already contains /uploads/, returning as is');
-      return path;
-    }
-
-    // Gunakan path yang benar untuk gambar post
-    const postImageUrl = `${apiUrl}/uploads/${path}`;
-    console.log('Using post image URL format:', postImageUrl);
-    return postImageUrl;
-  }
-
-  // Penanganan khusus untuk gambar post yang tidak memiliki prefix uploads/
-  // Ini untuk menangani kasus di mana image_url disimpan tanpa prefix uploads/
-  if (path.includes('post-') || path.includes('featured-') ||
-      path.match(/\d{13}-\d+\.[a-z]+$/) || // Format timestamp-number.ext
-      path.match(/\d{13}-[a-f0-9]+\.[a-z]+$/) || // Format timestamp-hash.ext
-      path.match(/\d{10,13}[_-][a-zA-Z0-9]+\.[a-z]+$/) || // Format timestamp_random.ext
-      path.match(/^[0-9]+\.[a-z]+$/) || // Format number.ext
-      path.endsWith('.jpg')) { // Semua file jpg
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-    const fullUrl = `${apiUrl}/uploads/${path}`;
-    console.log('Using post image URL format for post image:', fullUrl);
-    return fullUrl;
-  }
-
-  // Untuk kasus lainnya, coba beberapa format umum
-  // Coba dengan /uploads/profiles/ untuk gambar profil
+  // Penanganan khusus untuk gambar profil
   if (path.includes('profile-')) {
     // Jika path sudah mengandung /uploads/profiles/, jangan tambahkan lagi
     if (path.includes('/uploads/profiles/')) {
-      console.log('Profile path already contains /uploads/profiles/, returning as is');
       return path;
     }
 
     // Jika path mengandung /uploads/ tapi tidak /profiles/, tambahkan /profiles/
     if (path.includes('/uploads/')) {
-      const fixedUrl = path.replace('/uploads/', '/uploads/profiles/');
-      console.log('Fixed profile URL by adding profiles folder:', fixedUrl);
-      return fixedUrl;
+      return path.replace('/uploads/', '/uploads/profiles/');
     }
 
     // Gunakan path yang benar dengan folder profiles/
-    const profileUrl = `${apiUrl}/uploads/profiles/${path}`;
-    console.log('Using profile URL format with profiles folder:', profileUrl);
-    return profileUrl;
+    return `${apiUrl}/uploads/profiles/${path}`;
   }
 
-  // Coba dengan /uploads/ untuk gambar umum
-  const uploadsUrl = `${apiUrl}/uploads/${path}`;
-  console.log('Using uploads URL format:', uploadsUrl);
-  return uploadsUrl;
+  // Default: tambahkan /uploads/ untuk semua kasus lainnya
+  return `${apiUrl}/uploads/${path}`;
 };
 
   /**

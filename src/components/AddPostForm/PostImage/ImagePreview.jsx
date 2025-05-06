@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import LazyImage from '../../common/LazyImage';
 import '../../../styles/lazyImage.css';
 
 const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
   const [hasError, setHasError] = useState(false);
   const retryCount = useRef(0);
   const maxRetries = 3;
+  const imgRef = useRef(null);
 
+  // Fungsi untuk menangani error loading gambar
   const handleError = (error) => {
     if (retryCount.current >= maxRetries) {
       setHasError(true);
@@ -15,11 +16,18 @@ const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
     }
 
     retryCount.current += 1;
+
+    // Coba load gambar lagi dengan cache busting
     const baseUrl = src.split('?')[0];
     const newSrc = `${baseUrl}?retry=${retryCount.current}&t=${Date.now()}`;
-    error.target.src = newSrc;
+
+    // Gunakan referensi langsung ke elemen img
+    if (imgRef.current) {
+      imgRef.current.src = newSrc;
+    }
   };
 
+  // Reset state saat src berubah
   useEffect(() => {
     retryCount.current = 0;
     setHasError(false);
@@ -27,15 +35,16 @@ const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
 
   return (
     <div className="writer-image-preview">
-      <LazyImage
+      {/* Gunakan img langsung daripada LazyImage untuk menghindari masalah */}
+      <img
+        ref={imgRef}
         src={hasError ? '/default-fallback-image.jpg' : src}
         alt="Preview"
         height="200px"
         width="100%"
-        objectFit="cover"
+        style={{ objectFit: 'cover' }}
         className={`writer-preview-image ${isUploading ? 'uploading' : ''}`}
         onError={handleError}
-        key={src}
       />
       {!hasError && (
         <button
