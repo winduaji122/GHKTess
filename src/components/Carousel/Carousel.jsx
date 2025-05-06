@@ -3,13 +3,8 @@ import { Carousel as BootstrapCarousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
 import LazyImage from '../common/LazyImage';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 import { getImageUrl } from '../../utils/imageHelper';
-import './Carousel.css';
-import './carousel-fix.css'; // Import CSS fix untuk transisi horizontal
-import './carousel-performance.css'; // Import CSS untuk optimasi performa
-import '../../styles/lazyImage.css';
+import './carousel-optimized.css'; // File CSS yang sudah dioptimasi
 
 // Preload gambar untuk meningkatkan performa
 const preloadImage = (src) => {
@@ -19,10 +14,41 @@ const preloadImage = (src) => {
       return;
     }
 
-    const img = new Image();
-    img.src = src;
-    img.onload = () => resolve(src);
-    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    // Cek apakah gambar sudah ada di cache browser
+    if ('caches' in window) {
+      caches.match(src).then(response => {
+        if (response) {
+          // Gambar sudah ada di cache, resolve langsung
+          resolve(src);
+          return;
+        }
+
+        // Gambar tidak ada di cache, lanjutkan dengan preload normal
+        preloadWithImage();
+      }).catch(() => {
+        // Error saat mengecek cache, lanjutkan dengan preload normal
+        preloadWithImage();
+      });
+    } else {
+      // Cache API tidak tersedia, lanjutkan dengan preload normal
+      preloadWithImage();
+    }
+
+    function preloadWithImage() {
+      const img = new Image();
+
+      // Tambahkan atribut untuk optimasi
+      img.decoding = 'async';
+      img.fetchPriority = 'high';
+      img.importance = 'high'; // Untuk browser yang mendukung
+
+      // Tambahkan event listener sebelum mengatur src
+      img.onload = () => resolve(src);
+      img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+
+      // Atur src setelah event listener untuk menghindari race condition
+      img.src = src;
+    }
   });
 };
 
@@ -125,31 +151,50 @@ const Carousel = () => {
           // Batasi jumlah slide untuk performa
           const limitedSlides = activeSlides.slice(0, 5);
 
-          // Preload gambar secara paralel
-          const preloadPromises = limitedSlides.map(slide => {
-            const imageUrl = getImageUrl(slide.image_url, slide.image_source);
-            return preloadImage(imageUrl).catch(() => {
-              // Jika gagal, coba URL alternatif
-              const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-              if (slide.image_source === 'regular' && slide.image_url) {
-                const fileName = slide.image_url.split('/').pop();
-                if (fileName) {
-                  return preloadImage(`${apiUrl}/uploads/${fileName}`);
+          // Preload gambar secara paralel - hanya preload 2 slide pertama untuk performa
+          const slidesToPreload = limitedSlides.slice(0, 2);
+
+          // Gunakan Promise.all dengan timeout untuk setiap gambar
+          const preloadPromises = slidesToPreload.map(async (slide) => {
+            try {
+              // Buat timeout untuk setiap gambar (1.5 detik)
+              const imageUrl = getImageUrl(slide.image_url, slide.image_source);
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Image preload timeout')), 1500)
+              );
+
+              // Race antara preload dan timeout
+              await Promise.race([
+                preloadImage(imageUrl),
+                timeoutPromise
+              ]);
+            } catch (error) {
+              // Jika gagal atau timeout, coba URL alternatif
+              try {
+                const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                if (slide.image_source === 'regular' && slide.image_url) {
+                  const fileName = slide.image_url.split('/').pop();
+                  if (fileName) {
+                    await preloadImage(`${apiUrl}/uploads/${fileName}`);
+                    return;
+                  }
+                } else if (slide.image_source === 'carousel' && slide.image_url) {
+                  const fileName = slide.image_url.split('/').pop();
+                  if (fileName) {
+                    await preloadImage(`${apiUrl}/uploads/carousel/${fileName}`);
+                    return;
+                  }
                 }
-              } else if (slide.image_source === 'carousel' && slide.image_url) {
-                const fileName = slide.image_url.split('/').pop();
-                if (fileName) {
-                  return preloadImage(`${apiUrl}/uploads/carousel/${fileName}`);
-                }
+              } catch (fallbackError) {
+                // Abaikan error pada fallback
               }
-              return Promise.resolve(); // Resolve kosong jika semua gagal
-            });
+            }
           });
 
-          // Tunggu semua gambar preload (atau timeout setelah 3 detik)
+          // Tunggu semua gambar preload (atau timeout setelah 2 detik)
           await Promise.race([
             Promise.all(preloadPromises),
-            new Promise(resolve => setTimeout(resolve, 3000))
+            new Promise(resolve => setTimeout(resolve, 2000))
           ]);
 
           setSlides(limitedSlides);
@@ -180,7 +225,47 @@ const Carousel = () => {
     return (
       <div className="writer-carousel-container">
         <div className="writer-carousel-skeleton">
-          <Skeleton height={400} width="100%" />
+          {/* Gunakan div statis daripada Skeleton untuk performa lebih baik */}
+          <div
+            style={{
+              height: "400px",
+              width: "100%",
+              backgroundColor: "#f0f0f0",
+              borderRadius: "4px"
+            }}
+          />
+          {/* Tambahkan skeleton untuk caption untuk UX yang lebih baik */}
+          <div className="writer-carousel-skeleton-caption">
+            {/* Judul */}
+            <div
+              style={{
+                height: "30px",
+                width: "60%",
+                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                borderRadius: "4px",
+                marginBottom: '10px'
+              }}
+            />
+            {/* Deskripsi */}
+            <div
+              style={{
+                height: "20px",
+                width: "80%",
+                backgroundColor: "rgba(255, 255, 255, 0.4)",
+                borderRadius: "4px",
+                marginBottom: '15px'
+              }}
+            />
+            {/* Tombol */}
+            <div
+              style={{
+                height: "36px",
+                width: "120px",
+                backgroundColor: "rgba(255, 255, 255, 0.6)",
+                borderRadius: "18px"
+              }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -206,69 +291,81 @@ const Carousel = () => {
         touch={true} // Mendukung swipe pada perangkat mobile
         wrap={true} // Carousel akan kembali ke awal setelah slide terakhir
         fade={false} // Gunakan transisi slide horizontal untuk performa lebih baik
+        keyboard={false} // Nonaktifkan keyboard navigation untuk mengurangi event listener
       >
-        {slides.map((slide, index) => (
-          <BootstrapCarousel.Item key={slide.id || index}>
-            <div className="writer-carousel-image-container">
-              <LazyImage
-                src={getImageUrl(slide.image_url, slide.image_source)}
-                alt={slide.title || 'Carousel slide'}
-                className="writer-carousel-lazy-image"
-                height="400px"
-                width="100%"
-                objectFit="cover"
-                priority={index < 2} // Prioritaskan hanya 2 slide pertama
-                loading={index < 2 ? "eager" : "lazy"} // Gunakan eager loading hanya untuk slide pertama
-                decoding="async" // Gunakan async decoding untuk performa
-                fetchpriority={index === 0 ? "high" : "auto"} // Prioritas tinggi untuk slide pertama
-                onError={(e) => {
-                  if (!e || !e.target) return;
+        {slides.map((slide, index) => {
+          // Tentukan apakah ini adalah slide yang perlu diprioritaskan
+          const isPriority = index < 2;
+          const isFirstSlide = index === 0;
 
-                  // Coba dengan URL alternatif jika gambar gagal dimuat
-                  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+          // Precompute image URL untuk menghindari kalkulasi berulang
+          const imageUrl = getImageUrl(slide.image_url, slide.image_source);
 
-                  try {
-                    // Tentukan jenis gambar dan coba URL alternatif
-                    let fallbackUrl = null;
+          // Precompute fallback URL untuk menghindari kalkulasi dalam onError
+          const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+          let fallbackUrl = null;
 
-                    if (slide.image_url) {
-                      const fileName = slide.image_url.split('/').pop();
-                      if (fileName) {
-                        if (slide.image_source === 'regular') {
-                          fallbackUrl = `${apiUrl}/uploads/${fileName}`;
-                        } else if (slide.image_source === 'carousel') {
-                          fallbackUrl = `${apiUrl}/uploads/carousel/${fileName}`;
-                        }
-                      }
-                    }
+          if (slide.image_url) {
+            const fileName = slide.image_url.split('/').pop();
+            if (fileName) {
+              if (slide.image_source === 'regular') {
+                fallbackUrl = `${apiUrl}/uploads/${fileName}`;
+              } else if (slide.image_source === 'carousel') {
+                fallbackUrl = `${apiUrl}/uploads/carousel/${fileName}`;
+              }
+            }
+          }
 
-                    // Gunakan fallback URL atau default image
-                    e.target.src = fallbackUrl || `${apiUrl}/uploads/default-image.jpg`;
-                  } catch (error) {
-                    // Fallback ke default image jika terjadi error
-                    e.target.src = `${apiUrl}/uploads/default-image.jpg`;
+          // Optimasi onError handler
+          const handleImageError = (e) => {
+            if (!e || !e.target) return;
+            e.target.src = fallbackUrl || `${apiUrl}/uploads/default-image.jpg`;
+          };
+
+          return (
+            <BootstrapCarousel.Item key={slide.id || index}>
+              <div className="writer-carousel-image-container">
+                <LazyImage
+                  src={imageUrl}
+                  alt={slide.title || 'Carousel slide'}
+                  className="writer-carousel-lazy-image"
+                  height="400px"
+                  width="100%"
+                  objectFit="cover"
+                  priority={isPriority} // Prioritaskan hanya 2 slide pertama
+                  loading={isPriority ? "eager" : "lazy"} // Gunakan eager loading untuk slide prioritas
+                  decoding="async" // Gunakan async decoding untuk performa
+                  fetchpriority={isFirstSlide ? "high" : "auto"} // Prioritas tinggi untuk slide pertama
+                  onError={handleImageError}
+                  customPlaceholder={
+                    <div className="writer-carousel-image-placeholder">
+                      {/* Gunakan div statis daripada Skeleton untuk performa lebih baik */}
+                      <div
+                        style={{
+                          height: "400px",
+                          width: "100%",
+                          backgroundColor: "#f0f0f0",
+                          borderRadius: "4px"
+                        }}
+                      />
+                    </div>
                   }
-                }}
-                customPlaceholder={
-                  <div className="writer-carousel-image-placeholder">
-                    <Skeleton height="400px" width="100%" enableAnimation={false} />
-                  </div>
-                }
-              />
-              <div className="writer-carousel-caption">
-                <h3>{slide.title}</h3>
-                {slide.description && <p>{slide.description}</p>}
-                <button
-                  onClick={() => handleSlideClick(slide)}
-                  className="writer-carousel-button"
-                  aria-label={`Lihat ${slide.title}`}
-                >
-                  {slide.button_text || 'Selengkapnya'}
-                </button>
+                />
+                <div className="writer-carousel-caption">
+                  <h3>{slide.title}</h3>
+                  {slide.description && <p>{slide.description}</p>}
+                  <button
+                    onClick={() => handleSlideClick(slide)}
+                    className="writer-carousel-button"
+                    aria-label={`Lihat ${slide.title}`}
+                  >
+                    {slide.button_text || 'Selengkapnya'}
+                  </button>
+                </div>
               </div>
-            </div>
-          </BootstrapCarousel.Item>
-        ))}
+            </BootstrapCarousel.Item>
+          );
+        })}
       </BootstrapCarousel>
     </div>
   );

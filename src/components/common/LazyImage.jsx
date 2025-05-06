@@ -161,17 +161,21 @@ const LazyImage = ({
   }
 
   // Tampilkan gambar yang sudah dimuat
+  // Periksa apakah ini adalah gambar carousel untuk menghindari animasi fade-in
+  const isCarouselImage = className && className.includes('writer-carousel-lazy-image');
+
   return (
     <img
       ref={imgRef}
       src={imageSrc}
       alt={alt}
-      className={`writer-lazy-image fade-in ${className}`}
+      className={`writer-lazy-image ${!isCarouselImage ? 'fade-in' : ''} ${className}`}
       style={{ objectFit, ...style }}
       width={width}
       height={height}
       loading={priority ? "eager" : "lazy"} // Gunakan native lazy loading juga
       decoding="async" // Tambahkan decoding async untuk performa
+      fetchpriority={priority ? "high" : "auto"} // Tambahkan fetchpriority untuk browser modern
       {...props}
     />
   );

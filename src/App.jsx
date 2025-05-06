@@ -448,38 +448,109 @@ function AppContent() {
 const preloadCarouselImages = async () => {
   try {
     // Hanya preload di halaman utama
-    if (window.location.pathname === '/') {
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      // Cek apakah ada cache di Cache API
+      if ('caches' in window) {
+        try {
+          const cache = await caches.open('carousel-cache');
+          const cachedResponse = await cache.match('carousel-slides');
+
+          if (cachedResponse) {
+            const cachedData = await cachedResponse.json();
+            // Gunakan cache jika belum kedaluwarsa (5 menit)
+            if (cachedData.timestamp && (Date.now() - cachedData.timestamp < 5 * 60 * 1000)) {
+              // Preload gambar dari cache
+              if (cachedData.slides && cachedData.slides.length > 0) {
+                preloadImagesFromData(cachedData.slides);
+                return; // Keluar dari fungsi jika berhasil menggunakan cache
+              }
+            }
+          }
+        } catch (cacheError) {
+          console.warn('Cache API error:', cacheError);
+        }
+      }
+
+      // Jika tidak ada cache, ambil dari API
       const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/carousel?_t=${Date.now()}`);
-      const data = await response.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // Timeout 3 detik
 
-      if (data && data.success && data.slides && data.slides.length > 0) {
-        // Preload hanya 2 slide pertama untuk performa
-        const slidesToPreload = data.slides.slice(0, 2);
+      try {
+        const response = await fetch(`${apiUrl}/api/carousel?_t=${Date.now()}`, {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
 
-        // Preload gambar secara asynchronous
-        slidesToPreload.forEach(slide => {
-          if (slide.image_url) {
-            const img = new Image();
-            let imageUrl = slide.image_url;
+        clearTimeout(timeoutId);
 
-            // Tambahkan domain jika URL relatif
-            if (!imageUrl.startsWith('http')) {
-              if (slide.image_source === 'carousel') {
-                imageUrl = `${apiUrl}/uploads/carousel/${imageUrl.split('/').pop()}`;
-              } else {
-                imageUrl = `${apiUrl}/uploads/${imageUrl.split('/').pop()}`;
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data && data.success && data.slides && data.slides.length > 0) {
+            // Simpan ke cache untuk penggunaan berikutnya
+            if ('caches' in window) {
+              try {
+                const cache = await caches.open('carousel-cache');
+                await cache.put('carousel-slides', new Response(JSON.stringify({
+                  slides: data.slides,
+                  timestamp: Date.now()
+                })));
+              } catch (cacheError) {
+                console.warn('Failed to cache carousel slides:', cacheError);
               }
             }
 
-            img.src = imageUrl;
+            // Preload gambar
+            preloadImagesFromData(data.slides);
           }
-        });
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        console.warn('Failed to fetch carousel data:', fetchError);
       }
     }
   } catch (error) {
     console.warn('Failed to preload carousel images:', error);
   }
+};
+
+// Helper function untuk preload gambar dari data
+const preloadImagesFromData = (slides) => {
+  // Preload hanya 2 slide pertama untuk performa
+  const slidesToPreload = slides.slice(0, 2);
+
+  // Preload gambar dengan prioritas tinggi
+  slidesToPreload.forEach(slide => {
+    if (slide.image_url) {
+      const img = new Image();
+      let imageUrl = slide.image_url;
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+      // Tambahkan domain jika URL relatif
+      if (!imageUrl.startsWith('http')) {
+        if (slide.image_source === 'carousel') {
+          imageUrl = `${apiUrl}/uploads/carousel/${imageUrl.split('/').pop()}`;
+        } else {
+          imageUrl = `${apiUrl}/uploads/${imageUrl.split('/').pop()}`;
+        }
+      }
+
+      // Tambahkan atribut untuk optimasi
+      img.decoding = 'async';
+      img.fetchPriority = 'high';
+
+      // Tambahkan event listener sebelum mengatur src
+      img.onload = () => console.log('Preloaded carousel image:', imageUrl);
+      img.onerror = () => console.warn('Failed to preload carousel image:', imageUrl);
+
+      // Atur src setelah event listener
+      img.src = imageUrl;
+    }
+  });
 };
 
 function App() {
@@ -494,11 +565,19 @@ function App() {
 
   // Preload carousel images setelah komponen dimuat
   useEffect(() => {
+    // Gunakan Promise.race untuk memastikan preload tidak menghambat loading halaman
+    const preloadWithTimeout = async () => {
+      await Promise.race([
+        preloadCarouselImages(),
+        new Promise(resolve => setTimeout(resolve, 2000)) // Timeout 2 detik
+      ]);
+    };
+
     // Gunakan requestIdleCallback jika tersedia, atau setTimeout sebagai fallback
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => preloadCarouselImages());
+      window.requestIdleCallback(() => preloadWithTimeout());
     } else {
-      setTimeout(preloadCarouselImages, 1000);
+      setTimeout(preloadWithTimeout, 1000);
     }
   }, []);
 
