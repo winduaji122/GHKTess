@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import moment from 'moment';
-import LazyImage from './common/LazyImage.jsx';
+import AdminPostImage from './common/AdminPostImage.jsx';
 import { stripHtmlTags } from '../utils/textUtils';
 import PostStats from './PostStats';
 
@@ -55,15 +55,14 @@ const PostItem = memo(({
       onClick={handlePostClick}
     >
       <div className="admin-post-thumbnail">
-        <LazyImage
+        <AdminPostImage
           src={imageUrl}
           alt={`Gambar untuk postingan: ${processedPost.title}`}
           height="150px"
           width="150px"
-          objectFit="cover"
           className="post-image"
-          loading="lazy"
           onError={() => handleImageError(processedPost.id)}
+          fallbackSrc="/placeholder-image.jpg"
         />
         {isFeatured && <div className="admin-featured-label">FEATURED</div>}
       </div>

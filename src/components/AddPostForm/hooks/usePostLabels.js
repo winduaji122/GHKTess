@@ -24,8 +24,6 @@ export const usePostLabels = ({ initialSelectedLabels = [], onLabelsChange }) =>
     ? initialSelectedLabels.map(id => typeof id === 'string' ? parseInt(id) : id)
     : [];
 
-  console.log('Normalized initial labels:', normalizedInitialLabels);
-
   const [selectedLabels, setSelectedLabels] = useState(normalizedInitialLabels);
 
   // State untuk loading
@@ -129,10 +127,7 @@ export const usePostLabels = ({ initialSelectedLabels = [], onLabelsChange }) =>
         parent_id: parentId ? parseInt(parentId) : null
       };
 
-      console.log('Mengirim permintaan untuk membuat label:', labelData);
-
       const newLabel = await createLabel(labelData);
-      console.log('Label berhasil dibuat:', newLabel);
 
       // Format label untuk konsistensi
       const formattedLabel = {
@@ -220,11 +215,8 @@ export const usePostLabels = ({ initialSelectedLabels = [], onLabelsChange }) =>
         parent_id: labelToEdit.parent_id
       };
 
-      console.log('Mengirim permintaan untuk memperbarui label:', { id: numericLabelId, ...updateData });
-
       try {
         const updatedLabel = await updateLabel(numericLabelId, updateData);
-        console.log('Label berhasil diperbarui:', updatedLabel);
 
         // Format label untuk konsistensi
         const formattedLabel = {
@@ -410,9 +402,6 @@ export const usePostLabels = ({ initialSelectedLabels = [], onLabelsChange }) =>
     const normalizedLabels = Array.isArray(initialSelectedLabels)
       ? initialSelectedLabels.map(id => typeof id === 'string' ? parseInt(id) : id)
       : [];
-
-    console.log('initialSelectedLabels changed:', initialSelectedLabels);
-    console.log('Normalized labels for update:', normalizedLabels);
 
     if (normalizedLabels.length > 0) {
       setSelectedLabels(normalizedLabels);

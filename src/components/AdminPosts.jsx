@@ -5,8 +5,7 @@ import PostItem from './PostItem';
 import { useAuth } from '../contexts/AuthContext';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import LazyImage from './common/LazyImage';
-import '../styles/lazyImage.css';
+import AdminPostImage from './common/AdminPostImage';
 import {
   getAllPostsAdmin,
   toggleFeaturedPost,
@@ -573,31 +572,37 @@ function AdminPosts() {
     return '';
   }, []);
 
-  // Gunakan getImageUrl yang diimpor dari '../utils/imageHelper'
-  // dan tambahkan parameter version untuk cache busting
+  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post
   const getPostImageUrl = useCallback((imagePath, postId) => {
     if (!imagePath) return '/default-fallback-image.jpg';
 
     try {
-      const version = imageVersions[postId] || Date.now();
+      // Ambil API URL dari environment variable
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
-      // Bersihkan URL dari duplikasi localhost atau backend URL
-      let cleanPath = imagePath.replace(/^http:\/\/localhost:5000\/uploads\//, '');
-      cleanPath = cleanPath.replace(/^https:\/\/ghk-tess-backend\.vercel\.app\/uploads\//, '');
-      cleanPath = cleanPath.replace(/^uploads\//, '');
-
-      // Pastikan path tidak mengandung URL lengkap ganda
-      if (cleanPath.includes('http://localhost:5000')) {
-        cleanPath = cleanPath.substring(cleanPath.lastIndexOf('http://localhost:5000/uploads/') + 29);
-      }
-      if (cleanPath.includes('https://ghk-tess-backend.vercel.app')) {
-        cleanPath = cleanPath.substring(cleanPath.lastIndexOf('https://ghk-tess-backend.vercel.app/uploads/') + 43);
+      // Jika imagePath adalah URL lengkap
+      if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
+        // Perbaiki URL localhost
+        if (imagePath.includes('localhost:5000')) {
+          return imagePath.replace('http://localhost:5000', apiUrl);
+        }
+        return imagePath;
       }
 
-      return `${import.meta.env.VITE_API_BASE_URL}/uploads/${cleanPath}?v=${version}`;
+      // Bersihkan path dari prefiks yang tidak perlu
+      let cleanPath = imagePath;
+      if (typeof cleanPath === 'string') {
+        cleanPath = cleanPath.replace(/^uploads\//, '');
+        cleanPath = cleanPath.replace(/^\/uploads\//, '');
+      }
+
+      // Tambahkan version untuk cache busting jika diperlukan
+      const version = imageVersions[postId] || '';
+      const versionParam = version ? `?v=${version}` : '';
+
+      // Kembalikan URL lengkap
+      return `${apiUrl}/uploads/${cleanPath}${versionParam}`;
     } catch (error) {
-      // Log ini penting untuk debugging error saat menghasilkan URL gambar
-      console.error('Error generating image URL:', error);
       return '/default-fallback-image.jpg';
     }
   }, [imageVersions]);
@@ -608,8 +613,7 @@ function AdminPosts() {
   }, [navigate]);
 
   const handleImageError = useCallback((postId) => {
-    // Log ini penting untuk debugging masalah loading gambar
-    console.log('Image load error for post:', postId);
+    // Hanya set error state tanpa logging berlebihan
     setImageLoadErrors(prev => ({
       ...prev,
       [postId]: true

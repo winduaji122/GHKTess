@@ -4,26 +4,20 @@ import FeaturedToggle from './FeaturedToggle';
 import SpotlightToggle from './SpotlightToggle';
 
 const PostFeatures = ({ post, isAdmin, onFeaturedToggle, onSpotlightToggle }) => {
-  console.log('PostFeatures render:', { 
-    isAdmin, 
-    is_featured: Boolean(post?.is_featured),
-    is_spotlight: Boolean(post?.is_spotlight)
-  });
+  // Hapus console.log yang tidak perlu
 
   const handleSpotlightChange = useCallback((checked) => {
-    console.log('Spotlight change in PostFeatures:', checked);
     onSpotlightToggle(checked);
   }, [onSpotlightToggle]);
 
   const handleFeaturedChange = useCallback((checked) => {
-    console.log('Featured change in PostFeatures:', checked);
     onFeaturedToggle(checked);
   }, [onFeaturedToggle]);
 
   return (
     <div className="post-features">
       {isAdmin && (
-        <FeaturedToggle 
+        <FeaturedToggle
           isChecked={Boolean(post?.is_featured)}
           onChange={handleFeaturedChange}
           disabled={!isAdmin}
