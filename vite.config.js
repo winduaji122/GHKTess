@@ -68,6 +68,26 @@ Sitemap: ${frontendUrl}/sitemap.xml`;
         console.error('❌ Error processing robots.txt:', error);
       }
 
+      // Salin file verifikasi Google Search Console
+      try {
+        const verificationFiles = [
+          'googlede9e9fdfc5c6af66.html',
+          'google-site-verification.html'
+        ];
+
+        verificationFiles.forEach(file => {
+          const sourcePath = path.resolve('public', file);
+          const destPath = path.resolve('dist', file);
+
+          if (fs.existsSync(sourcePath)) {
+            fs.copyFileSync(sourcePath, destPath);
+            console.log(`✅ ${file} copied to dist`);
+          }
+        });
+      } catch (error) {
+        console.error('❌ Error copying verification files:', error);
+      }
+
       // Proses sitemap.xml jika belum diproses oleh script generate-sitemap
       try {
         const sitemapPath = path.resolve('public', 'sitemap.xml');
