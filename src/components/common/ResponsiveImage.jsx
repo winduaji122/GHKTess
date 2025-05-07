@@ -65,7 +65,11 @@ const ResponsiveImage = ({
 
         // Gunakan URL langsung yang sesuai
         if (imgSrc === src || imgSrc === originalUrl) {
-          setImgSrc(directMain);
+          // Coba URL langsung ke file di direktori uploads
+          const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const directUrl = `${apiUrl}/uploads/${imgSrc.split('/').pop()}`;
+          console.log('Trying direct URL:', directUrl);
+          setImgSrc(directUrl);
         } else if (imgSrc === thumbnailSrc) {
           setImgSrc(directThumbnail || directMain);
         } else if (imgSrc === mediumSrc) {
@@ -76,7 +80,24 @@ const ResponsiveImage = ({
         return;
       }
 
-      // Jika sudah mencoba URL langsung atau tidak ada URL langsung, gunakan fallback default
+      // Jika sudah mencoba URL langsung atau tidak ada URL langsung, coba URL alternatif
+      if (useFallback && imgSrc.includes('/api/images/')) {
+        // Coba URL langsung ke direktori uploads
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const match = imgSrc.match(/\/api\/images\/([^\/]+)\/([^\/]+)/);
+        if (match && match[1] && match[2]) {
+          const imageId = match[1];
+          const size = match[2]; // original, medium, atau thumbnail
+          const directUrl = `${apiUrl}/uploads/${size}/${imageId}`;
+          console.log('Trying alternative URL:', directUrl);
+          setImgSrc(directUrl);
+          setUseFallback(false); // Reset useFallback untuk mencoba lagi
+          retryCount.current = 0; // Reset retry count
+          return;
+        }
+      }
+
+      // Jika semua upaya gagal, gunakan fallback default
       setHasError(true);
       setImgSrc(fallbackSrc);
 
