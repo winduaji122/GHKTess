@@ -9,7 +9,8 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { getImageUrl } from '../../utils/imageHelper';
+import { getImageUrl, getResponsiveImageUrls } from '../../utils/imageHelper';
+import ResponsivePostImage from '../common/ResponsivePostImage';
 import './AddCarouselPost.css';
 
 // Konfigurasi editor Quill
@@ -130,7 +131,18 @@ const AddCarouselPost = () => {
                 });
 
                 if (regularPost.image || regularPost.featured_image || regularPost.image_url) {
-                  setPreviewImage(getImageUrl(regularPost.image || regularPost.featured_image || regularPost.image_url, 'regular'));
+                  const imagePath = regularPost.image || regularPost.featured_image || regularPost.image_url;
+
+                  // Cek apakah imagePath adalah UUID (format baru)
+                  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                  if (uuidPattern.test(imagePath)) {
+                    // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+                    const imageUrls = getResponsiveImageUrls(imagePath);
+                    setPreviewImage(imageUrls.original);
+                  } else {
+                    // Gunakan getImageUrl untuk format lama
+                    setPreviewImage(getImageUrl(imagePath, 'regular'));
+                  }
                 }
 
                 setLoading(false);
@@ -176,11 +188,29 @@ const AddCarouselPost = () => {
             console.log(`Storing original UUID: ${slide.id}`);
 
             if (slide.image_url) {
-              setPreviewImage(getImageUrl(slide.image_url, 'carousel'));
+              // Cek apakah image_url adalah UUID (format baru)
+              const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+              if (uuidPattern.test(slide.image_url)) {
+                // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+                const imageUrls = getResponsiveImageUrls(slide.image_url);
+                setPreviewImage(imageUrls.original);
+              } else {
+                // Gunakan getImageUrl untuk format lama
+                setPreviewImage(getImageUrl(slide.image_url, 'carousel'));
+              }
             }
 
             if (slide.side_image_url) {
-              setPreviewSideImage(getImageUrl(slide.side_image_url, 'carousel'));
+              // Cek apakah side_image_url adalah UUID (format baru)
+              const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+              if (uuidPattern.test(slide.side_image_url)) {
+                // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+                const imageUrls = getResponsiveImageUrls(slide.side_image_url);
+                setPreviewSideImage(imageUrls.original);
+              } else {
+                // Gunakan getImageUrl untuk format lama
+                setPreviewSideImage(getImageUrl(slide.side_image_url, 'carousel'));
+              }
             }
           } else {
             console.error('Carousel post not found:', response.data);
@@ -554,7 +584,13 @@ const AddCarouselPost = () => {
             <div className="carousel-post-image-upload">
               {previewImage ? (
                 <div className="carousel-post-image-preview">
-                  <img src={previewImage} alt="Preview" />
+                  <ResponsivePostImage
+                    src={previewImage}
+                    alt="Preview"
+                    width="100%"
+                    height="100%"
+                    objectFit="cover"
+                  />
                   {!formData.isFromRegularPost && (
                     <button
                       type="button"
@@ -606,7 +642,13 @@ const AddCarouselPost = () => {
                 <div className="carousel-post-image-upload">
                   {previewSideImage ? (
                     <div className="carousel-post-image-preview">
-                      <img src={previewSideImage} alt="Preview" />
+                      <ResponsivePostImage
+                        src={previewSideImage}
+                        alt="Preview"
+                        width="100%"
+                        height="100%"
+                        objectFit="cover"
+                      />
                       <button
                         type="button"
                         className="carousel-post-remove-image"

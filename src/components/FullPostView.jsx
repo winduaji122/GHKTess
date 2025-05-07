@@ -3,8 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPublicPostBySlug, incrementViews } from '../api/postApi';
 import { FaTags, FaHome, FaChevronRight, FaUser, FaCalendarAlt, FaFacebookF, FaWhatsapp, FaEnvelope, FaLink, FaTwitter } from 'react-icons/fa';
 import './FullPostView.css';
-import '../styles/lazyImage.css';
-import LazyImage from './common/LazyImage';
+import ResponsivePostImage from './common/ResponsivePostImage';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import RelatedPostWidget from './RelatedPostWidget';
@@ -13,6 +12,7 @@ import PostEngagement from './Comments/PostEngagement';
 import SEO from './SEO/SEO';
 import { toast } from 'react-toastify';
 import DOMPurify from 'dompurify';
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 
 function FullPostView() {
   const [post, setPost] = useState(null);
@@ -174,27 +174,20 @@ function FullPostView() {
   }, [slugOrId, navigate]);
 
   // Menggunakan useMemo untuk getImageUrl
-  const getImageUrl = useMemo(() => {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-
+  const getPostImageUrl = useMemo(() => {
     return (imagePath) => {
       if (!imagePath) return '/default-fallback-image.jpg';
 
-      // Jika URL menggunakan localhost, ganti dengan URL produksi
-      if (imagePath.startsWith('http') && imagePath.includes('localhost:5000')) {
-        return imagePath.replace(/http:\/\/localhost:5000/g, apiUrl);
+      // Cek apakah imagePath adalah UUID (format baru)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
+        // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+        const imageUrls = getResponsiveImageUrls(imagePath);
+        return imageUrls.original; // Gunakan ukuran original untuk gambar utama
       }
 
-      // Jika sudah URL lengkap lainnya, gunakan langsung
-      if (imagePath.startsWith('http')) return imagePath;
-
-      // Fix double uploads in path
-      if (imagePath.includes('/uploads/uploads/')) {
-        imagePath = imagePath.replace('/uploads/uploads/', '/uploads/');
-      }
-
-      if (imagePath.startsWith('/uploads/')) return `${apiUrl}${imagePath}`;
-      return `${apiUrl}/uploads/${imagePath}`;
+      // Gunakan fungsi getImageUrl dari utils/imageHelper.js
+      return getImageUrl(imagePath);
     };
   }, []);
 
@@ -384,7 +377,7 @@ function FullPostView() {
     "@type": "Article",
     "headline": post.title,
     "description": getMetaDescription(),
-    "image": post.image ? getImageUrl(post.image) : null,
+    "image": post.image ? getPostImageUrl(post.image) : null,
     "datePublished": post.publish_date || post.created_at,
     "dateModified": post.updated_at || post.created_at,
     "author": {
@@ -416,7 +409,7 @@ function FullPostView() {
         title={`${post.title} - Gema Hati Kudus`}
         description={getMetaDescription()}
         keywords={keywords}
-        ogImage={post.image ? getImageUrl(post.image) : null}
+        ogImage={post.image ? getPostImageUrl(post.image) : null}
         ogType="article"
         structuredData={articleStructuredData}
       />
@@ -558,13 +551,14 @@ function FullPostView() {
           </div>
         </div>
         <div className="post-image-container">
-          <LazyImage
-            src={getImageUrl(post.image)}
+          <ResponsivePostImage
+            src={post.image}
             alt={post.title}
             className="full-post-image"
             height="auto"
             width="100%"
             objectFit="cover"
+            priority={true}
           />
         </div>
         <div

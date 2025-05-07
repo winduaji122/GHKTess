@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPopularPosts } from '../api/postApi';
-import { getImageUrl } from '../utils/imageHelper';
-import LazyImage from './common/LazyImage';
+import ResponsivePostImage from './common/ResponsivePostImage';
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import './PopularPostsWidget.css';
@@ -97,8 +97,8 @@ const PopularPostsWidget = ({ limit = 5 }) => {
               className="popular-post-item"
             >
               <div className="popular-post-image">
-                <LazyImage
-                  src={getImageUrl(post.image)}
+                <ResponsivePostImage
+                  src={post.image}
                   alt={post.title}
                   height="80px"
                   width="80px"
@@ -125,12 +125,13 @@ const PopularPostsWidget = ({ limit = 5 }) => {
             className="popular-featured"
           >
             <div className="popular-featured-image">
-              <LazyImage
-                src={getImageUrl(featuredPost.image)}
+              <ResponsivePostImage
+                src={featuredPost.image}
                 alt={featuredPost.title}
                 height="200px"
                 width="100%"
                 objectFit="cover"
+                priority={true}
               />
             </div>
             <div className="popular-featured-content">

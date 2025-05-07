@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import ImagePreview from './ImagePreview';
 import UploadProgress from './UploadProgress';
-import { getImageUrl } from '../../../utils/imageHelper';
+import { getImageUrl, getResponsiveImageUrls } from '../../../utils/imageHelper';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 
 const PostImage = ({ post, uploadStatus, onImageChange, onRemoveImage }) => {
@@ -11,65 +11,118 @@ const PostImage = ({ post, uploadStatus, onImageChange, onRemoveImage }) => {
   // State untuk menyimpan URL preview gambar
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // Fungsi untuk mendapatkan URL gambar dari post.image
-  const getImageUrlFromPost = useCallback((imageData) => {
-    console.log('Getting image URL from:', imageData);
+  // Fungsi untuk mendapatkan informasi gambar dari post.image
+  const getImageInfoFromPost = useCallback((imageData) => {
+    // Objek default untuk informasi gambar
+    const defaultInfo = {
+      url: null,
+      thumbnailUrl: null,
+      mediumUrl: null,
+      srcSet: null,
+      sizes: null
+    };
+
+    // Jika tidak ada data gambar
+    if (!imageData) {
+      return defaultInfo;
+    }
 
     // Jika imageData adalah File object (baru diupload)
     if (imageData instanceof File) {
       const url = URL.createObjectURL(imageData);
-      console.log('Created object URL for File:', url);
-      return url;
+      return {
+        ...defaultInfo,
+        url
+      };
     }
 
     // Jika imageData adalah object dengan file property
     if (imageData?.file instanceof File) {
       const url = URL.createObjectURL(imageData.file);
-      console.log('Created object URL for file property:', url);
-      return url;
+      return {
+        ...defaultInfo,
+        url
+      };
     }
 
-    // Jika imageData adalah object dengan url property (dari respons API)
-    if (imageData?.url) {
-      console.log('Using url property:', imageData.url);
-      return imageData.url;
-    }
-
-    // Jika imageData adalah object dengan path property
-    if (imageData?.path) {
-      // Jika path sudah berupa URL lengkap, gunakan langsung
-      if (typeof imageData.path === 'string' && imageData.path.startsWith('http')) {
-        console.log('Using http path directly:', imageData.path);
-        return imageData.path;
+    // Jika imageData adalah object dengan properti dari API baru
+    if (typeof imageData === 'object') {
+      // Cek apakah ini adalah respons dari API baru dengan kompresi
+      if (imageData.thumbnailUrl || imageData.mediumUrl || imageData.srcSet) {
+        return {
+          url: imageData.url || imageData.path,
+          thumbnailUrl: imageData.thumbnailUrl,
+          mediumUrl: imageData.mediumUrl,
+          srcSet: imageData.srcSet,
+          sizes: imageData.sizes || "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+        };
       }
 
-      const url = getImageUrl(imageData.path, 'regular');
-      console.log('Generated URL from path property:', url);
-      return url;
+      // Jika hanya ada url atau path
+      if (imageData.url) {
+        return {
+          ...defaultInfo,
+          url: imageData.url
+        };
+      }
+
+      if (imageData.path) {
+        // Jika path sudah berupa URL lengkap, gunakan langsung
+        if (typeof imageData.path === 'string' && imageData.path.startsWith('http')) {
+          return {
+            ...defaultInfo,
+            url: imageData.path
+          };
+        }
+
+        const url = getImageUrl(imageData.path, 'regular');
+        return {
+          ...defaultInfo,
+          url
+        };
+      }
     }
 
     // Jika imageData adalah string (path langsung)
     if (typeof imageData === 'string') {
+      // Cek apakah imageData adalah UUID (format baru)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidPattern.test(imageData)) {
+        // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+        const imageUrls = getResponsiveImageUrls(imageData);
+        return {
+          url: imageUrls.original,
+          thumbnailUrl: imageUrls.thumbnail,
+          mediumUrl: imageUrls.medium,
+          srcSet: imageUrls.srcSet,
+          sizes: imageUrls.sizes
+        };
+      }
+
       // Jika string sudah berupa URL lengkap, gunakan langsung
       if (imageData.startsWith('http')) {
-        console.log('Using http string directly:', imageData);
-        return imageData;
+        return {
+          ...defaultInfo,
+          url: imageData
+        };
       }
 
       const url = getImageUrl(imageData, 'regular');
-      console.log('Generated URL from string:', url);
-      return url;
+      return {
+        ...defaultInfo,
+        url
+      };
     }
 
-    console.log('No valid image found, returning null');
-    return null;
+    return defaultInfo;
   }, []);
 
   // Gunakan useEffect untuk mengatur previewUrl saat post.image berubah
   useEffect(() => {
     if (post.image) {
-      const url = getImageUrlFromPost(post.image);
-      setPreviewUrl(url);
+      const imageInfo = getImageInfoFromPost(post.image);
+      // Gunakan medium URL jika tersedia, jika tidak gunakan URL utama
+      setPreviewUrl(imageInfo.mediumUrl || imageInfo.url);
     } else {
       setPreviewUrl(null);
     }
@@ -80,7 +133,10 @@ const PostImage = ({ post, uploadStatus, onImageChange, onRemoveImage }) => {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [post.image, getImageUrlFromPost]);
+  }, [post.image, getImageInfoFromPost]);
+
+  // Dapatkan informasi gambar lengkap
+  const imageInfo = post.image ? getImageInfoFromPost(post.image) : { url: null };
 
   // Gunakan previewUrl untuk menampilkan gambar
   const imageUrl = previewUrl;
@@ -201,17 +257,26 @@ const PostImage = ({ post, uploadStatus, onImageChange, onRemoveImage }) => {
           <div className="writer-image-preview-container">
             <ImagePreview
               src={imageUrl}
+              thumbnailSrc={imageInfo.thumbnailUrl}
+              mediumSrc={imageInfo.mediumUrl}
+              srcSet={imageInfo.srcSet}
+              sizes={imageInfo.sizes}
               onError={(error) => {
                 console.error('Image load error:', error);
                 toast.error('Gagal memuat gambar. Coba upload ulang.');
 
-                // Jika terjadi error, coba gunakan URL alternatif jika ada
+                // Jika terjadi error, coba gunakan URL alternatif
                 if (post.image && typeof post.image === 'object') {
-                  if (post.image.url) {
-                    console.log('Trying alternative URL from post.image.url');
+                  // Coba gunakan URL medium jika tersedia
+                  if (post.image.mediumUrl) {
+                    setPreviewUrl(post.image.mediumUrl);
+                  }
+                  // Jika tidak, coba URL utama
+                  else if (post.image.url) {
                     setPreviewUrl(post.image.url);
-                  } else if (post.image.path) {
-                    console.log('Trying alternative URL from post.image.path');
+                  }
+                  // Jika tidak, coba path
+                  else if (post.image.path) {
                     const altUrl = getImageUrl(post.image.path, 'regular');
                     setPreviewUrl(altUrl);
                   }

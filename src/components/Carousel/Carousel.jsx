@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Carousel as BootstrapCarousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
-import LazyImage from '../common/LazyImage';
-import { getImageUrl } from '../../utils/imageHelper';
+import ResponsivePostImage from '../common/ResponsivePostImage';
+import { getImageUrl, getResponsiveImageUrls } from '../../utils/imageHelper';
 import './carousel-optimized.css'; // File CSS yang sudah dioptimasi
 
 // Preload gambar untuk meningkatkan performa
@@ -158,7 +158,20 @@ const Carousel = () => {
           const preloadPromises = slidesToPreload.map(async (slide) => {
             try {
               // Buat timeout untuk setiap gambar (1.5 detik)
-              const imageUrl = getImageUrl(slide.image_url, slide.image_source);
+              let imageUrl;
+
+              // Cek apakah image_url adalah UUID (format baru)
+              const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+              if (uuidPattern.test(slide.image_url)) {
+                // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+                const imageUrls = getResponsiveImageUrls(slide.image_url);
+                // Gunakan ukuran medium untuk preload (lebih kecil, lebih cepat)
+                imageUrl = imageUrls.medium;
+              } else {
+                // Gunakan getImageUrl untuk format lama
+                imageUrl = getImageUrl(slide.image_url, slide.image_source);
+              }
+
               const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Image preload timeout')), 1500)
               );
@@ -296,16 +309,16 @@ const Carousel = () => {
         {slides.map((slide, index) => {
           // Tentukan apakah ini adalah slide yang perlu diprioritaskan
           const isPriority = index < 2;
-          const isFirstSlide = index === 0;
 
-          // Precompute image URL untuk menghindari kalkulasi berulang
-          const imageUrl = getImageUrl(slide.image_url, slide.image_source);
+          // Cek apakah image_url adalah UUID (format baru)
+          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          const isUuid = slide.image_url && uuidPattern.test(slide.image_url);
 
           // Precompute fallback URL untuk menghindari kalkulasi dalam onError
           const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
           let fallbackUrl = null;
 
-          if (slide.image_url) {
+          if (!isUuid && slide.image_url) {
             const fileName = slide.image_url.split('/').pop();
             if (fileName) {
               if (slide.image_source === 'regular') {
@@ -325,31 +338,16 @@ const Carousel = () => {
           return (
             <BootstrapCarousel.Item key={slide.id || index}>
               <div className="writer-carousel-image-container">
-                <LazyImage
-                  src={imageUrl}
+                <ResponsivePostImage
+                  src={slide.image_url}
                   alt={slide.title || 'Carousel slide'}
                   className="writer-carousel-lazy-image"
                   height="400px"
                   width="100%"
                   objectFit="cover"
                   priority={isPriority} // Prioritaskan hanya 2 slide pertama
-                  loading={isPriority ? "eager" : "lazy"} // Gunakan eager loading untuk slide prioritas
-                  decoding="async" // Gunakan async decoding untuk performa
-                  fetchpriority={isFirstSlide ? "high" : "auto"} // Prioritas tinggi untuk slide pertama
                   onError={handleImageError}
-                  customPlaceholder={
-                    <div className="writer-carousel-image-placeholder">
-                      {/* Gunakan div statis daripada Skeleton untuk performa lebih baik */}
-                      <div
-                        style={{
-                          height: "400px",
-                          width: "100%",
-                          backgroundColor: "#f0f0f0",
-                          borderRadius: "4px"
-                        }}
-                      />
-                    </div>
-                  }
+                  fallbackSrc={fallbackUrl || `${apiUrl}/uploads/default-image.jpg`}
                 />
                 <div className="writer-carousel-caption">
                   <h3>{slide.title}</h3>

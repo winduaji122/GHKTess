@@ -1,50 +1,72 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import ResponsiveImage from '../../common/ResponsiveImage';
 import '../../../styles/lazyImage.css';
+import { getImageUrl, getResponsiveImageUrls } from '../../../utils/imageHelper';
 
-const ImagePreview = ({ src, onError, isUploading, onRemove }) => {
+const ImagePreview = ({ src, onError, isUploading, onRemove, thumbnailSrc, mediumSrc, srcSet, sizes }) => {
   const [hasError, setHasError] = useState(false);
-  const retryCount = useRef(0);
-  const maxRetries = 3;
-  const imgRef = useRef(null);
 
-  // Fungsi untuk menangani error loading gambar
-  const handleError = (error) => {
-    if (retryCount.current >= maxRetries) {
-      setHasError(true);
-      onError?.(error);
-      return;
+  // Ekstrak informasi gambar dari src
+  const extractImageInfo = () => {
+    // Jika src adalah objek dengan properti url, thumbnailUrl, dll.
+    if (typeof src === 'object' && src !== null) {
+      return {
+        main: src.url || src.path,
+        thumbnail: src.thumbnailUrl,
+        medium: src.mediumUrl,
+        srcSet: src.srcSet,
+        sizes: src.sizes
+      };
     }
 
-    retryCount.current += 1;
-
-    // Coba load gambar lagi dengan cache busting
-    const baseUrl = src.split('?')[0];
-    const newSrc = `${baseUrl}?retry=${retryCount.current}&t=${Date.now()}`;
-
-    // Gunakan referensi langsung ke elemen img
-    if (imgRef.current) {
-      imgRef.current.src = newSrc;
+    // Cek apakah src adalah UUID (format baru)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (typeof src === 'string' && uuidPattern.test(src)) {
+      // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+      return getResponsiveImageUrls(src);
     }
+
+    // Jika src adalah string biasa
+    return {
+      main: getImageUrl(src),
+      thumbnail: thumbnailSrc || null,
+      medium: mediumSrc || null,
+      srcSet,
+      sizes
+    };
   };
+
+  const imageInfo = extractImageInfo();
 
   // Reset state saat src berubah
   useEffect(() => {
-    retryCount.current = 0;
     setHasError(false);
   }, [src]);
 
+  // Handler untuk error
+  const handleImageError = () => {
+    setHasError(true);
+    if (onError) {
+      onError(new Error('Failed to load image'));
+    }
+  };
+
   return (
     <div className="writer-image-preview">
-      {/* Gunakan img langsung daripada LazyImage untuk menghindari masalah */}
-      <img
-        ref={imgRef}
-        src={hasError ? '/default-fallback-image.jpg' : src}
+      {/* Gunakan ResponsiveImage untuk performa yang lebih baik */}
+      <ResponsiveImage
+        src={imageInfo.main}
+        thumbnailSrc={imageInfo.thumbnail}
+        mediumSrc={imageInfo.medium}
+        srcSet={imageInfo.srcSet}
+        sizes={imageInfo.sizes}
         alt="Preview"
         height="200px"
         width="100%"
-        style={{ objectFit: 'cover' }}
         className={`writer-preview-image ${isUploading ? 'uploading' : ''}`}
-        onError={handleError}
+        onError={handleImageError}
+        fallbackSrc="/default-fallback-image.jpg"
+        loading="eager"
       />
       {!hasError && (
         <button

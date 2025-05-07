@@ -13,6 +13,13 @@ export const getImageUrl = (imagePath, imageSource) => {
     return `${apiUrl}/uploads/default-image.jpg`;
   }
 
+  // Cek apakah ini adalah UUID (format baru)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidPattern.test(imagePath)) {
+    // Ini adalah ID gambar, gunakan endpoint API baru
+    return `${apiUrl}/api/images/${imagePath}/original`;
+  }
+
   // Jika path adalah objek, coba ambil properti path
   if (typeof imagePath === 'object' && imagePath !== null) {
     // Coba berbagai properti yang mungkin berisi path
@@ -311,9 +318,52 @@ export const getProfileImageUrl = (profilePath) => {
   return `${apiUrl}/uploads/profiles/${profilePath}`;
 };
 
-  export default {
-    getImageUrl,
-    getProfileImageUrl,
-    validateImage,
-    sanitizeFileName
+/**
+ * Helper function untuk mendapatkan URL gambar dengan berbagai ukuran
+ * @param {string} imageId - ID gambar (UUID)
+ * @returns {Object} Objek berisi URL untuk berbagai ukuran gambar
+ */
+export const getResponsiveImageUrls = (imageId) => {
+  // Jika tidak ada ID, kembalikan null
+  if (!imageId) {
+    return null;
+  }
+
+  // Ambil base URL dari environment variable
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+
+  // Cek apakah ini adalah UUID (format baru)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidPattern.test(imageId)) {
+    // Jika bukan UUID, gunakan getImageUrl biasa
+    const url = getImageUrl(imageId);
+    return {
+      original: url,
+      medium: url,
+      thumbnail: url,
+      srcSet: null,
+      sizes: null
+    };
+  }
+
+  // Ini adalah ID gambar, gunakan endpoint API baru
+  const originalUrl = `${apiUrl}/api/images/${imageId}/original`;
+  const mediumUrl = `${apiUrl}/api/images/${imageId}/medium`;
+  const thumbnailUrl = `${apiUrl}/api/images/${imageId}/thumbnail`;
+
+  return {
+    original: originalUrl,
+    medium: mediumUrl,
+    thumbnail: thumbnailUrl,
+    srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
+    sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
   };
+};
+
+export default {
+  getImageUrl,
+  getProfileImageUrl,
+  validateImage,
+  sanitizeFileName,
+  getResponsiveImageUrls
+};

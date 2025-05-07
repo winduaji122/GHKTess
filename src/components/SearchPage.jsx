@@ -9,6 +9,7 @@ import { getLabels } from '../api/labelApi';
 import { searchPosts } from '../api/postApi';
 import SearchBar from './SearchBar';
 import { FaSort, FaCalendarAlt, FaEye, FaComment } from 'react-icons/fa';
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 
 function SearchPage() {
   const navigate = useNavigate();
@@ -25,11 +26,19 @@ function SearchPage() {
   const sortBy = searchParams.get('sort') || 'relevance';
   const selectedLabel = searchParams.get('label_id') || '';
 
-  const getImageUrl = useCallback((imagePath) => {
+  const getPostImageUrl = useCallback((imagePath) => {
     if (!imagePath) return '';
-    return imagePath.startsWith('http')
-      ? imagePath
-      : `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
+
+    // Cek apakah imagePath adalah UUID (format baru)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
+      // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+      const imageUrls = getResponsiveImageUrls(imagePath);
+      return imageUrls.medium; // Gunakan ukuran medium untuk thumbnail
+    }
+
+    // Gunakan fungsi getImageUrl dari utils/imageHelper.js
+    return getImageUrl(imagePath);
   }, []);
 
   const formatDate = useCallback((dateString) => {
@@ -253,7 +262,7 @@ function SearchPage() {
             <div className="result-image-container">
               {post.image && (
                 <img
-                  src={getImageUrl(post.image)}
+                  src={getPostImageUrl(post.image)}
                   alt={post.title}
                   className="result-image"
                   onError={(e) => {

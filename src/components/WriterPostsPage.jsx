@@ -11,7 +11,7 @@ import { getMyPosts, restorePost, getMyDeletedPosts, softDeletePost } from '../a
 import { getLabels } from '../api/labelApi';
 import { useAuth } from '../contexts/AuthContext';
 import './WriterPosts.css';
-import { getImageUrl } from '../utils/imageHelper';
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 import '../styles/custom-dialog.css';
 
 const WriterPostsPage = () => {
@@ -446,6 +446,14 @@ const WriterPostsPage = () => {
     }
 
     try {
+      // Cek apakah imageField adalah UUID (format baru)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (typeof imageField === 'string' && uuidPattern.test(imageField)) {
+        // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+        const imageUrls = getResponsiveImageUrls(imageField);
+        return imageUrls.medium; // Gunakan ukuran medium untuk thumbnail
+      }
+
       // Ambil API URL dari environment variable
       const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import LazyImage from './common/LazyImage';
-import '../styles/lazyImage.css';
+import ResponsivePostImage from './common/ResponsivePostImage';
 import './RelatedPostWidget.css';
 
 // Fungsi untuk mendapatkan tanggal yang valid
@@ -55,8 +54,8 @@ function RelatedPostItem({ post, onClick }) {
   return (
     <div className="related-post-item" onClick={() => onClick(post.slug || post.id)}>
       <div className="related-post-image-container">
-        <LazyImage
-          src={getImageUrl(post.image)}
+        <ResponsivePostImage
+          src={post.image}
           alt={post.title}
           className="related-post-image"
           height="180px"

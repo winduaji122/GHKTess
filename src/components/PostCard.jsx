@@ -1,8 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostCard.css';
-import '../styles/lazyImage.css';
-import LazyImage from './common/LazyImage';
+import ResponsivePostImage from './common/ResponsivePostImage';
+import { getImageUrl } from '../utils/imageHelper';
 import PropTypes from 'prop-types';
 
 const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
@@ -50,23 +50,7 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
     return [];
   }, [post?.labels]);
 
-  const getImageUrl = useCallback((imagePath) => {
-    if (!imagePath) return '/default-fallback-image.jpg';
-
-    // Jika URL sudah lengkap tapi menggunakan localhost, ganti dengan API_BASE_URL
-    if (imagePath.startsWith('http://localhost:5000')) {
-      return imagePath.replace('http://localhost:5000', import.meta.env.VITE_API_BASE_URL);
-    }
-
-    // Jika URL sudah lengkap dan bukan localhost, gunakan apa adanya
-    if (imagePath.startsWith('http')) return imagePath;
-
-    // Jika path dimulai dengan /uploads/
-    if (imagePath.startsWith('/uploads/')) return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
-
-    // Jika hanya nama file
-    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath}`;
-  }, []);
+  // Fungsi getImageUrl sudah diimpor dari utils/imageHelper.js
 
   const postContent = useMemo(() => {
     if (!post || typeof post !== 'object') {
@@ -79,8 +63,8 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
     return (
       <>
         <div className="post-card-image-container">
-          <LazyImage
-            src={getImageUrl(post.image)}
+          <ResponsivePostImage
+            src={post.image}
             alt={post.title || 'Post image'}
             className="post-card-image"
             height="200px"

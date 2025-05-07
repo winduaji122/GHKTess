@@ -1,36 +1,33 @@
 import { api } from './axios';
 
 /**
- * Upload gambar ke server
+ * Upload gambar ke server dengan kompresi otomatis
  * @param {File} file - File gambar yang akan diupload
+ * @param {Object} options - Opsi tambahan (postId, userId, dll)
  * @param {Function} onProgress - Callback untuk progress upload (opsional)
  * @returns {Promise<Object>} - Response dari server
  */
-export const uploadImage = async (file, onProgress) => {
+export const uploadImage = async (file, options = {}, onProgress) => {
   try {
     if (!file) {
       console.error('No file provided for upload');
       throw new Error('No file provided');
     }
 
-    console.log('Uploading file:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    });
-
     const formData = new FormData();
     formData.append('image', file);
 
-    // Log FormData entries untuk debugging
-    const formDataEntries = {};
-    for (const [key, value] of formData.entries()) {
-      formDataEntries[key] = value instanceof File ?
-        `File: ${value.name} (${value.size} bytes)` : value;
+    // Tambahkan opsi tambahan ke formData
+    if (options.postId) {
+      formData.append('postId', options.postId);
     }
-    console.log('FormData entries:', formDataEntries);
 
-    const response = await api.post('/api/upload', formData, {
+    if (options.userId) {
+      formData.append('userId', options.userId);
+    }
+
+    // Gunakan endpoint baru untuk upload dengan kompresi
+    const response = await api.post('/api/images', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -55,7 +52,28 @@ export const uploadImage = async (file, onProgress) => {
     console.log('Upload response:', response.data);
 
     if (response.data.success) {
-      // Pastikan path yang dikembalikan adalah string
+      // Format respons baru dari API dengan kompresi
+      if (response.data.data && response.data.data.urls) {
+        const { id, urls, width, height, size, format } = response.data.data;
+
+        return {
+          success: true,
+          id,
+          path: urls.original,
+          url: urls.original,
+          thumbnailUrl: urls.thumbnail,
+          mediumUrl: urls.medium,
+          width,
+          height,
+          size,
+          format,
+          srcSet: `${urls.thumbnail} 200w, ${urls.medium} 640w, ${urls.original} 1200w`,
+          sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px",
+          message: response.data.message || 'Upload successful'
+        };
+      }
+
+      // Fallback untuk format respons lama
       let imagePath = null;
       let imageUrl = null;
 
@@ -85,9 +103,6 @@ export const uploadImage = async (file, onProgress) => {
         console.error('No valid image path or URL in response:', response.data);
         throw new Error('Invalid response format');
       }
-
-      console.log('Extracted image path:', imagePath);
-      console.log('Extracted image URL:', imageUrl);
 
       // Buat URL lengkap jika hanya ada path
       const apiUrl = import.meta.env.VITE_API_BASE_URL || '';

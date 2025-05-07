@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import LazyImage from './common/LazyImage';
+import ResponsivePostImage from './common/ResponsivePostImage';
+import { getImageUrl } from '../utils/imageHelper';
 import './FeaturedPost.css';
 
 function FeaturedPost({ post }) {
@@ -23,38 +24,22 @@ function FeaturedPost({ post }) {
       : decodedContent;
   }, []);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-
-    // Jika URL sudah lengkap tapi menggunakan localhost, ganti dengan API_BASE_URL
-    if (imagePath.startsWith('http://localhost:5000')) {
-      return imagePath.replace('http://localhost:5000', import.meta.env.VITE_API_BASE_URL);
-    }
-
-    // Jika URL sudah lengkap dan bukan localhost, gunakan apa adanya
-    if (imagePath.startsWith('http')) return imagePath;
-
-    // Jika path dimulai dengan /uploads/
-    if (imagePath.startsWith('/uploads/')) return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
-
-    // Jika hanya nama file
-    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath.split('/').pop()}`;
-  };
+  // Fungsi getImageUrl sudah diimpor dari utils/imageHelper.js
 
   // Hapus log yang tidak perlu untuk meningkatkan performa
 
   return (
     <Link to={`/post/${post.id}`} className="featured-post">
       <div className="featured-image-container">
-        <LazyImage
-          src={getImageUrl(post.image)}
+        <ResponsivePostImage
+          src={post.image}
           alt={post.title}
           className="featured-image"
           height="100%"
           width="100%"
           objectFit="cover"
           priority={true} // Prioritaskan pemuatan gambar featured
-          onError={(e) => {
+          onError={() => {
             console.error('Error loading featured image:', post.image);
           }}
         />

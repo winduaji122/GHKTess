@@ -523,7 +523,13 @@ export const usePostForm = (isEditing, postId, userRole) => {
             speed: 0
           });
 
-          const uploadResponse = await uploadImage(imageFile, (progressData) => {
+          // Gunakan API upload baru dengan kompresi otomatis
+          const uploadOptions = {
+            postId: post.id, // Kirim postId jika sedang edit
+            userId: post.user_id // Kirim userId jika tersedia
+          };
+
+          const uploadResponse = await uploadImage(imageFile, uploadOptions, (progressData) => {
             setUploadStatus({
               isUploading: true,
               progress: progressData.progress,
@@ -537,16 +543,19 @@ export const usePostForm = (isEditing, postId, userRole) => {
             speed: 0
           });
 
-          console.log('Upload response:', uploadResponse);
-
           if (uploadResponse.success) {
-            // Simpan path dan URL dari respons
+            // Simpan data gambar dari respons API baru
             const imageData = {
+              id: uploadResponse.id,
               path: uploadResponse.path,
-              url: uploadResponse.url
+              url: uploadResponse.url,
+              thumbnailUrl: uploadResponse.thumbnailUrl,
+              mediumUrl: uploadResponse.mediumUrl,
+              srcSet: uploadResponse.srcSet,
+              sizes: uploadResponse.sizes,
+              width: uploadResponse.width,
+              height: uploadResponse.height
             };
-
-            console.log('Image uploaded successfully:', imageData);
 
             // Update state post dengan data gambar baru
             setPost(prev => ({
@@ -557,13 +566,10 @@ export const usePostForm = (isEditing, postId, userRole) => {
             // Gunakan path untuk form submission
             imagePath = uploadResponse.path;
 
-            // Update preview jika ada URL
-            if (uploadResponse.url) {
-              setImagePreview(uploadResponse.url);
-            }
+            // Update preview dengan URL medium untuk performa lebih baik
+            setImagePreview(uploadResponse.mediumUrl || uploadResponse.url);
           } else {
             toast.error(uploadResponse.message || 'Gagal mengupload gambar');
-            console.error('Upload failed:', uploadResponse.message);
           }
         } catch (error) {
           console.error('Error uploading image:', error);

@@ -57,6 +57,12 @@ export const endpoints = {
   verifyWriter: (id) => `/api/auth/verify-writer/${id}`,
   rejectWriter: (id) => `/api/auth/reject-writer/${id}`,
   postLabels: (postId) => `/api/posts/${postId}/labels`,
+  // Endpoint untuk gambar responsif
+  imageById: (id) => `/api/images/${id}`,
+  imageOriginal: (id) => `/api/images/${id}/original`,
+  imageMedium: (id) => `/api/images/${id}/medium`,
+  imageThumbnail: (id) => `/api/images/${id}/thumbnail`,
+  imagesByPostId: (postId) => `/api/images/post/${postId}`,
 };
 
 // Konfigurasi lain yang mungkin diperlukan

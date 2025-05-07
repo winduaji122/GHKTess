@@ -32,3 +32,7 @@ dist-ssr
 
 # Tambahkan baris ini jika Anda ingin menyimpan contoh file .env di repositori
 !.env.example
+
+# Database files
+DATABASE TABLE/
+C:/Users/USER/Documents/GHK/my-react-app/DATABASE TABLE/

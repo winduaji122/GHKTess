@@ -31,7 +31,7 @@ import FooterManager from './Admin/FooterManager';
 // import { LazyLoadImage } from 'react-lazy-load-image-component'; // Tidak digunakan
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import Pagination from './Pagination';
-// import { getImageUrl } from '../utils/imageHelper'; // Tidak digunakan karena kita mengimplementasikan getPostImageUrl
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 // import { getCurrentUser } from '../api/auth'; // Tidak digunakan
 import { toast } from 'react-hot-toast';
 import { FiFilter } from 'react-icons/fi';
@@ -577,6 +577,14 @@ function AdminPosts() {
     if (!imagePath) return '/default-fallback-image.jpg';
 
     try {
+      // Cek apakah imagePath adalah UUID (format baru)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
+        // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+        const imageUrls = getResponsiveImageUrls(imagePath);
+        return imageUrls.medium; // Gunakan ukuran medium untuk thumbnail
+      }
+
       // Ambil API URL dari environment variable
       const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 

@@ -2,8 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './SpotlightWidget.css';
-import '../styles/lazyImage.css';
-import LazyImage from './common/LazyImage';
+import ResponsivePostImage from './common/ResponsivePostImage';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SpotlightWidget = ({ posts, limit = 5 }) => {
@@ -52,8 +51,8 @@ const SpotlightWidget = ({ posts, limit = 5 }) => {
           >
             {post.image && (
               <div className="spotlight-item-image-container">
-                <LazyImage
-                  src={getImageUrl(post.image)}
+                <ResponsivePostImage
+                  src={post.image}
                   alt={post.title}
                   className="spotlight-item-image"
                   height="180px"

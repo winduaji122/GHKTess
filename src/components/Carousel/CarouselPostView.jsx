@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/axios';
 import { apiUrl } from '../../api/Config';
-import { getImageUrl } from '../../utils/imageHelper';
+import { getImageUrl, getResponsiveImageUrls } from '../../utils/imageHelper';
 // import { stripHtmlTags } from '../../utils/textUtils';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Helmet } from 'react-helmet-async';
+import ResponsivePostImage from '../common/ResponsivePostImage';
 import './CarouselPostView.css';
 
 // Fungsi untuk memformat tanggal
@@ -123,41 +124,32 @@ const CarouselPostView = () => {
         <meta name="description" content={post.excerpt || `Baca artikel ${post.title} di Gema Hati Kudus`} />
         <meta property="og:title" content={`${post.title} | Gema Hati Kudus`} />
         <meta property="og:description" content={post.excerpt || `Baca artikel ${post.title} di Gema Hati Kudus`} />
-        {post.image_url && <meta property="og:image" content={getImageUrl(post.image_url, 'carousel')} />}
+        {post.image_url && (
+          <meta
+            property="og:image"
+            content={
+              // Cek apakah image_url adalah UUID (format baru)
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.image_url)
+                ? getResponsiveImageUrls(post.image_url).original
+                : getImageUrl(post.image_url, 'carousel')
+            }
+          />
+        )}
       </Helmet>
 
       {/* Hero Image - Full width */}
       {post.image_url && (
         <div className="carousel-post-hero-image">
-          {console.log('Hero image URL:', getImageUrl(post.image_url, 'carousel'))}
-          <img
-            src={getImageUrl(post.image_url, 'carousel')}
+          <ResponsivePostImage
+            src={post.image_url}
             alt={post.title}
-            onError={(e) => {
-              e.target.onerror = null;
-
-              // Coba dengan URL alternatif jika gambar gagal dimuat
-              const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-              try {
-                // Jika URL mengandung carousel/carousel/, perbaiki
-                if (post.image_url && post.image_url.includes('carousel/carousel/')) {
-                  // Ekstrak nama file dari path
-                  const fileName = post.image_url.split('/').pop();
-                  if (fileName) {
-                    e.target.src = `${apiUrl}/uploads/carousel/${fileName}`;
-                    console.log('Trying fixed carousel URL:', `${apiUrl}/uploads/carousel/${fileName}`);
-                    return;
-                  }
-                }
-
-                // Fallback ke placeholder jika semua gagal
-                e.target.src = `${apiUrl}/uploads/default-image.jpg`;
-              } catch (error) {
-                console.error('Error in image error handler:', error);
-                // Fallback ke placeholder jika terjadi error
-                e.target.src = `${apiUrl}/uploads/default-image.jpg`;
-              }
+            width="100%"
+            height="100%"
+            objectFit="cover"
+            priority={true}
+            fallbackSrc={`${apiUrl}/uploads/default-image.jpg`}
+            onError={() => {
+              console.error('Failed to load hero image:', post.image_url);
             }}
           />
           <div className="carousel-post-hero-overlay">
@@ -195,35 +187,15 @@ const CarouselPostView = () => {
 
           {post.side_image_url && (
             <div className="carousel-post-side-image">
-              {console.log('Side image URL:', getImageUrl(post.side_image_url, 'carousel'))}
-              <img
-                src={getImageUrl(post.side_image_url, 'carousel')}
+              <ResponsivePostImage
+                src={post.side_image_url}
                 alt={`${post.title} - gambar samping`}
-                onError={(e) => {
-                  e.target.onerror = null;
-
-                  // Coba dengan URL alternatif jika gambar gagal dimuat
-                  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-                  try {
-                    // Jika URL mengandung carousel/carousel/, perbaiki
-                    if (post.side_image_url && post.side_image_url.includes('carousel/carousel/')) {
-                      // Ekstrak nama file dari path
-                      const fileName = post.side_image_url.split('/').pop();
-                      if (fileName) {
-                        e.target.src = `${apiUrl}/uploads/carousel/${fileName}`;
-                        console.log('Trying fixed carousel URL for side image:', `${apiUrl}/uploads/carousel/${fileName}`);
-                        return;
-                      }
-                    }
-
-                    // Fallback ke placeholder jika semua gagal
-                    e.target.src = `${apiUrl}/uploads/default-image.jpg`;
-                  } catch (error) {
-                    console.error('Error in side image error handler:', error);
-                    // Fallback ke placeholder jika terjadi error
-                    e.target.src = `${apiUrl}/uploads/default-image.jpg`;
-                  }
+                width="100%"
+                height="100%"
+                objectFit="cover"
+                fallbackSrc={`${apiUrl}/uploads/default-image.jpg`}
+                onError={() => {
+                  console.error('Failed to load side image:', post.side_image_url);
                 }}
               />
             </div>

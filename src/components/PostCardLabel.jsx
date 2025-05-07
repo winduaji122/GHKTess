@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import LazyImage from './common/LazyImage';
 import '../styles/lazyImage.css';
 import './PostCardLabel.css';
+import { getImageUrl, getResponsiveImageUrls } from '../utils/imageHelper';
 
 const PostCardLabel = ({ post, onClick, isFeatured = false }) => {
   const navigate = useNavigate();
@@ -38,35 +39,19 @@ const PostCardLabel = ({ post, onClick, isFeatured = false }) => {
   };
 
   // Get image URL with fallback
-  const getImageUrl = (imagePath) => {
+  const getPostImageUrl = (imagePath) => {
     if (!imagePath) return '/default-post-image.jpg';
 
-    // Jika image path berisi localhost, ganti dengan API base URL
-    if (imagePath.includes('localhost')) {
-      // Ekstrak path setelah localhost:port
-      const pathMatch = imagePath.match(/localhost:\d+(\/uploads\/.*)/i);
-      if (pathMatch && pathMatch[1]) {
-        return `${import.meta.env.VITE_API_BASE_URL}${pathMatch[1]}`;
-      }
+    // Cek apakah imagePath adalah UUID (format baru)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
+      // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
+      const imageUrls = getResponsiveImageUrls(imagePath);
+      return isFeatured ? imageUrls.original : imageUrls.medium; // Gunakan ukuran sesuai kebutuhan
     }
 
-    // If image is already a full URL (but not localhost)
-    if (imagePath.startsWith('http') && !imagePath.includes('localhost')) {
-      return imagePath;
-    }
-
-    // Fix double uploads in path
-    if (imagePath.includes('/uploads/uploads/')) {
-      imagePath = imagePath.replace('/uploads/uploads/', '/uploads/');
-    }
-
-    // If image is a relative path with /uploads/
-    if (imagePath.startsWith('/uploads/')) {
-      return `${import.meta.env.VITE_API_BASE_URL}${imagePath}`;
-    }
-
-    // Otherwise, assume it's just a filename
-    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${imagePath}`;
+    // Gunakan fungsi getImageUrl dari utils/imageHelper.js
+    return getImageUrl(imagePath);
   };
 
   // Get author name
@@ -126,7 +111,7 @@ const PostCardLabel = ({ post, onClick, isFeatured = false }) => {
       <div className="writer-featured-post" onClick={onClick || handleCardClick}>
         <div className="writer-featured-post-image-container">
           <LazyImage
-            src={getImageUrl(post.image)}
+            src={getPostImageUrl(post.image)}
             alt={post.title}
             className="writer-featured-post-image"
             height="400px"
@@ -179,7 +164,7 @@ const PostCardLabel = ({ post, onClick, isFeatured = false }) => {
     <div className="writer-post-card" onClick={onClick || handleCardClick}>
       <div className="writer-post-card-image-container">
         <LazyImage
-          src={getImageUrl(post.image)}
+          src={getPostImageUrl(post.image)}
           alt={post.title}
           className="writer-post-card-image"
           height="180px"
