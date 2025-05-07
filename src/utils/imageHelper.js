@@ -17,17 +17,17 @@ export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
   // Cek apakah ini adalah UUID (format baru)
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidPattern.test(imagePath)) {
-    // Ini adalah ID gambar, gunakan API endpoint untuk mengakses gambar
-    // Pilih endpoint berdasarkan parameter size
+    // Ini adalah ID gambar, gunakan URL langsung ke file
+    // Pilih path berdasarkan parameter size
     if (size === 'thumbnail') {
-      return `${apiUrl}/api/images/${imagePath}/thumbnail`;
+      return `${apiUrl}/uploads/thumbnail/${imagePath}`;
     } else if (size === 'medium') {
-      return `${apiUrl}/api/images/${imagePath}/medium`;
+      return `${apiUrl}/uploads/medium/${imagePath}`;
     } else if (size === 'original') {
-      return `${apiUrl}/api/images/${imagePath}/original`;
+      return `${apiUrl}/uploads/original/${imagePath}`;
     } else {
       // Default ke original jika size adalah 'auto' atau tidak valid
-      return `${apiUrl}/api/images/${imagePath}/original`;
+      return `${apiUrl}/uploads/original/${imagePath}`;
     }
   }
 
@@ -371,27 +371,27 @@ export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
     };
   }
 
-  // Ini adalah ID gambar, gunakan API endpoint untuk mengakses gambar
-  const apiOriginalUrl = `${apiUrl}/api/images/${imageId}/original`;
-  const apiMediumUrl = `${apiUrl}/api/images/${imageId}/medium`;
-  const apiThumbnailUrl = `${apiUrl}/api/images/${imageId}/thumbnail`;
-
-  // URL langsung ke file sebagai fallback
+  // Gunakan URL langsung ke file
   const directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
   const directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
   const directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
 
+  // Untuk kompatibilitas dengan kode lama, tetap buat URL API
+  const apiOriginalUrl = directOriginalUrl;
+  const apiMediumUrl = directMediumUrl;
+  const apiThumbnailUrl = directThumbnailUrl;
+
   // Tentukan URL yang diutamakan berdasarkan preferredSize
   let preferredUrl;
   if (preferredSize === 'thumbnail') {
-    preferredUrl = apiThumbnailUrl;
+    preferredUrl = directThumbnailUrl;
   } else if (preferredSize === 'medium') {
-    preferredUrl = apiMediumUrl;
+    preferredUrl = directMediumUrl;
   } else if (preferredSize === 'original') {
-    preferredUrl = apiOriginalUrl;
+    preferredUrl = directOriginalUrl;
   } else {
     // Default ke original jika preferredSize adalah 'auto' atau tidak valid
-    preferredUrl = apiOriginalUrl;
+    preferredUrl = directOriginalUrl;
   }
 
   return {

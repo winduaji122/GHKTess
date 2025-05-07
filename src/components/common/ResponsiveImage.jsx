@@ -71,28 +71,40 @@ const ResponsiveImage = ({
           // Hapus parameter cache busting jika ada
           const cleanImgSrc = imgSrc.split('?')[0];
 
+          // Periksa apakah URL mengandung localhost
+          if (cleanImgSrc.includes('localhost:5000')) {
+            // Ganti localhost dengan URL API
+            const fixedUrl = cleanImgSrc.replace('http://localhost:5000', apiUrl);
+            console.log('Fixed localhost URL:', fixedUrl);
+            setImgSrc(fixedUrl);
+            return;
+          }
+
+          // Periksa apakah URL mengandung path yang salah
+          if (cleanImgSrc.includes('/uploads/http://')) {
+            // Ekstrak nama file dari URL yang salah
+            const parts = cleanImgSrc.split('/uploads/');
+            if (parts.length > 1) {
+              const wrongPath = parts[1];
+              const filename = wrongPath.split('/').pop();
+              // Gunakan nama file langsung
+              const fixedUrl = `${apiUrl}/uploads/${filename}`;
+              console.log('Fixed malformed URL:', fixedUrl);
+              setImgSrc(fixedUrl);
+              return;
+            }
+          }
+
           // Ekstrak ID gambar dari URL API
           const match = cleanImgSrc.match(/\/api\/images\/([^\/]+)\/([^\/]+)/);
           if (match && match[1] && match[2]) {
             const imageId = match[1];
             const size = match[2]; // original, medium, atau thumbnail
 
-            // Coba beberapa format file yang umum
-            const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', ''];
-
-            // Coba format pertama
-            const directUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[0]}`;
+            // Gunakan URL langsung ke file tanpa menambahkan ekstensi
+            const directUrl = `${apiUrl}/uploads/${size}/${imageId}`;
             console.log('Trying direct URL:', directUrl);
             setImgSrc(directUrl);
-
-            // Simpan informasi untuk mencoba format lain jika gagal
-            window.imageRetryInfo = {
-              imageId,
-              size,
-              extensions,
-              currentExtIndex: 0,
-              apiUrl
-            };
           } else {
             // Fallback jika tidak bisa mengekstrak ID
             const directUrl = `${apiUrl}/uploads/${cleanImgSrc.split('/').pop()}`;
@@ -122,22 +134,10 @@ const ResponsiveImage = ({
           const imageId = match[1];
           const size = match[2]; // original, medium, atau thumbnail
 
-          // Coba beberapa format file yang umum
-          const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', ''];
-
-          // Coba format pertama
-          const directUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[0]}`;
+          // Gunakan URL langsung ke file tanpa menambahkan ekstensi
+          const directUrl = `${apiUrl}/uploads/${size}/${imageId}`;
           console.log('Trying alternative URL:', directUrl);
           setImgSrc(directUrl);
-
-          // Simpan informasi untuk mencoba format lain jika gagal
-          window.imageRetryInfo = {
-            imageId,
-            size,
-            extensions,
-            currentExtIndex: 0,
-            apiUrl
-          };
 
           setUseFallback(false); // Reset useFallback untuk mencoba lagi
           retryCount.current = 0; // Reset retry count
@@ -145,20 +145,29 @@ const ResponsiveImage = ({
         }
       }
 
-      // Jika kita sudah mencoba URL alternatif dan masih gagal, coba format file lain
-      if (window.imageRetryInfo && imgSrc.includes('/uploads/')) {
-        const { imageId, size, extensions, currentExtIndex, apiUrl } = window.imageRetryInfo;
+      // Periksa apakah URL mengandung localhost
+      if (imgSrc.includes('localhost:5000')) {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Ganti localhost dengan URL API
+        const fixedUrl = imgSrc.replace('http://localhost:5000', apiUrl);
+        console.log('Fixed localhost URL:', fixedUrl);
+        setImgSrc(fixedUrl);
+        retryCount.current = 0; // Reset retry count
+        return;
+      }
 
-        // Coba format file berikutnya
-        const nextExtIndex = currentExtIndex + 1;
-        if (nextExtIndex < extensions.length) {
-          const nextDirectUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[nextExtIndex]}`;
-          console.log('Trying next file format:', nextDirectUrl);
-
-          // Update informasi retry
-          window.imageRetryInfo.currentExtIndex = nextExtIndex;
-
-          setImgSrc(nextDirectUrl);
+      // Periksa apakah URL mengandung path yang salah
+      if (imgSrc.includes('/uploads/http://')) {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Ekstrak nama file dari URL yang salah
+        const parts = imgSrc.split('/uploads/');
+        if (parts.length > 1) {
+          const wrongPath = parts[1];
+          const filename = wrongPath.split('/').pop();
+          // Gunakan nama file langsung
+          const fixedUrl = `${apiUrl}/uploads/${filename}`;
+          console.log('Fixed malformed URL:', fixedUrl);
+          setImgSrc(fixedUrl);
           retryCount.current = 0; // Reset retry count
           return;
         }
@@ -188,9 +197,34 @@ const ResponsiveImage = ({
     if (imgSrc.includes('/uploads/')) {
       // Untuk URL langsung ke file, jangan tambahkan parameter cache busting
       // karena bisa menyebabkan masalah dengan path
-      const retryUrl = imgSrc;
-      console.log('Retrying with same URL (no cache busting for direct file access):', retryUrl);
-      setImgSrc(retryUrl);
+
+      // Periksa apakah URL mengandung localhost
+      if (imgSrc.includes('localhost:5000')) {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Ganti localhost dengan URL API
+        const fixedUrl = imgSrc.replace('http://localhost:5000', apiUrl);
+        console.log('Fixed localhost URL:', fixedUrl);
+        setImgSrc(fixedUrl);
+      } else if (imgSrc.includes('/uploads/http://')) {
+        // Periksa apakah URL mengandung path yang salah
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Ekstrak nama file dari URL yang salah
+        const parts = imgSrc.split('/uploads/');
+        if (parts.length > 1) {
+          const wrongPath = parts[1];
+          const filename = wrongPath.split('/').pop();
+          // Gunakan nama file langsung
+          const fixedUrl = `${apiUrl}/uploads/${filename}`;
+          console.log('Fixed malformed URL:', fixedUrl);
+          setImgSrc(fixedUrl);
+        }
+      } else {
+        // Coba URL yang sama tanpa cache busting
+        console.log('Retrying with same URL (no cache busting for direct file access):', imgSrc);
+        // Trick untuk memaksa browser me-reload gambar
+        const dummyParam = `${imgSrc}${imgSrc.includes('?') ? '&' : '?'}_dummy=${Math.random()}`;
+        setImgSrc(dummyParam);
+      }
     } else {
       // Untuk URL API, tambahkan parameter cache busting
       const cacheBuster = `${imgSrc}${imgSrc.includes('?') ? '&' : '?'}_v=${Date.now()}`;

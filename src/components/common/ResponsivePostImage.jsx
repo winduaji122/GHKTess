@@ -89,18 +89,19 @@ const ResponsivePostImage = ({
       // Cek apakah ini adalah UUID (format baru)
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidPattern.test(imagePath)) {
-        // Ini adalah ID gambar, gunakan URL API untuk mengakses gambar
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+        // Ini adalah ID gambar, gunakan URL langsung ke file (yang terbukti berfungsi)
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
-        // Gunakan API endpoint untuk mengakses gambar
-        const originalUrl = `${apiUrl}/api/images/${imagePath}/original`;
-        const mediumUrl = `${apiUrl}/api/images/${imagePath}/medium`;
-        const thumbnailUrl = `${apiUrl}/api/images/${imagePath}/thumbnail`;
-
-        // Alternatif: Gunakan path langsung ke file jika API tidak tersedia
+        // Gunakan path langsung ke file tanpa menambahkan ekstensi
+        // Beberapa gambar memiliki ekstensi file di path mereka, beberapa tidak
         const directOriginalUrl = `${apiUrl}/uploads/original/${imagePath}`;
         const directMediumUrl = `${apiUrl}/uploads/medium/${imagePath}`;
         const directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imagePath}`;
+
+        // Untuk kompatibilitas dengan kode lama, tetap buat URL API
+        const originalUrl = directOriginalUrl;
+        const mediumUrl = directMediumUrl;
+        const thumbnailUrl = directThumbnailUrl;
 
         // Tentukan main URL berdasarkan parameter size
         let mainUrl;
