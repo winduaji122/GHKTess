@@ -183,7 +183,7 @@ function FullPostView() {
       if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
         // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
         const imageUrls = getResponsiveImageUrls(imagePath);
-        return imageUrls.original; // Gunakan ukuran original untuk gambar utama
+        return imageUrls.medium; // Gunakan ukuran medium untuk gambar utama (lebih cepat, kualitas masih bagus)
       }
 
       // Gunakan fungsi getImageUrl dari utils/imageHelper.js
@@ -409,7 +409,12 @@ function FullPostView() {
         title={`${post.title} - Gema Hati Kudus`}
         description={getMetaDescription()}
         keywords={keywords}
-        ogImage={post.image ? getPostImageUrl(post.image) : null}
+        ogImage={post.image ? (
+          // Cek apakah image adalah UUID (format baru)
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.image)
+            ? getResponsiveImageUrls(post.image).original // Gunakan ukuran original untuk og:image
+            : getPostImageUrl(post.image)
+        ) : null}
         ogType="article"
         structuredData={articleStructuredData}
       />

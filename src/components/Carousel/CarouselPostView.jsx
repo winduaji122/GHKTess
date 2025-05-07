@@ -130,7 +130,7 @@ const CarouselPostView = () => {
             content={
               // Cek apakah image_url adalah UUID (format baru)
               /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.image_url)
-                ? getResponsiveImageUrls(post.image_url).original
+                ? getResponsiveImageUrls(post.image_url).original // Gunakan ukuran original untuk og:image
                 : getImageUrl(post.image_url, 'carousel')
             }
           />

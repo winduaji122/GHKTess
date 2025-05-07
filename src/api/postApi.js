@@ -1249,6 +1249,12 @@ export const uploadImage = async (file, onProgress) => {
     const formData = new FormData();
     formData.append('image', file);
 
+    // Tambahkan flag untuk menandakan bahwa ini adalah upload gambar untuk post
+    formData.append('type', 'post');
+
+    // Tambahkan flag untuk meminta backend membuat versi thumbnail, medium, dan original
+    formData.append('createVersions', 'true');
+
     const response = await api.post('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -1274,6 +1280,23 @@ export const uploadImage = async (file, onProgress) => {
       throw new Error(response.data?.message || 'Upload gagal');
     }
 
+    // Periksa apakah response mengandung data gambar dengan format baru (UUID)
+    if (response.data.imageId) {
+      // Format baru dengan UUID dan versi gambar
+      return {
+        success: true,
+        imageId: response.data.imageId,
+        path: response.data.imageId, // Gunakan imageId sebagai path
+        url: getImageUrl(response.data.imageId),
+        thumbnailUrl: response.data.thumbnailUrl || `${import.meta.env.VITE_API_BASE_URL}/uploads/thumbnail/${response.data.imageId}`,
+        mediumUrl: response.data.mediumUrl || `${import.meta.env.VITE_API_BASE_URL}/uploads/medium/${response.data.imageId}`,
+        originalUrl: response.data.originalUrl || `${import.meta.env.VITE_API_BASE_URL}/uploads/original/${response.data.imageId}`,
+        srcSet: response.data.srcSet || null,
+        sizes: response.data.sizes || "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+      };
+    }
+
+    // Format lama (fallback)
     return {
       success: true,
       filename: response.data.filename,
@@ -1288,7 +1311,7 @@ export const uploadImage = async (file, onProgress) => {
 };
 
 // Tambahkan fungsi delete image
-export const deleteImage = async (filename) => {
+export const deleteImage = async (imageData) => {
   try {
     // Pastikan ada token
     const token = getAccessToken();
@@ -1296,8 +1319,56 @@ export const deleteImage = async (filename) => {
       throw new Error('No authentication token available');
     }
 
-    // Tidak perlu split lagi karena filename sudah diberikan dari parameter
-    const response = await api.delete(`/api/upload/${filename}`, {
+    // Cek tipe data yang diterima
+    if (!imageData) {
+      console.error('No image data provided');
+      return { success: false, message: 'No image data provided' };
+    }
+
+    let imageId;
+
+    // Jika imageData adalah string, gunakan langsung
+    if (typeof imageData === 'string') {
+      imageId = imageData;
+    }
+    // Jika imageData adalah object dengan imageId atau id
+    else if (typeof imageData === 'object') {
+      imageId = imageData.imageId || imageData.id || imageData.path;
+
+      // Jika masih tidak ada imageId, coba ekstrak dari path
+      if (!imageId && imageData.path) {
+        // Cek apakah path adalah UUID
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidPattern.test(imageData.path)) {
+          imageId = imageData.path;
+        } else {
+          // Coba ekstrak filename dari path
+          const pathParts = imageData.path.split('/');
+          imageId = pathParts[pathParts.length - 1];
+        }
+      }
+    }
+
+    if (!imageId) {
+      console.error('Could not determine image ID from:', imageData);
+      return { success: false, message: 'Invalid image data' };
+    }
+
+    console.log(`Deleting image with ID: ${imageId}`);
+
+    // Gunakan endpoint yang sesuai berdasarkan format imageId
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let endpoint;
+
+    if (uuidPattern.test(imageId)) {
+      // Format baru (UUID) - gunakan endpoint images
+      endpoint = `/api/images/${imageId}`;
+    } else {
+      // Format lama - gunakan endpoint upload
+      endpoint = `/api/upload/${imageId}`;
+    }
+
+    const response = await api.delete(endpoint, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1306,7 +1377,11 @@ export const deleteImage = async (filename) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting image:', error);
-    throw error;
+    // Return object dengan success: false daripada throw error
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
   }
 };
 

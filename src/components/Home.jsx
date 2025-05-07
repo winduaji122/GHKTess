@@ -104,9 +104,9 @@ function Home() {
   return (
     <div className="home-container">
       <SEO
-        title="Gema Hati Kudus - Portal Berita Katolik Indonesia"
-        description="Portal berita Katolik Indonesia yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan umat Katolik di Indonesia."
-        keywords="katolik, gereja katolik, berita katolik, spiritualitas, iman katolik, indonesia"
+        title="Gema Hati Kudus - Portal Berita Skolastikat SCJ Yogyakarta"
+        description="Portal berita Skolastikat SCJ Yogyakarta yang menyajikan informasi terkini seputar Gereja Katolik, spiritualitas, dan kegiatan Skolastikat SCJ Yogyakarta."
+        keywords="katolik, gereja katolik, berita katolik, spiritualitas, skolastikat scj yogyakarta, scj jogja, iman katolik, indonesia"
         ogType="website"
         structuredData={homeStructuredData}
       />

@@ -16,8 +16,9 @@ export const getImageUrl = (imagePath, imageSource) => {
   // Cek apakah ini adalah UUID (format baru)
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidPattern.test(imagePath)) {
-    // Ini adalah ID gambar, gunakan endpoint API baru
-    return `${apiUrl}/api/images/${imagePath}/original`;
+    // Ini adalah ID gambar, gunakan URL langsung ke file
+    // Tidak perlu menambahkan ekstensi file karena path di database sudah lengkap
+    return `${apiUrl}/uploads/original/${imagePath}`;
   }
 
   // Jika path adalah objek, coba ambil properti path
@@ -346,10 +347,11 @@ export const getResponsiveImageUrls = (imageId) => {
     };
   }
 
-  // Ini adalah ID gambar, gunakan endpoint API baru
-  const originalUrl = `${apiUrl}/api/images/${imageId}/original`;
-  const mediumUrl = `${apiUrl}/api/images/${imageId}/medium`;
-  const thumbnailUrl = `${apiUrl}/api/images/${imageId}/thumbnail`;
+  // Ini adalah ID gambar, gunakan URL langsung ke file
+  // Gunakan path yang sesuai dari database tanpa menambahkan ekstensi
+  const originalUrl = `${apiUrl}/uploads/original/${imageId}`;
+  const mediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+  const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
 
   return {
     original: originalUrl,

@@ -68,11 +68,13 @@ const ResponsivePostImage = ({
       // Cek apakah ini adalah UUID (format baru)
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidPattern.test(imagePath)) {
-        // Ini adalah ID gambar, gunakan endpoint API baru
+        // Ini adalah ID gambar, gunakan URL langsung ke file
         const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
-        const originalUrl = `${apiUrl}/api/images/${imagePath}/original`;
-        const mediumUrl = `${apiUrl}/api/images/${imagePath}/medium`;
-        const thumbnailUrl = `${apiUrl}/api/images/${imagePath}/thumbnail`;
+
+        // Gunakan path yang sesuai dari database tanpa menambahkan ekstensi
+        const originalUrl = `${apiUrl}/uploads/original/${imagePath}`;
+        const mediumUrl = `${apiUrl}/uploads/medium/${imagePath}`;
+        const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imagePath}`;
 
         return {
           main: originalUrl,

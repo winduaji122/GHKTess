@@ -35,15 +35,35 @@ export const usePostImages = ({ setPost, setHasChanges, isEditing }) => {
       });
 
       if (result.success) {
-        setPost(prevPost => ({
-          ...prevPost,
-          image: {
-            file: file,
-            path: result.filename,
-            url: result.url
-          }
-        }));
-        
+        // Cek apakah result mengandung data gambar dengan format baru (UUID)
+        if (result.imageId) {
+          // Format baru dengan UUID dan versi gambar
+          setPost(prevPost => ({
+            ...prevPost,
+            image: {
+              file: file,
+              path: result.imageId, // Gunakan imageId sebagai path
+              url: result.url || result.originalUrl,
+              thumbnailUrl: result.thumbnailUrl,
+              mediumUrl: result.mediumUrl,
+              originalUrl: result.originalUrl,
+              srcSet: result.srcSet,
+              sizes: result.sizes,
+              imageId: result.imageId // Simpan imageId untuk digunakan saat update/delete
+            }
+          }));
+        } else {
+          // Format lama (fallback)
+          setPost(prevPost => ({
+            ...prevPost,
+            image: {
+              file: file,
+              path: result.filename || result.path,
+              url: result.url
+            }
+          }));
+        }
+
         setHasChanges(prev => ({
           ...prev,
           image: true
@@ -54,7 +74,7 @@ export const usePostImages = ({ setPost, setHasChanges, isEditing }) => {
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error(error.message || 'Gagal mengupload gambar');
-      
+
       setUploadStatus(prev => ({
         ...prev,
         error: error.message
@@ -70,31 +90,51 @@ export const usePostImages = ({ setPost, setHasChanges, isEditing }) => {
   const handleRemoveImage = async () => {
     try {
       setPost(prevPost => {
+        // Revoke object URL jika ada
         if (prevPost.imagePreview) {
           URL.revokeObjectURL(prevPost.imagePreview);
         }
-        
+
+        // Hapus gambar dari server jika ada
         if (prevPost.image) {
-          deleteImage(prevPost.image).catch(err => {
-            console.error('Error deleting image:', err);
-          });
+          // Cek apakah image mengandung imageId (format baru)
+          if (prevPost.image.imageId) {
+            console.log(`Deleting image with ID: ${prevPost.image.imageId}`);
+            deleteImage(prevPost.image.imageId).catch(err => {
+              console.error('Error deleting image:', err);
+            });
+          }
+          // Cek apakah image mengandung path (format baru atau lama)
+          else if (prevPost.image.path) {
+            console.log(`Deleting image with path: ${prevPost.image.path}`);
+            deleteImage(prevPost.image.path).catch(err => {
+              console.error('Error deleting image:', err);
+            });
+          }
+          // Fallback untuk format lama
+          else {
+            console.log('Deleting image with unknown format:', prevPost.image);
+            deleteImage(prevPost.image).catch(err => {
+              console.error('Error deleting image:', err);
+            });
+          }
         }
-        
+
         return {
           ...prevPost,
           image: null,
           imagePreview: null
         };
       });
-      
+
       setImagePreview(null);
       setImageFile(null);
-      
+
       setHasChanges(prev => ({
         ...prev,
         image: true
       }));
-      
+
       toast.success('Gambar berhasil dihapus');
     } catch (error) {
       console.error('Error removing image:', error);
