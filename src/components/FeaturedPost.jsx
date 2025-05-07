@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import ResponsivePostImage from './common/ResponsivePostImage';
-import { getImageUrl } from '../utils/imageHelper';
 import './FeaturedPost.css';
 
 function FeaturedPost({ post }) {
@@ -39,6 +38,7 @@ function FeaturedPost({ post }) {
           width="100%"
           objectFit="cover"
           priority={true} // Prioritaskan pemuatan gambar featured
+          size="medium" // Gunakan ukuran medium untuk kualitas yang baik dengan performa yang lebih baik
           onError={() => {
             console.error('Error loading featured image:', post.image);
           }}

@@ -2,9 +2,10 @@
  * Helper function untuk menangani URL gambar
  * @param {string} imagePath - Path gambar yang akan diproses
  * @param {string} imageSource - Sumber gambar (optional: 'carousel', 'regular', dll)
+ * @param {string} size - Ukuran gambar yang diinginkan ('thumbnail', 'medium', 'original', 'auto')
  * @returns {string|null} URL lengkap gambar atau null jika tidak ada path
  */
-export const getImageUrl = (imagePath, imageSource) => {
+export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
   // Ambil base URL dari environment variable
   const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
@@ -16,9 +17,18 @@ export const getImageUrl = (imagePath, imageSource) => {
   // Cek apakah ini adalah UUID (format baru)
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidPattern.test(imagePath)) {
-    // Ini adalah ID gambar, gunakan URL langsung ke file
-    // Tidak perlu menambahkan ekstensi file karena path di database sudah lengkap
-    return `${apiUrl}/uploads/original/${imagePath}`;
+    // Ini adalah ID gambar, gunakan API endpoint untuk mengakses gambar
+    // Pilih endpoint berdasarkan parameter size
+    if (size === 'thumbnail') {
+      return `${apiUrl}/api/images/${imagePath}/thumbnail`;
+    } else if (size === 'medium') {
+      return `${apiUrl}/api/images/${imagePath}/medium`;
+    } else if (size === 'original') {
+      return `${apiUrl}/api/images/${imagePath}/original`;
+    } else {
+      // Default ke original jika size adalah 'auto' atau tidak valid
+      return `${apiUrl}/api/images/${imagePath}/original`;
+    }
   }
 
   // Jika path adalah objek, coba ambil properti path
@@ -53,7 +63,20 @@ export const getImageUrl = (imagePath, imageSource) => {
     if (path.includes('localhost:5000')) {
       return path.replace(/http:\/\/localhost:5000/g, apiUrl);
     }
+
+    // Jika URL mengandung /uploads/original/ dan UUID, coba gunakan API endpoint
+    const uuidMatch = path.match(/\/uploads\/original\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    if (uuidMatch && uuidMatch[1]) {
+      return `${apiUrl}/api/images/${uuidMatch[1]}/original`;
+    }
+
     return path;
+  }
+
+  // Penanganan khusus untuk path yang mengandung UUID tanpa ekstensi
+  const uuidInPathMatch = path.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+  if (uuidInPathMatch && uuidInPathMatch[1]) {
+    return `${apiUrl}/api/images/${uuidInPathMatch[1]}/original`;
   }
 
   // Penanganan khusus berdasarkan image_source
@@ -322,9 +345,10 @@ export const getProfileImageUrl = (profilePath) => {
 /**
  * Helper function untuk mendapatkan URL gambar dengan berbagai ukuran
  * @param {string} imageId - ID gambar (UUID)
+ * @param {string} preferredSize - Ukuran gambar yang diutamakan ('thumbnail', 'medium', 'original')
  * @returns {Object} Objek berisi URL untuk berbagai ukuran gambar
  */
-export const getResponsiveImageUrls = (imageId) => {
+export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
   // Jika tidak ada ID, kembalikan null
   if (!imageId) {
     return null;
@@ -336,8 +360,8 @@ export const getResponsiveImageUrls = (imageId) => {
   // Cek apakah ini adalah UUID (format baru)
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidPattern.test(imageId)) {
-    // Jika bukan UUID, gunakan getImageUrl biasa
-    const url = getImageUrl(imageId);
+    // Jika bukan UUID, gunakan getImageUrl biasa dengan parameter size
+    const url = getImageUrl(imageId, null, preferredSize);
     return {
       original: url,
       medium: url,
@@ -347,17 +371,38 @@ export const getResponsiveImageUrls = (imageId) => {
     };
   }
 
-  // Ini adalah ID gambar, gunakan URL langsung ke file
-  // Gunakan path yang sesuai dari database tanpa menambahkan ekstensi
-  const originalUrl = `${apiUrl}/uploads/original/${imageId}`;
-  const mediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
-  const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+  // Ini adalah ID gambar, gunakan API endpoint untuk mengakses gambar
+  const apiOriginalUrl = `${apiUrl}/api/images/${imageId}/original`;
+  const apiMediumUrl = `${apiUrl}/api/images/${imageId}/medium`;
+  const apiThumbnailUrl = `${apiUrl}/api/images/${imageId}/thumbnail`;
+
+  // URL langsung ke file sebagai fallback
+  const directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
+  const directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+  const directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+
+  // Tentukan URL yang diutamakan berdasarkan preferredSize
+  let preferredUrl;
+  if (preferredSize === 'thumbnail') {
+    preferredUrl = apiThumbnailUrl;
+  } else if (preferredSize === 'medium') {
+    preferredUrl = apiMediumUrl;
+  } else if (preferredSize === 'original') {
+    preferredUrl = apiOriginalUrl;
+  } else {
+    // Default ke original jika preferredSize adalah 'auto' atau tidak valid
+    preferredUrl = apiOriginalUrl;
+  }
 
   return {
-    original: originalUrl,
-    medium: mediumUrl,
-    thumbnail: thumbnailUrl,
-    srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
+    original: apiOriginalUrl,
+    medium: apiMediumUrl,
+    thumbnail: apiThumbnailUrl,
+    preferred: preferredUrl,
+    directOriginal: directOriginalUrl,
+    directMedium: directMediumUrl,
+    directThumbnail: directThumbnailUrl,
+    srcSet: `${apiThumbnailUrl} 200w, ${apiMediumUrl} 640w, ${apiOriginalUrl} 1200w`,
     sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
   };
 };

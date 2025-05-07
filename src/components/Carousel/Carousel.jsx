@@ -346,6 +346,7 @@ const Carousel = () => {
                   width="100%"
                   objectFit="cover"
                   priority={isPriority} // Prioritaskan hanya 2 slide pertama
+                  size="medium" // Gunakan ukuran medium untuk carousel
                   onError={handleImageError}
                   fallbackSrc={fallbackUrl || `${apiUrl}/uploads/default-image.jpg`}
                 />

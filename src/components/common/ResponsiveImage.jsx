@@ -19,14 +19,21 @@ const ResponsiveImage = ({
   onError,
   fallbackSrc = '/placeholder-image.jpg',
   thumbnailSrc,
-  mediumSrc
+  mediumSrc,
+  directMain,
+  directThumbnail,
+  directMedium
 }) => {
   const [imgSrc, setImgSrc] = useState(thumbnailSrc || src);
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const imgRef = useRef(null);
   const retryCount = useRef(0);
-  const MAX_RETRIES = 1;
+  const MAX_RETRIES = 2;
+
+  // Simpan URL asli untuk referensi
+  const originalUrl = src;
 
   // Buat srcSet jika tidak disediakan tapi ada thumbnailSrc dan mediumSrc
   const computedSrcSet = srcSet || (
@@ -50,9 +57,29 @@ const ResponsiveImage = ({
   const handleError = () => {
     // Jika sudah mencapai batas retry, gunakan fallback
     if (retryCount.current >= MAX_RETRIES) {
+      // Jika belum mencoba URL langsung dan URL langsung tersedia
+      if (!useFallback && directMain) {
+        console.log('Switching to direct URL fallback');
+        setUseFallback(true);
+        retryCount.current = 0; // Reset retry count untuk URL langsung
+
+        // Gunakan URL langsung yang sesuai
+        if (imgSrc === src || imgSrc === originalUrl) {
+          setImgSrc(directMain);
+        } else if (imgSrc === thumbnailSrc) {
+          setImgSrc(directThumbnail || directMain);
+        } else if (imgSrc === mediumSrc) {
+          setImgSrc(directMedium || directMain);
+        } else {
+          setImgSrc(directMain);
+        }
+        return;
+      }
+
+      // Jika sudah mencoba URL langsung atau tidak ada URL langsung, gunakan fallback default
       setHasError(true);
       setImgSrc(fallbackSrc);
-      
+
       if (onError) {
         onError();
       }
@@ -61,13 +88,13 @@ const ResponsiveImage = ({
 
     // Coba lagi dengan cache busting
     retryCount.current += 1;
-    
+
     // Coba gunakan medium size jika tersedia
     if (retryCount.current === 1 && mediumSrc && imgSrc !== mediumSrc) {
       setImgSrc(mediumSrc);
       return;
     }
-    
+
     // Tambahkan timestamp untuk cache busting
     const cacheBuster = `${imgSrc}${imgSrc.includes('?') ? '&' : '?'}_v=${Date.now()}`;
     setImgSrc(cacheBuster);
@@ -79,7 +106,7 @@ const ResponsiveImage = ({
   };
 
   return (
-    <div 
+    <div
       className={`responsive-image-container ${className}`}
       style={{
         width: width || 'auto',
@@ -149,7 +176,10 @@ ResponsiveImage.propTypes = {
   onError: PropTypes.func,
   fallbackSrc: PropTypes.string,
   thumbnailSrc: PropTypes.string,
-  mediumSrc: PropTypes.string
+  mediumSrc: PropTypes.string,
+  directMain: PropTypes.string,
+  directThumbnail: PropTypes.string,
+  directMedium: PropTypes.string
 };
 
 export default ResponsiveImage;

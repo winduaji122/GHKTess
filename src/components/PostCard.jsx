@@ -70,6 +70,7 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
             height="200px"
             width="100%"
             objectFit="cover"
+            size="thumbnail" // Gunakan ukuran thumbnail untuk performa lebih baik
           />
           {!isSpotlight && labels.length > 0 && (
             <div className="post-card-labels-overlay">

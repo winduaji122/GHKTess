@@ -103,6 +103,7 @@ const PopularPostsWidget = ({ limit = 5 }) => {
                   height="80px"
                   width="80px"
                   objectFit="cover"
+                  size="thumbnail" // Gunakan ukuran thumbnail untuk daftar post
                 />
               </div>
               <div className="popular-post-content">
@@ -132,6 +133,7 @@ const PopularPostsWidget = ({ limit = 5 }) => {
                 width="100%"
                 objectFit="cover"
                 priority={true}
+                size="medium" // Gunakan ukuran medium untuk featured post
               />
             </div>
             <div className="popular-featured-content">

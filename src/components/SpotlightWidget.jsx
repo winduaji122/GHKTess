@@ -58,6 +58,7 @@ const SpotlightWidget = ({ posts, limit = 5 }) => {
                   height="180px"
                   width="100%"
                   objectFit="cover"
+                  size="thumbnail" // Gunakan ukuran thumbnail untuk performa lebih baik
                 />
               </div>
             )}
