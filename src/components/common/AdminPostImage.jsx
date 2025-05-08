@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
-import ResponsivePostImage from './ResponsivePostImage';
+import SimpleResponsivePostImage from './SimpleResponsivePostImage';
 
 /**
  * Komponen AdminPostImage yang dioptimalkan untuk halaman admin posts
- * Menggunakan ResponsivePostImage untuk performa yang lebih baik
+ * Menggunakan SimpleResponsivePostImage untuk performa yang lebih baik
  */
 const AdminPostImage = ({
   src,
@@ -57,7 +57,7 @@ const AdminPostImage = ({
   }, []);
 
   return (
-    <ResponsivePostImage
+    <SimpleResponsivePostImage
       src={fixImageUrl(src)}
       alt={alt}
       className={`admin-post-image-container ${className}`}
@@ -67,7 +67,7 @@ const AdminPostImage = ({
       onError={onError}
       size="thumbnail" // Gunakan ukuran thumbnail untuk performa yang lebih baik
       priority={index < 5} // Prioritaskan 5 gambar pertama
-      loading={index < 5 ? "eager" : "lazy"} // Lazy loading untuk gambar yang tidak terlihat
+      fallbackSrc="/placeholder-image.jpg"
     />
   );
 };

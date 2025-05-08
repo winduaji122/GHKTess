@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Carousel as BootstrapCarousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
-import ResponsivePostImage from '../common/ResponsivePostImage';
-import { getImageUrl, getResponsiveImageUrls } from '../../utils/imageHelper';
+import SimpleResponsivePostImage from '../common/SimpleResponsivePostImage';
+import { getImageUrl } from '../../utils/imageHelper';
 import './carousel-optimized.css'; // File CSS yang sudah dioptimasi
 
 // Preload gambar untuk meningkatkan performa
@@ -160,13 +160,14 @@ const Carousel = () => {
               // Buat timeout untuk setiap gambar (1.5 detik)
               let imageUrl;
 
+              // Gunakan getImageUrl untuk semua format
+              const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
               // Cek apakah image_url adalah UUID (format baru)
               const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
               if (uuidPattern.test(slide.image_url)) {
-                // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
-                const imageUrls = getResponsiveImageUrls(slide.image_url);
-                // Gunakan ukuran medium untuk preload (lebih kecil, lebih cepat)
-                imageUrl = imageUrls.medium;
+                // Gunakan URL langsung ke medium size
+                imageUrl = `${apiUrl}/uploads/medium/${slide.image_url}`;
               } else {
                 // Gunakan getImageUrl untuk format lama
                 imageUrl = getImageUrl(slide.image_url, slide.image_source);
@@ -338,7 +339,7 @@ const Carousel = () => {
           return (
             <BootstrapCarousel.Item key={slide.id || index}>
               <div className="writer-carousel-image-container">
-                <ResponsivePostImage
+                <SimpleResponsivePostImage
                   src={slide.image_url}
                   alt={slide.title || 'Carousel slide'}
                   className="writer-carousel-lazy-image"
