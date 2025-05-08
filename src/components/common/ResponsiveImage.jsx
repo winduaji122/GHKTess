@@ -80,8 +80,31 @@ const ResponsiveImage = ({
       return;
     }
 
+    // Jika URL mengandung /uploads/ tapi tidak mengandung ekstensi file, coba tambahkan ekstensi
+    if (imgSrc.includes('/uploads/') && !imgSrc.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      // Ekstrak ID gambar dari URL
+      const parts = imgSrc.split('/');
+      const imageId = parts[parts.length - 1].split('?')[0]; // Hapus parameter query jika ada
+
+      // Coba tambahkan ekstensi .jpg
+      if (retryCount.current === 1) {
+        const newUrl = imgSrc + '.jpg';
+        console.log('Trying with .jpg extension:', newUrl);
+        setImgSrc(newUrl);
+        return;
+      }
+
+      // Coba tambahkan ekstensi .png
+      if (retryCount.current === 2) {
+        const newUrl = imgSrc.replace(/\.jpg$/, '') + '.png';
+        console.log('Trying with .png extension:', newUrl);
+        setImgSrc(newUrl);
+        return;
+      }
+    }
+
     // Strategi 1: Coba gunakan medium size jika tersedia dan belum dicoba
-    if (retryCount.current === 1 && mediumSrc && imgSrc !== mediumSrc) {
+    if (retryCount.current === 3 && mediumSrc && imgSrc !== mediumSrc) {
       console.log('Trying medium size URL:', mediumSrc);
       setImgSrc(mediumSrc);
       return;
@@ -252,9 +275,47 @@ const ResponsiveImage = ({
       return;
     }
 
-    // Strategi 6: Jika sudah mencapai batas retry, gunakan fallback
+    // Strategi 6: Jika URL mengandung /uploads/ dan sudah mencoba beberapa ekstensi, coba dengan ekstensi lain
+    if (imgSrc.includes('/uploads/') && retryCount.current >= 4 && retryCount.current < MAX_RETRIES - 1) {
+      const parts = imgSrc.split('/');
+      const imageId = parts[parts.length - 1].split('?')[0].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
+
+      const extensions = ['.jpeg', '.gif', '.webp'];
+      const extensionIndex = retryCount.current - 4;
+
+      if (extensionIndex < extensions.length) {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const size = imgSrc.includes('/medium/') ? 'medium' :
+                    imgSrc.includes('/thumbnail/') ? 'thumbnail' : 'original';
+        const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[extensionIndex]}`;
+        console.log(`Trying with ${extensions[extensionIndex]} extension:`, newUrl);
+        setImgSrc(newUrl);
+        return;
+      }
+    }
+
+    // Strategi 7: Jika sudah mencapai batas retry, gunakan fallback
     if (retryCount.current >= MAX_RETRIES) {
       console.log('Reached maximum retries, using fallback');
+
+      // Jika ini adalah gambar dari /uploads/, simpan informasi error ke localStorage
+      if (imgSrc.includes('/uploads/')) {
+        try {
+          const parts = imgSrc.split('/');
+          const imageId = parts[parts.length - 1].split('?')[0].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
+
+          // Simpan informasi error ke localStorage
+          const errorImages = JSON.parse(localStorage.getItem('errorImages') || '{}');
+          errorImages[imageId] = {
+            url: imgSrc,
+            timestamp: new Date().toISOString()
+          };
+          localStorage.setItem('errorImages', JSON.stringify(errorImages));
+        } catch (error) {
+          console.error('Error saving error image info to localStorage:', error);
+        }
+      }
+
       setHasError(true);
       setImgSrc(fallbackSrc);
 
@@ -264,8 +325,22 @@ const ResponsiveImage = ({
       return;
     }
 
-    // Strategi 7: Tambahkan parameter dummy untuk refresh
+    // Strategi 8: Tambahkan parameter dummy untuk refresh
     if (imgSrc.includes('/uploads/')) {
+      // Coba dengan URL yang berbeda format
+      if (retryCount.current === MAX_RETRIES - 1) {
+        const parts = imgSrc.split('/');
+        const imageId = parts[parts.length - 1].split('?')[0].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+        // Coba dengan format URL yang berbeda
+        const newUrl = `${apiUrl}/uploads/${imageId}`;
+        console.log('Trying with different URL format:', newUrl);
+        setImgSrc(newUrl);
+        return;
+      }
+
+      // Tambahkan parameter dummy
       const dummyParam = `${cleanImgSrc}${cleanImgSrc.includes('?') ? '&' : '?'}_dummy=${Math.random()}`;
       console.log('Retrying with dummy parameter:', dummyParam);
       setImgSrc(dummyParam);

@@ -576,9 +576,48 @@ export const getImageUrlWithExtension = (imageId, size = 'original') => {
   if (!imageId) return null;
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+  // Jika imageId sudah mengandung ekstensi, gunakan langsung
+  if (imageId.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    return `${apiUrl}/uploads/${size}/${imageId}`;
+  }
+
+  // Jika imageId adalah URL lengkap, ekstrak nama file
+  if (imageId.startsWith('http')) {
+    const urlParts = imageId.split('/');
+    const fileName = urlParts[urlParts.length - 1];
+    return `${apiUrl}/uploads/${size}/${fileName}`;
+  }
+
+  // Jika imageId adalah format image-*, coba deteksi ekstensi dari pola
+  if (imageId.includes('image-')) {
+    // Coba cari di cache localStorage
+    try {
+      const cachedExtensions = localStorage.getItem('imageExtensionCache');
+      if (cachedExtensions) {
+        const extensionMap = JSON.parse(cachedExtensions);
+        if (extensionMap[imageId]) {
+          return `${apiUrl}/uploads/${size}/${imageId}${extensionMap[imageId]}`;
+        }
+      }
+    } catch (error) {
+      console.error('Error reading from imageExtensionCache:', error);
+    }
+
+    // Jika tidak ada di cache, gunakan .jpg sebagai default untuk image-*
+    return `${apiUrl}/uploads/${imageId}`;
+  }
+
+  // Untuk UUID, coba semua ekstensi yang umum
   const extension = detectImageExtension(imageId);
 
-  return `${apiUrl}/uploads/${size}/${imageId}${extension}`;
+  // Jika ekstensi ditemukan, gunakan
+  if (extension) {
+    return `${apiUrl}/uploads/${size}/${imageId}${extension}`;
+  }
+
+  // Jika tidak ada ekstensi yang ditemukan, coba tanpa ekstensi
+  return `${apiUrl}/uploads/${size}/${imageId}`;
 };
 
 export default {
