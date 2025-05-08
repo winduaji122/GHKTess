@@ -143,8 +143,29 @@ function AdminPosts() {
     }
   }, []);
 
-  // Inisialisasi database gambar jika belum ada
+  // Inisialisasi database gambar dan cache gambar
   useEffect(() => {
+    // Inisialisasi cache gambar jika belum ada
+    if (!window.imageCache) {
+      window.imageCache = new Map();
+    }
+
+    // Coba ambil cache gambar dari localStorage
+    try {
+      const cachedImageUrls = localStorage.getItem('imageUrlCache');
+      if (cachedImageUrls) {
+        const parsedCache = JSON.parse(cachedImageUrls);
+        // Konversi objek JSON kembali ke Map
+        Object.entries(parsedCache).forEach(([key, value]) => {
+          window.imageCache.set(key, value);
+        });
+        console.log('AdminPosts: Loaded image URL cache from localStorage:', Object.keys(parsedCache).length, 'entries');
+      }
+    } catch (error) {
+      console.error('Error loading image URL cache from localStorage:', error);
+    }
+
+    // Inisialisasi database gambar jika belum ada
     if (!window.imageDatabase && typeof window !== 'undefined') {
       // Coba ambil dari localStorage
       try {
@@ -152,6 +173,44 @@ function AdminPosts() {
         if (cachedData) {
           window.imageDatabase = JSON.parse(cachedData);
           console.log('AdminPosts: Loaded image database from localStorage:', window.imageDatabase.length, 'images');
+
+          // Pre-cache URL gambar untuk mempercepat loading
+          const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+          window.imageDatabase.forEach(img => {
+            // Cache URL untuk setiap ukuran
+            const originalUrl = `${apiUrl}/${img.original_path}`;
+            const mediumUrl = `${apiUrl}/${img.medium_path}`;
+            const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+            // Simpan ke cache dengan ID sebagai key
+            window.imageCache.set(img.id, {
+              original: originalUrl,
+              medium: mediumUrl,
+              thumbnail: thumbnailUrl
+            });
+
+            // Cache juga dengan nama file sebagai key untuk format lama
+            const originalFilename = img.original_path.split('/').pop();
+            if (originalFilename) {
+              window.imageCache.set(originalFilename, {
+                original: originalUrl,
+                medium: mediumUrl,
+                thumbnail: thumbnailUrl
+              });
+            }
+          });
+
+          // Simpan cache ke localStorage
+          try {
+            const cacheObject = {};
+            window.imageCache.forEach((value, key) => {
+              cacheObject[key] = value;
+            });
+            localStorage.setItem('imageUrlCache', JSON.stringify(cacheObject));
+            console.log('AdminPosts: Saved image URL cache to localStorage:', Object.keys(cacheObject).length, 'entries');
+          } catch (error) {
+            console.error('Error saving image URL cache to localStorage:', error);
+          }
         }
       } catch (error) {
         console.error('Error loading image database from localStorage:', error);
@@ -169,11 +228,48 @@ function AdminPosts() {
                 window.imageDatabase = data.images;
                 console.log('AdminPosts: Loaded image database from server:', window.imageDatabase.length, 'images');
 
-                // Simpan ke localStorage untuk penggunaan berikutnya
+                // Pre-cache URL gambar untuk mempercepat loading
+                data.images.forEach(img => {
+                  // Cache URL untuk setiap ukuran
+                  const originalUrl = `${apiUrl}/${img.original_path}`;
+                  const mediumUrl = `${apiUrl}/${img.medium_path}`;
+                  const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+                  // Simpan ke cache dengan ID sebagai key
+                  window.imageCache.set(img.id, {
+                    original: originalUrl,
+                    medium: mediumUrl,
+                    thumbnail: thumbnailUrl
+                  });
+
+                  // Cache juga dengan nama file sebagai key untuk format lama
+                  const originalFilename = img.original_path.split('/').pop();
+                  if (originalFilename) {
+                    window.imageCache.set(originalFilename, {
+                      original: originalUrl,
+                      medium: mediumUrl,
+                      thumbnail: thumbnailUrl
+                    });
+                  }
+                });
+
+                // Simpan database ke localStorage
                 try {
                   localStorage.setItem('imageDatabase', JSON.stringify(data.images));
                 } catch (error) {
                   console.error('Error saving image database to localStorage:', error);
+                }
+
+                // Simpan cache ke localStorage
+                try {
+                  const cacheObject = {};
+                  window.imageCache.forEach((value, key) => {
+                    cacheObject[key] = value;
+                  });
+                  localStorage.setItem('imageUrlCache', JSON.stringify(cacheObject));
+                  console.log('AdminPosts: Saved image URL cache to localStorage:', Object.keys(cacheObject).length, 'entries');
+                } catch (error) {
+                  console.error('Error saving image URL cache to localStorage:', error);
                 }
               }
             }
@@ -279,7 +375,7 @@ function AdminPosts() {
   // Tambahkan flag untuk mencegah multiple fetching
   const isFetchingRef = useRef(false);
 
-  const fetchRegularPosts = useCallback(async () => {
+  const fetchRegularPosts = useCallback(async (isInitialLoad = false) => {
     // Jika tidak ada user, jangan lakukan fetch
     if (!user || !user.id) {
       return;
@@ -289,8 +385,11 @@ function AdminPosts() {
     isFetchingRef.current = true;
 
     try {
-      // Tampilkan indikator loading
-      setContentLoading(true);
+      // Tampilkan indikator loading jika bukan initial load
+      // Initial load sudah diatur di useEffect tab switching
+      if (!isInitialLoad) {
+        setContentLoading(true);
+      }
       setError(null);
 
       // Reset filterChanged state
@@ -376,7 +475,7 @@ function AdminPosts() {
       // Reset flag bahwa fetch sudah selesai
       isFetchingRef.current = false;
     }
-  }, [currentPage, filters, ITEMS_PER_PAGE, sortBy, user?.id]); // Tambahkan user?.id ke dependency array
+  }, [currentPage, filters, ITEMS_PER_PAGE, sortBy, user?.id, isInitialDataLoad]); // Tambahkan user?.id dan isInitialDataLoad ke dependency array
 
   // useEffect untuk inisialisasi - DISEDERHANAKAN
   useEffect(() => {
@@ -616,17 +715,57 @@ function AdminPosts() {
     return '';
   }, []);
 
-  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post
+  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post dengan cache
   const getPostImageUrl = useCallback((imagePath, postId) => {
     if (!imagePath) return '/default-fallback-image.jpg';
 
     try {
+      // Cek apakah URL sudah ada di cache
+      if (window.imageCache && window.imageCache.has(imagePath)) {
+        // Gunakan URL dari cache
+        const cachedUrls = window.imageCache.get(imagePath);
+        return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
+      }
+
+      // Cek apakah postId sudah ada di cache
+      if (postId && window.imageCache && window.imageCache.has(postId)) {
+        // Gunakan URL dari cache
+        const cachedUrls = window.imageCache.get(postId);
+        return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
+      }
+
       // Cek apakah imagePath adalah UUID (format baru)
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
-        // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
-        const imageUrls = getResponsiveImageUrls(imagePath, 'thumbnail'); // Gunakan ukuran thumbnail untuk performa yang lebih baik
-        return imageUrls.thumbnail; // Gunakan ukuran thumbnail untuk performa yang lebih baik
+        // Cek apakah UUID sudah ada di cache
+        if (window.imageCache && window.imageCache.has(imagePath)) {
+          // Gunakan URL dari cache
+          const cachedUrls = window.imageCache.get(imagePath);
+          return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
+        }
+
+        // Jika tidak ada di cache, gunakan getResponsiveImageUrls
+        const imageUrls = getResponsiveImageUrls(imagePath, 'thumbnail');
+
+        // Simpan ke cache untuk penggunaan berikutnya
+        if (window.imageCache) {
+          window.imageCache.set(imagePath, {
+            original: imageUrls.original,
+            medium: imageUrls.medium,
+            thumbnail: imageUrls.thumbnail
+          });
+
+          // Simpan juga dengan postId sebagai key jika tersedia
+          if (postId) {
+            window.imageCache.set(postId, {
+              original: imageUrls.original,
+              medium: imageUrls.medium,
+              thumbnail: imageUrls.thumbnail
+            });
+          }
+        }
+
+        return imageUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
       }
 
       // Ambil API URL dari environment variable
@@ -636,8 +775,47 @@ function AdminPosts() {
       if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
         // Perbaiki URL localhost
         if (imagePath.includes('localhost:5000')) {
-          return imagePath.replace('http://localhost:5000', apiUrl);
+          const fixedUrl = imagePath.replace('http://localhost:5000', apiUrl);
+
+          // Simpan ke cache untuk penggunaan berikutnya
+          if (window.imageCache) {
+            window.imageCache.set(imagePath, {
+              original: fixedUrl,
+              medium: fixedUrl,
+              thumbnail: fixedUrl
+            });
+
+            // Simpan juga dengan postId sebagai key jika tersedia
+            if (postId) {
+              window.imageCache.set(postId, {
+                original: fixedUrl,
+                medium: fixedUrl,
+                thumbnail: fixedUrl
+              });
+            }
+          }
+
+          return fixedUrl;
         }
+
+        // Simpan ke cache untuk penggunaan berikutnya
+        if (window.imageCache) {
+          window.imageCache.set(imagePath, {
+            original: imagePath,
+            medium: imagePath,
+            thumbnail: imagePath
+          });
+
+          // Simpan juga dengan postId sebagai key jika tersedia
+          if (postId) {
+            window.imageCache.set(postId, {
+              original: imagePath,
+              medium: imagePath,
+              thumbnail: imagePath
+            });
+          }
+        }
+
         return imagePath;
       }
 
@@ -650,8 +828,27 @@ function AdminPosts() {
           );
 
           if (matchingImage) {
-            console.log('Found matching image in database:', matchingImage.id);
-            return `${apiUrl}/${matchingImage.thumbnail_path}`; // Gunakan thumbnail path
+            const thumbnailUrl = `${apiUrl}/${matchingImage.thumbnail_path}`;
+
+            // Simpan ke cache untuk penggunaan berikutnya
+            if (window.imageCache) {
+              window.imageCache.set(imagePath, {
+                original: `${apiUrl}/${matchingImage.original_path}`,
+                medium: `${apiUrl}/${matchingImage.medium_path}`,
+                thumbnail: thumbnailUrl
+              });
+
+              // Simpan juga dengan postId sebagai key jika tersedia
+              if (postId) {
+                window.imageCache.set(postId, {
+                  original: `${apiUrl}/${matchingImage.original_path}`,
+                  medium: `${apiUrl}/${matchingImage.medium_path}`,
+                  thumbnail: thumbnailUrl
+                });
+              }
+            }
+
+            return thumbnailUrl; // Gunakan thumbnail path
           }
         }
       }
@@ -667,14 +864,33 @@ function AdminPosts() {
       const version = imageVersions[postId] || '';
       const versionParam = version ? `?v=${version}` : '';
 
-      // Kembalikan URL lengkap dengan thumbnail
-      // Coba gunakan direktori thumbnail jika path tidak spesifik
+      // Buat URL untuk thumbnail
+      let thumbnailUrl;
       if (!cleanPath.includes('/')) {
-        return `${apiUrl}/uploads/thumbnail/${cleanPath}${versionParam}`;
+        thumbnailUrl = `${apiUrl}/uploads/thumbnail/${cleanPath}${versionParam}`;
+      } else {
+        thumbnailUrl = `${apiUrl}/uploads/${cleanPath}${versionParam}`;
       }
 
-      // Jika path sudah spesifik, gunakan path tersebut
-      return `${apiUrl}/uploads/${cleanPath}${versionParam}`;
+      // Simpan ke cache untuk penggunaan berikutnya
+      if (window.imageCache) {
+        window.imageCache.set(imagePath, {
+          original: `${apiUrl}/uploads/original/${cleanPath}${versionParam}`,
+          medium: `${apiUrl}/uploads/medium/${cleanPath}${versionParam}`,
+          thumbnail: thumbnailUrl
+        });
+
+        // Simpan juga dengan postId sebagai key jika tersedia
+        if (postId) {
+          window.imageCache.set(postId, {
+            original: `${apiUrl}/uploads/original/${cleanPath}${versionParam}`,
+            medium: `${apiUrl}/uploads/medium/${cleanPath}${versionParam}`,
+            thumbnail: thumbnailUrl
+          });
+        }
+      }
+
+      return thumbnailUrl;
     } catch (error) {
       return '/default-fallback-image.jpg';
     }
@@ -948,11 +1164,15 @@ function AdminPosts() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Tambahkan state untuk melacak apakah ini adalah loading awal
+  const [isInitialDataLoad, setIsInitialDataLoad] = useState(true);
+
   // Modifikasi useEffect untuk tab switching dan inisialisasi data
   useEffect(() => {
     // Jangan jalankan jika masih dalam initialLoading
     if (initialLoading) return;
 
+    // Set loading state dengan flag yang berbeda untuk loading awal
     setContentLoading(true);
 
     // Fungsi untuk mengambil data berdasarkan tab aktif
@@ -970,7 +1190,8 @@ function AdminPosts() {
 
           // Kemudian ambil regular posts
           try {
-            await fetchRegularPosts();
+            // Panggil fetchRegularPosts dengan flag isInitialLoad
+            await fetchRegularPosts(isInitialDataLoad);
           } catch (postsError) {
             console.error('Error fetching regular posts:', postsError);
           }
@@ -988,13 +1209,17 @@ function AdminPosts() {
         setError(`Gagal memuat data untuk tab ${activeTab}: ${error.message}`);
       } finally {
         setContentLoading(false);
+        // Setelah loading pertama selesai, set isInitialDataLoad ke false
+        if (isInitialDataLoad) {
+          setIsInitialDataLoad(false);
+        }
       }
     };
 
     // Jalankan fetch data
     fetchDataForActiveTab();
 
-  }, [activeTab, initialLoading, user?.id]); // Tambahkan initialLoading dan user?.id ke dependency array
+  }, [activeTab, initialLoading, user?.id, isInitialDataLoad]); // Tambahkan isInitialDataLoad ke dependency array
 
   useEffect(() => {
     const checkForUpdates = () => {
@@ -1051,6 +1276,28 @@ function AdminPosts() {
     }
     return className;
   };
+
+  // Tambahkan useEffect untuk preload gambar
+  useEffect(() => {
+    // Preload featured post image jika ada
+    if (featuredPost && featuredPost.image) {
+      const img = new Image();
+      img.src = getPostImageUrl(featuredPost.image, featuredPost.id);
+    }
+
+    // Preload gambar untuk 5 post pertama
+    if (regularPosts && regularPosts.length > 0) {
+      // Gunakan setTimeout untuk tidak memblokir rendering
+      setTimeout(() => {
+        regularPosts.slice(0, 5).forEach(post => {
+          if (post && post.image) {
+            const img = new Image();
+            img.src = getPostImageUrl(post.image, post.id);
+          }
+        });
+      }, 500);
+    }
+  }, [featuredPost, regularPosts, getPostImageUrl]);
 
   // Fungsi stripHtmlTags sudah dipindahkan ke utils/textUtils.js
 
@@ -1134,7 +1381,7 @@ function AdminPosts() {
   // Fungsi handlePostClick sudah dipindahkan ke komponen PostItem
 
   // Fungsi renderPost untuk menampilkan post dengan PostItem
-  const renderPost = (post, isFeatured = false) => {
+  const renderPost = (post, isFeatured = false, index = 0) => {
     if (!post) {
       return null;
     }
@@ -1157,6 +1404,7 @@ function AdminPosts() {
         handlePermanentDelete={handlePermanentDelete}
         handleSoftDelete={handleSoftDelete}
         ensurePostStatus={ensurePostStatus}
+        index={index}
       />
     );
   };
@@ -1402,15 +1650,21 @@ function AdminPosts() {
                         {contentLoading ? (
                           <div className="admin-loading">
                             <div className="loading-spinner"></div>
-                            <p>Memuat data dengan filter yang dipilih...</p>
+                            <p>
+                              {isInitialDataLoad
+                                ? "Memuat data awal..."
+                                : filterChanged
+                                  ? "Memuat data dengan filter yang dipilih..."
+                                  : "Memuat data..."}
+                            </p>
                           </div>
                         ) : regularPosts && regularPosts.length > 0 ? (
                           <>
-                            {regularPosts.map(post => {
+                            {regularPosts.map((post, index) => {
                               if (!post || !post.id) {
                                 return null;
                               }
-                              return renderPost(post);
+                              return renderPost(post, false, index);
                             })}
                           </>
                         ) : (

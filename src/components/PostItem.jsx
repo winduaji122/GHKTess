@@ -20,7 +20,8 @@ const PostItem = memo(({
   handleRestore,
   handlePermanentDelete,
   handleSoftDelete,
-  ensurePostStatus
+  ensurePostStatus,
+  index = 0
 }) => {
   if (!post) return null;
 
@@ -63,6 +64,7 @@ const PostItem = memo(({
           className="post-image"
           onError={() => handleImageError(processedPost.id)}
           fallbackSrc="/placeholder-image.jpg"
+          index={index}
         />
         {isFeatured && <div className="admin-featured-label">FEATURED</div>}
       </div>
