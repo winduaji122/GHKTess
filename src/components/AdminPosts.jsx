@@ -143,6 +143,50 @@ function AdminPosts() {
     }
   }, []);
 
+  // Inisialisasi database gambar jika belum ada
+  useEffect(() => {
+    if (!window.imageDatabase && typeof window !== 'undefined') {
+      // Coba ambil dari localStorage
+      try {
+        const cachedData = localStorage.getItem('imageDatabase');
+        if (cachedData) {
+          window.imageDatabase = JSON.parse(cachedData);
+          console.log('AdminPosts: Loaded image database from localStorage:', window.imageDatabase.length, 'images');
+        }
+      } catch (error) {
+        console.error('Error loading image database from localStorage:', error);
+      }
+
+      // Jika tidak ada di localStorage, coba ambil dari server
+      if (!window.imageDatabase) {
+        const fetchImageDatabase = async () => {
+          try {
+            const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+            const response = await fetch(`${apiUrl}/api/images/database`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && Array.isArray(data.images)) {
+                window.imageDatabase = data.images;
+                console.log('AdminPosts: Loaded image database from server:', window.imageDatabase.length, 'images');
+
+                // Simpan ke localStorage untuk penggunaan berikutnya
+                try {
+                  localStorage.setItem('imageDatabase', JSON.stringify(data.images));
+                } catch (error) {
+                  console.error('Error saving image database to localStorage:', error);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching image database:', error);
+          }
+        };
+
+        fetchImageDatabase();
+      }
+    }
+  }, []);
+
   // Load view mode dari localStorage
   useEffect(() => {
     const savedViewMode = localStorage.getItem('adminPostsViewMode');
@@ -581,12 +625,12 @@ function AdminPosts() {
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
         // Gunakan getResponsiveImageUrls untuk mendapatkan URL gambar dengan berbagai ukuran
-        const imageUrls = getResponsiveImageUrls(imagePath);
-        return imageUrls.medium; // Gunakan ukuran medium untuk thumbnail
+        const imageUrls = getResponsiveImageUrls(imagePath, 'thumbnail'); // Gunakan ukuran thumbnail untuk performa yang lebih baik
+        return imageUrls.thumbnail; // Gunakan ukuran thumbnail untuk performa yang lebih baik
       }
 
       // Ambil API URL dari environment variable
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
       // Jika imagePath adalah URL lengkap
       if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
@@ -595,6 +639,21 @@ function AdminPosts() {
           return imagePath.replace('http://localhost:5000', apiUrl);
         }
         return imagePath;
+      }
+
+      // Cek apakah imagePath mengandung 'image-' (format lama)
+      if (typeof imagePath === 'string' && imagePath.includes('image-')) {
+        // Coba cari di database gambar berdasarkan nama file
+        if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+          const matchingImage = window.imageDatabase.find(img =>
+            img.original_path.includes(imagePath.split('/').pop())
+          );
+
+          if (matchingImage) {
+            console.log('Found matching image in database:', matchingImage.id);
+            return `${apiUrl}/${matchingImage.thumbnail_path}`; // Gunakan thumbnail path
+          }
+        }
       }
 
       // Bersihkan path dari prefiks yang tidak perlu
@@ -608,7 +667,13 @@ function AdminPosts() {
       const version = imageVersions[postId] || '';
       const versionParam = version ? `?v=${version}` : '';
 
-      // Kembalikan URL lengkap
+      // Kembalikan URL lengkap dengan thumbnail
+      // Coba gunakan direktori thumbnail jika path tidak spesifik
+      if (!cleanPath.includes('/')) {
+        return `${apiUrl}/uploads/thumbnail/${cleanPath}${versionParam}`;
+      }
+
+      // Jika path sudah spesifik, gunakan path tersebut
       return `${apiUrl}/uploads/${cleanPath}${versionParam}`;
     } catch (error) {
       return '/default-fallback-image.jpg';
