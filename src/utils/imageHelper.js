@@ -371,10 +371,28 @@ export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
     };
   }
 
-  // Gunakan URL langsung ke file
-  const directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
-  const directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
-  const directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+  // Coba cari file di database jika tersedia
+  let directOriginalUrl, directMediumUrl, directThumbnailUrl;
+
+  if (window.imageDatabase) {
+    const imageData = window.imageDatabase.find(img => img.id === imageId);
+    if (imageData) {
+      // Gunakan path dari database
+      directOriginalUrl = `${apiUrl}/${imageData.original_path}`;
+      directMediumUrl = `${apiUrl}/${imageData.medium_path}`;
+      directThumbnailUrl = `${apiUrl}/${imageData.thumbnail_path}`;
+    } else {
+      // Gunakan URL langsung ke file tanpa ekstensi
+      directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
+      directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+      directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+    }
+  } else {
+    // Gunakan URL langsung ke file tanpa ekstensi
+    directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
+    directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+    directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+  }
 
   // Untuk kompatibilitas dengan kode lama, tetap buat URL API
   const apiOriginalUrl = directOriginalUrl;
