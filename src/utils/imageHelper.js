@@ -355,7 +355,7 @@ export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
   }
 
   // Ambil base URL dari environment variable
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
   // Cek apakah ini adalah UUID (format baru)
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -372,55 +372,62 @@ export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
   }
 
   // Coba cari file di database jika tersedia
-  let directOriginalUrl, directMediumUrl, directThumbnailUrl;
-
   if (window.imageDatabase) {
     const imageData = window.imageDatabase.find(img => img.id === imageId);
     if (imageData) {
       // Gunakan path dari database
-      directOriginalUrl = `${apiUrl}/${imageData.original_path}`;
-      directMediumUrl = `${apiUrl}/${imageData.medium_path}`;
-      directThumbnailUrl = `${apiUrl}/${imageData.thumbnail_path}`;
-    } else {
-      // Gunakan URL langsung ke file tanpa ekstensi
-      directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
-      directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
-      directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
+      const originalUrl = `${apiUrl}/${imageData.original_path}`;
+      const mediumUrl = `${apiUrl}/${imageData.medium_path}`;
+      const thumbnailUrl = `${apiUrl}/${imageData.thumbnail_path}`;
+
+      // Tentukan URL yang diutamakan berdasarkan preferredSize
+      let preferredUrl;
+      if (preferredSize === 'thumbnail') {
+        preferredUrl = thumbnailUrl;
+      } else if (preferredSize === 'medium') {
+        preferredUrl = mediumUrl;
+      } else if (preferredSize === 'original') {
+        preferredUrl = originalUrl;
+      } else {
+        // Default ke original jika preferredSize adalah 'auto' atau tidak valid
+        preferredUrl = originalUrl;
+      }
+
+      return {
+        original: originalUrl,
+        medium: mediumUrl,
+        thumbnail: thumbnailUrl,
+        preferred: preferredUrl,
+        srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
+        sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+      };
     }
-  } else {
-    // Gunakan URL langsung ke file tanpa ekstensi
-    directOriginalUrl = `${apiUrl}/uploads/original/${imageId}`;
-    directMediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
-    directThumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
   }
 
-  // Untuk kompatibilitas dengan kode lama, tetap buat URL API
-  const apiOriginalUrl = directOriginalUrl;
-  const apiMediumUrl = directMediumUrl;
-  const apiThumbnailUrl = directThumbnailUrl;
+  // Gunakan URL langsung ke file tanpa ekstensi
+  const originalUrl = `${apiUrl}/uploads/original/${imageId}`;
+  const mediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+  const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
 
   // Tentukan URL yang diutamakan berdasarkan preferredSize
   let preferredUrl;
   if (preferredSize === 'thumbnail') {
-    preferredUrl = directThumbnailUrl;
+    preferredUrl = thumbnailUrl;
   } else if (preferredSize === 'medium') {
-    preferredUrl = directMediumUrl;
+    preferredUrl = mediumUrl;
   } else if (preferredSize === 'original') {
-    preferredUrl = directOriginalUrl;
+    preferredUrl = originalUrl;
   } else {
     // Default ke original jika preferredSize adalah 'auto' atau tidak valid
-    preferredUrl = directOriginalUrl;
+    preferredUrl = originalUrl;
   }
 
   return {
-    original: apiOriginalUrl,
-    medium: apiMediumUrl,
-    thumbnail: apiThumbnailUrl,
+    original: originalUrl,
+    medium: mediumUrl,
+    thumbnail: thumbnailUrl,
     preferred: preferredUrl,
-    directOriginal: directOriginalUrl,
-    directMedium: directMediumUrl,
-    directThumbnail: directThumbnailUrl,
-    srcSet: `${apiThumbnailUrl} 200w, ${apiMediumUrl} 640w, ${apiOriginalUrl} 1200w`,
+    srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
     sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
   };
 };

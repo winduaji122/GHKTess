@@ -40,18 +40,18 @@ const ResponsivePostImage = ({
       };
     }
 
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
     // Jika imagePath adalah objek dengan properti dari API baru
     if (typeof imagePath === 'object' && imagePath !== null) {
       // Jika objek memiliki properti original_path, thumbnail_path, medium_path (dari database)
       if (imagePath.original_path || imagePath.thumbnail_path || imagePath.medium_path) {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-
         // Gunakan path langsung dari database
         const originalUrl = imagePath.original_path ? `${apiUrl}/${imagePath.original_path}` : null;
         const mediumUrl = imagePath.medium_path ? `${apiUrl}/${imagePath.medium_path}` : null;
         const thumbnailUrl = imagePath.thumbnail_path ? `${apiUrl}/${imagePath.thumbnail_path}` : null;
 
-        // Tentukan main berdasarkan parameter size
+        // Tentukan main berdasarkan parameter size dan dimensi komponen
         let mainUrl;
         if (size === 'thumbnail' && thumbnailUrl) {
           mainUrl = thumbnailUrl;
@@ -59,8 +59,8 @@ const ResponsivePostImage = ({
           mainUrl = mediumUrl;
         } else if (size === 'original' && originalUrl) {
           mainUrl = originalUrl;
-        } else {
-          // Default atau 'auto': gunakan ukuran yang sesuai berdasarkan dimensi komponen
+        } else if (size === 'auto') {
+          // Auto: pilih berdasarkan dimensi komponen
           if (parseInt(height) <= 200 && thumbnailUrl) {
             mainUrl = thumbnailUrl;
           } else if (parseInt(height) <= 640 && mediumUrl) {
@@ -68,12 +68,16 @@ const ResponsivePostImage = ({
           } else {
             mainUrl = originalUrl;
           }
+        } else {
+          // Default ke original
+          mainUrl = originalUrl || mediumUrl || thumbnailUrl;
         }
 
         return {
           main: mainUrl,
           thumbnail: thumbnailUrl,
           medium: mediumUrl,
+          original: originalUrl,
           srcSet: thumbnailUrl && mediumUrl && originalUrl ?
             `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w` : null,
           sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
@@ -90,8 +94,8 @@ const ResponsivePostImage = ({
           mainUrl = imagePath.mediumUrl;
         } else if (size === 'original' && imagePath.url) {
           mainUrl = imagePath.url;
-        } else {
-          // Default atau 'auto': gunakan ukuran yang sesuai berdasarkan dimensi komponen
+        } else if (size === 'auto') {
+          // Auto: pilih berdasarkan dimensi komponen
           if (parseInt(height) <= 200 && imagePath.thumbnailUrl) {
             mainUrl = imagePath.thumbnailUrl;
           } else if (parseInt(height) <= 640 && imagePath.mediumUrl) {
@@ -99,12 +103,16 @@ const ResponsivePostImage = ({
           } else {
             mainUrl = imagePath.url || imagePath.path;
           }
+        } else {
+          // Default ke original
+          mainUrl = imagePath.url || imagePath.mediumUrl || imagePath.thumbnailUrl || imagePath.path;
         }
 
         return {
           main: mainUrl,
           thumbnail: imagePath.thumbnailUrl,
           medium: imagePath.mediumUrl,
+          original: imagePath.url,
           srcSet: imagePath.srcSet,
           sizes: imagePath.sizes || "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
         };
@@ -117,6 +125,7 @@ const ResponsivePostImage = ({
           main: url,
           thumbnail: null,
           medium: null,
+          original: null,
           srcSet: null,
           sizes: null
         };
@@ -135,37 +144,37 @@ const ResponsivePostImage = ({
 
           if (imageData) {
             // Gunakan path dari database
-            const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-
-            // Gunakan path lengkap dari database
             const originalUrl = `${apiUrl}/${imageData.original_path}`;
             const mediumUrl = `${apiUrl}/${imageData.medium_path}`;
             const thumbnailUrl = `${apiUrl}/${imageData.thumbnail_path}`;
 
             // Tentukan main URL berdasarkan parameter size
             let mainUrl;
-
             if (size === 'thumbnail') {
               mainUrl = thumbnailUrl;
             } else if (size === 'medium') {
               mainUrl = mediumUrl;
             } else if (size === 'original') {
               mainUrl = originalUrl;
-            } else {
-              // Mode auto: pilih berdasarkan dimensi komponen
+            } else if (size === 'auto') {
+              // Auto: pilih berdasarkan dimensi komponen
               if (parseInt(height) <= 200) {
                 mainUrl = thumbnailUrl;
-              } else if (parseInt(height) <= 400) {
+              } else if (parseInt(height) <= 640) {
                 mainUrl = mediumUrl;
               } else {
                 mainUrl = originalUrl;
               }
+            } else {
+              // Default ke original
+              mainUrl = originalUrl || mediumUrl || thumbnailUrl;
             }
 
             return {
               main: mainUrl,
               thumbnail: thumbnailUrl,
               medium: mediumUrl,
+              original: originalUrl,
               srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
               sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
             };
@@ -175,147 +184,157 @@ const ResponsivePostImage = ({
         }
 
         // Fallback jika tidak ada database atau gambar tidak ditemukan
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-
-        // Coba beberapa format path
-        // Prioritaskan format tanpa ekstensi terlebih dahulu karena banyak file di server tidak memiliki ekstensi
-        const formats = [
-          { original: `${apiUrl}/uploads/original/${imagePath}`, medium: `${apiUrl}/uploads/medium/${imagePath}`, thumbnail: `${apiUrl}/uploads/thumbnail/${imagePath}` },
-          { original: `${apiUrl}/uploads/original/${imagePath}.jpg`, medium: `${apiUrl}/uploads/medium/${imagePath}.jpg`, thumbnail: `${apiUrl}/uploads/thumbnail/${imagePath}.jpg` },
-          { original: `${apiUrl}/uploads/original/${imagePath}.jpeg`, medium: `${apiUrl}/uploads/medium/${imagePath}.jpeg`, thumbnail: `${apiUrl}/uploads/thumbnail/${imagePath}.jpeg` },
-          { original: `${apiUrl}/uploads/original/${imagePath}.png`, medium: `${apiUrl}/uploads/medium/${imagePath}.png`, thumbnail: `${apiUrl}/uploads/thumbnail/${imagePath}.png` },
-          { original: `${apiUrl}/uploads/original/${imagePath}.webp`, medium: `${apiUrl}/uploads/medium/${imagePath}.webp`, thumbnail: `${apiUrl}/uploads/thumbnail/${imagePath}.webp` }
-        ];
-
-        // Simpan format untuk digunakan di fallback
-        window.imageFormats = window.imageFormats || {};
-        window.imageFormats[imagePath] = formats;
-
-        // Gunakan format pertama sebagai default
-        const originalUrl = formats[0].original;
-        const mediumUrl = formats[0].medium;
-        const thumbnailUrl = formats[0].thumbnail;
+        // Gunakan URL langsung ke file tanpa ekstensi
+        const originalUrl = `${apiUrl}/uploads/original/${imagePath}`;
+        const mediumUrl = `${apiUrl}/uploads/medium/${imagePath}`;
+        const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imagePath}`;
 
         // Tentukan main URL berdasarkan parameter size
         let mainUrl;
-
         if (size === 'thumbnail') {
           mainUrl = thumbnailUrl;
         } else if (size === 'medium') {
           mainUrl = mediumUrl;
         } else if (size === 'original') {
           mainUrl = originalUrl;
-        } else {
-          // Mode auto: pilih berdasarkan dimensi komponen
+        } else if (size === 'auto') {
+          // Auto: pilih berdasarkan dimensi komponen
           if (parseInt(height) <= 200) {
             mainUrl = thumbnailUrl;
-          } else if (parseInt(height) <= 400) {
+          } else if (parseInt(height) <= 640) {
             mainUrl = mediumUrl;
           } else {
             mainUrl = originalUrl;
           }
+        } else {
+          // Default ke original
+          mainUrl = originalUrl;
         }
 
         return {
           main: mainUrl,
           thumbnail: thumbnailUrl,
           medium: mediumUrl,
+          original: originalUrl,
           srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
-          sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px",
-          // Simpan format untuk digunakan di fallback
-          formats: formats
+          sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
         };
       }
 
-      // Gunakan getImageUrl dengan parameter size
-      const url = getImageUrl(imagePath, null, size);
+      // Jika URL sudah mengandung /uploads/original/, /uploads/medium/, atau /uploads/thumbnail/
+      if (imagePath.includes('/uploads/original/') || imagePath.includes('/uploads/medium/') || imagePath.includes('/uploads/thumbnail/')) {
+        // Ekstrak ID dari URL
+        const parts = imagePath.split('/');
+        const imageId = parts[parts.length - 1].split('?')[0]; // Hapus parameter query jika ada
 
-      // Coba buat srcSet berdasarkan URL
-      let thumbnailUrl = null;
-      let mediumUrl = null;
-      let originalUrl = null;
-      let srcSet = null;
-      let mainUrl = url; // Default ke URL yang dikembalikan oleh getImageUrl
+        // Hapus ekstensi jika ada
+        const cleanImageId = imageId.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
 
-      // Jika URL mengandung /uploads/original/
-      if (url.includes('/uploads/original/')) {
-        thumbnailUrl = url.replace('/uploads/original/', '/uploads/thumbnail/');
-        mediumUrl = url.replace('/uploads/original/', '/uploads/medium/');
-        originalUrl = url;
+        // Buat URL untuk setiap ukuran
+        const originalUrl = `${apiUrl}/uploads/original/${cleanImageId}`;
+        const mediumUrl = `${apiUrl}/uploads/medium/${cleanImageId}`;
+        const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${cleanImageId}`;
 
-        // Buat srcSet jika URL berhasil diubah
-        if (thumbnailUrl !== url && mediumUrl !== url) {
-          srcSet = `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`;
-        }
-
-        // Pilih URL yang sesuai berdasarkan parameter size
+        // Tentukan main URL berdasarkan parameter size
+        let mainUrl;
         if (size === 'thumbnail') {
           mainUrl = thumbnailUrl;
         } else if (size === 'medium') {
           mainUrl = mediumUrl;
         } else if (size === 'original') {
           mainUrl = originalUrl;
-        } else {
-          // Mode auto: pilih berdasarkan dimensi komponen
+        } else if (size === 'auto') {
+          // Auto: pilih berdasarkan dimensi komponen
           if (parseInt(height) <= 200) {
             mainUrl = thumbnailUrl;
-          } else if (parseInt(height) <= 400) {
+          } else if (parseInt(height) <= 640) {
             mainUrl = mediumUrl;
           } else {
             mainUrl = originalUrl;
           }
+        } else {
+          // Default ke URL asli
+          mainUrl = imagePath;
         }
-      } else if (url.includes('/api/images/')) {
-        // Jika URL sudah menggunakan API endpoint, coba ekstrak ID dan buat URL untuk ukuran yang berbeda
-        const match = url.match(/\/api\/images\/([^\/]+)\/([^\/]+)/);
+
+        return {
+          main: mainUrl,
+          thumbnail: thumbnailUrl,
+          medium: mediumUrl,
+          original: originalUrl,
+          srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
+          sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+        };
+      }
+
+      // Jika URL mengandung /api/images/
+      if (imagePath.includes('/api/images/')) {
+        // Ekstrak ID dari URL API
+        const match = imagePath.match(/\/api\/images\/([^\/]+)\/([^\/]+)/);
         if (match && match[1]) {
           const imageId = match[1];
-          const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
 
-          thumbnailUrl = `${apiUrl}/api/images/${imageId}/thumbnail`;
-          mediumUrl = `${apiUrl}/api/images/${imageId}/medium`;
-          originalUrl = `${apiUrl}/api/images/${imageId}/original`;
+          // Buat URL langsung ke file
+          const originalUrl = `${apiUrl}/uploads/original/${imageId}`;
+          const mediumUrl = `${apiUrl}/uploads/medium/${imageId}`;
+          const thumbnailUrl = `${apiUrl}/uploads/thumbnail/${imageId}`;
 
-          srcSet = `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`;
-
-          // Pilih URL yang sesuai berdasarkan parameter size
+          // Tentukan main URL berdasarkan parameter size
+          let mainUrl;
           if (size === 'thumbnail') {
             mainUrl = thumbnailUrl;
           } else if (size === 'medium') {
             mainUrl = mediumUrl;
           } else if (size === 'original') {
             mainUrl = originalUrl;
-          } else {
-            // Mode auto: pilih berdasarkan dimensi komponen
+          } else if (size === 'auto') {
+            // Auto: pilih berdasarkan dimensi komponen
             if (parseInt(height) <= 200) {
               mainUrl = thumbnailUrl;
-            } else if (parseInt(height) <= 400) {
+            } else if (parseInt(height) <= 640) {
               mainUrl = mediumUrl;
             } else {
               mainUrl = originalUrl;
             }
+          } else {
+            // Default ke URL asli
+            mainUrl = imagePath;
           }
+
+          return {
+            main: mainUrl,
+            thumbnail: thumbnailUrl,
+            medium: mediumUrl,
+            original: originalUrl,
+            srcSet: `${thumbnailUrl} 200w, ${mediumUrl} 640w, ${originalUrl} 1200w`,
+            sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+          };
         }
       }
 
+      // Fallback: gunakan getImageUrl dengan parameter size
+      const url = getImageUrl(imagePath, null, size);
+
       return {
-        main: mainUrl,
-        thumbnail: thumbnailUrl,
-        medium: mediumUrl,
-        original: originalUrl,
-        srcSet,
-        sizes: srcSet ? "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px" : null
+        main: url,
+        thumbnail: null,
+        medium: null,
+        original: null,
+        srcSet: null,
+        sizes: null
       };
     }
 
+    // Fallback default
     return {
       main: fallbackSrc,
       thumbnail: null,
       medium: null,
+      original: null,
       srcSet: null,
       sizes: null
     };
-  }, [fallbackSrc]);
+  }, [fallbackSrc, height, size]);
 
   // Update imageInfo saat src berubah
   useEffect(() => {
