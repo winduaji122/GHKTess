@@ -152,143 +152,130 @@ function AdminPosts() {
     }
   }, []);
 
-  // Inisialisasi database gambar dan cache gambar
+  // Inisialisasi database gambar dan cache gambar - DIOPTIMASI
   useEffect(() => {
     // Inisialisasi cache gambar jika belum ada
     if (!window.imageCache) {
       window.imageCache = new Map();
     }
 
-    // Coba ambil cache gambar dari localStorage
-    try {
-      const cachedImageUrls = localStorage.getItem('imageUrlCache');
-      if (cachedImageUrls) {
-        const parsedCache = JSON.parse(cachedImageUrls);
-        // Konversi objek JSON kembali ke Map
-        Object.entries(parsedCache).forEach(([key, value]) => {
-          window.imageCache.set(key, value);
-        });
-        console.log('AdminPosts: Loaded image URL cache from localStorage:', Object.keys(parsedCache).length, 'entries');
+    // Fungsi untuk memuat cache gambar dari localStorage
+    const loadImageCache = () => {
+      try {
+        const cachedImageUrls = localStorage.getItem('imageUrlCache');
+        if (cachedImageUrls) {
+          const parsedCache = JSON.parse(cachedImageUrls);
+          // Konversi objek JSON kembali ke Map
+          Object.entries(parsedCache).forEach(([key, value]) => {
+            window.imageCache.set(key, value);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading image URL cache from localStorage:', error);
       }
-    } catch (error) {
-      console.error('Error loading image URL cache from localStorage:', error);
-    }
+    };
 
-    // Inisialisasi database gambar jika belum ada
-    if (!window.imageDatabase && typeof window !== 'undefined') {
-      // Coba ambil dari localStorage
+    // Fungsi untuk memuat database gambar dari localStorage
+    const loadImageDatabaseFromLocalStorage = () => {
       try {
         const cachedData = localStorage.getItem('imageDatabase');
         if (cachedData) {
           window.imageDatabase = JSON.parse(cachedData);
-          console.log('AdminPosts: Loaded image database from localStorage:', window.imageDatabase.length, 'images');
-
-          // Pre-cache URL gambar untuk mempercepat loading
-          const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-          window.imageDatabase.forEach(img => {
-            // Cache URL untuk setiap ukuran
-            const originalUrl = `${apiUrl}/${img.original_path}`;
-            const mediumUrl = `${apiUrl}/${img.medium_path}`;
-            const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
-
-            // Simpan ke cache dengan ID sebagai key
-            window.imageCache.set(img.id, {
-              original: originalUrl,
-              medium: mediumUrl,
-              thumbnail: thumbnailUrl
-            });
-
-            // Cache juga dengan nama file sebagai key untuk format lama
-            const originalFilename = img.original_path.split('/').pop();
-            if (originalFilename) {
-              window.imageCache.set(originalFilename, {
-                original: originalUrl,
-                medium: mediumUrl,
-                thumbnail: thumbnailUrl
-              });
-            }
-          });
-
-          // Simpan cache ke localStorage
-          try {
-            const cacheObject = {};
-            window.imageCache.forEach((value, key) => {
-              cacheObject[key] = value;
-            });
-            localStorage.setItem('imageUrlCache', JSON.stringify(cacheObject));
-            console.log('AdminPosts: Saved image URL cache to localStorage:', Object.keys(cacheObject).length, 'entries');
-          } catch (error) {
-            console.error('Error saving image URL cache to localStorage:', error);
-          }
+          return true;
         }
       } catch (error) {
         console.error('Error loading image database from localStorage:', error);
       }
+      return false;
+    };
 
-      // Jika tidak ada di localStorage, coba ambil dari server
-      if (!window.imageDatabase) {
-        const fetchImageDatabase = async () => {
-          try {
-            const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-            const response = await fetch(`${apiUrl}/api/images/database`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.success && Array.isArray(data.images)) {
-                window.imageDatabase = data.images;
-                console.log('AdminPosts: Loaded image database from server:', window.imageDatabase.length, 'images');
+    // Fungsi untuk memuat database gambar dari server
+    const loadImageDatabaseFromServer = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${apiUrl}/api/images/database`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.images)) {
+            window.imageDatabase = data.images;
 
-                // Pre-cache URL gambar untuk mempercepat loading
-                data.images.forEach(img => {
-                  // Cache URL untuk setiap ukuran
-                  const originalUrl = `${apiUrl}/${img.original_path}`;
-                  const mediumUrl = `${apiUrl}/${img.medium_path}`;
-                  const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
-
-                  // Simpan ke cache dengan ID sebagai key
-                  window.imageCache.set(img.id, {
-                    original: originalUrl,
-                    medium: mediumUrl,
-                    thumbnail: thumbnailUrl
-                  });
-
-                  // Cache juga dengan nama file sebagai key untuk format lama
-                  const originalFilename = img.original_path.split('/').pop();
-                  if (originalFilename) {
-                    window.imageCache.set(originalFilename, {
-                      original: originalUrl,
-                      medium: mediumUrl,
-                      thumbnail: thumbnailUrl
-                    });
-                  }
-                });
-
-                // Simpan database ke localStorage
-                try {
-                  localStorage.setItem('imageDatabase', JSON.stringify(data.images));
-                } catch (error) {
-                  console.error('Error saving image database to localStorage:', error);
-                }
-
-                // Simpan cache ke localStorage
-                try {
-                  const cacheObject = {};
-                  window.imageCache.forEach((value, key) => {
-                    cacheObject[key] = value;
-                  });
-                  localStorage.setItem('imageUrlCache', JSON.stringify(cacheObject));
-                  console.log('AdminPosts: Saved image URL cache to localStorage:', Object.keys(cacheObject).length, 'entries');
-                } catch (error) {
-                  console.error('Error saving image URL cache to localStorage:', error);
-                }
-              }
+            // Simpan database ke localStorage
+            try {
+              localStorage.setItem('imageDatabase', JSON.stringify(data.images));
+            } catch (error) {
+              console.error('Error saving image database to localStorage:', error);
             }
-          } catch (error) {
-            console.error('Error fetching image database:', error);
-          }
-        };
 
-        fetchImageDatabase();
+            return true;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching image database:', error);
       }
+      return false;
+    };
+
+    // Fungsi untuk pre-cache URL gambar yang terlihat di viewport
+    const preCacheVisibleImages = () => {
+      if (!window.imageDatabase || !Array.isArray(window.imageDatabase)) return;
+
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+      // Hanya cache 10 gambar pertama untuk mempercepat loading awal
+      const visibleImages = window.imageDatabase.slice(0, 10);
+
+      visibleImages.forEach(img => {
+        // Cache URL untuk setiap ukuran
+        const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+        // Simpan ke cache dengan ID sebagai key
+        window.imageCache.set(img.id, {
+          original: `${apiUrl}/${img.original_path}`,
+          medium: `${apiUrl}/${img.medium_path}`,
+          thumbnail: thumbnailUrl
+        });
+      });
+    };
+
+    // Fungsi untuk menyimpan cache ke localStorage
+    const saveImageCache = () => {
+      try {
+        const cacheObject = {};
+        window.imageCache.forEach((value, key) => {
+          cacheObject[key] = value;
+        });
+        localStorage.setItem('imageUrlCache', JSON.stringify(cacheObject));
+      } catch (error) {
+        console.error('Error saving image URL cache to localStorage:', error);
+      }
+    };
+
+    // Langkah 1: Load image cache dari localStorage (cepat)
+    loadImageCache();
+
+    // Langkah 2: Load image database dari localStorage (cepat)
+    const loadedFromLocalStorage = loadImageDatabaseFromLocalStorage();
+
+    // Langkah 3: Pre-cache gambar yang terlihat jika database sudah dimuat
+    if (loadedFromLocalStorage) {
+      preCacheVisibleImages();
+    }
+
+    // Langkah 4: Muat database dari server secara asinkron jika perlu
+    if (!loadedFromLocalStorage) {
+      // Gunakan setTimeout untuk tidak memblokir rendering
+      setTimeout(async () => {
+        const loadedFromServer = await loadImageDatabaseFromServer();
+        if (loadedFromServer) {
+          preCacheVisibleImages();
+          saveImageCache();
+        }
+      }, 1000); // Delay 1 detik untuk memprioritaskan rendering UI
+    } else {
+      // Jika sudah dimuat dari localStorage, simpan cache
+      setTimeout(() => {
+        saveImageCache();
+      }, 2000); // Delay lebih lama karena tidak sepenting
     }
   }, []);
 
@@ -484,7 +471,7 @@ function AdminPosts() {
       // Reset flag bahwa fetch sudah selesai
       isFetchingRef.current = false;
     }
-  }, [currentPage, filters, ITEMS_PER_PAGE, sortBy, user?.id, isInitialDataLoad]); // Tambahkan user?.id dan isInitialDataLoad ke dependency array
+  }, [currentPage, filters, ITEMS_PER_PAGE, sortBy, user?.id]); // Hapus isInitialDataLoad dari dependency array
 
   // useEffect untuk inisialisasi - DISEDERHANAKAN
   useEffect(() => {
@@ -724,183 +711,86 @@ function AdminPosts() {
     return '';
   }, []);
 
-  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post dengan cache
+  // Fungsi yang dioptimalkan untuk mendapatkan URL gambar post dengan cache - DIOPTIMASI
   const getPostImageUrl = useCallback((imagePath, postId) => {
     if (!imagePath) return '/default-fallback-image.jpg';
 
     try {
-      // Cek apakah URL sudah ada di cache
-      if (window.imageCache && window.imageCache.has(imagePath)) {
+      // Buat key cache yang unik
+      const cacheKey = postId || imagePath;
+
+      // Cek apakah URL sudah ada di cache (cek sekali saja)
+      if (window.imageCache && window.imageCache.has(cacheKey)) {
         // Gunakan URL dari cache
-        const cachedUrls = window.imageCache.get(imagePath);
-        return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
+        return window.imageCache.get(cacheKey).thumbnail;
       }
 
-      // Cek apakah postId sudah ada di cache
-      if (postId && window.imageCache && window.imageCache.has(postId)) {
-        // Gunakan URL dari cache
-        const cachedUrls = window.imageCache.get(postId);
-        return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
-      }
-
-      // Cek apakah imagePath adalah UUID (format baru)
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
-        // Cek apakah UUID sudah ada di cache
-        if (window.imageCache && window.imageCache.has(imagePath)) {
-          // Gunakan URL dari cache
-          const cachedUrls = window.imageCache.get(imagePath);
-          return cachedUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
-        }
-
-        // Jika tidak ada di cache, gunakan getResponsiveImageUrls
-        const imageUrls = getResponsiveImageUrls(imagePath, 'thumbnail');
-
-        // Simpan ke cache untuk penggunaan berikutnya
+      // Fungsi untuk menyimpan URL ke cache
+      const saveToCache = (key, urls) => {
         if (window.imageCache) {
-          window.imageCache.set(imagePath, {
-            original: imageUrls.original,
-            medium: imageUrls.medium,
-            thumbnail: imageUrls.thumbnail
-          });
-
-          // Simpan juga dengan postId sebagai key jika tersedia
-          if (postId) {
-            window.imageCache.set(postId, {
-              original: imageUrls.original,
-              medium: imageUrls.medium,
-              thumbnail: imageUrls.thumbnail
-            });
+          window.imageCache.set(key, urls);
+          // Jika key adalah postId, simpan juga dengan imagePath
+          if (key === postId && key !== imagePath) {
+            window.imageCache.set(imagePath, urls);
           }
         }
-
-        return imageUrls.thumbnail; // Gunakan thumbnail untuk performa yang lebih baik
-      }
+      };
 
       // Ambil API URL dari environment variable
       const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
-      // Jika imagePath adalah URL lengkap
-      if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
-        // Perbaiki URL localhost
-        if (imagePath.includes('localhost:5000')) {
-          const fixedUrl = imagePath.replace('http://localhost:5000', apiUrl);
-
-          // Simpan ke cache untuk penggunaan berikutnya
-          if (window.imageCache) {
-            window.imageCache.set(imagePath, {
-              original: fixedUrl,
-              medium: fixedUrl,
-              thumbnail: fixedUrl
-            });
-
-            // Simpan juga dengan postId sebagai key jika tersedia
-            if (postId) {
-              window.imageCache.set(postId, {
-                original: fixedUrl,
-                medium: fixedUrl,
-                thumbnail: fixedUrl
-              });
-            }
-          }
-
-          return fixedUrl;
-        }
-
-        // Simpan ke cache untuk penggunaan berikutnya
-        if (window.imageCache) {
-          window.imageCache.set(imagePath, {
-            original: imagePath,
-            medium: imagePath,
-            thumbnail: imagePath
-          });
-
-          // Simpan juga dengan postId sebagai key jika tersedia
-          if (postId) {
-            window.imageCache.set(postId, {
-              original: imagePath,
-              medium: imagePath,
-              thumbnail: imagePath
-            });
-          }
-        }
-
-        return imagePath;
+      // Cek apakah imagePath adalah UUID (format baru)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (typeof imagePath === 'string' && uuidPattern.test(imagePath)) {
+        // Gunakan getResponsiveImageUrls untuk format UUID
+        const imageUrls = getResponsiveImageUrls(imagePath, 'thumbnail');
+        saveToCache(cacheKey, imageUrls);
+        return imageUrls.thumbnail;
       }
 
-      // Cek apakah imagePath mengandung 'image-' (format lama)
-      if (typeof imagePath === 'string' && imagePath.includes('image-')) {
-        // Coba cari di database gambar berdasarkan nama file
-        if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
-          const matchingImage = window.imageDatabase.find(img =>
-            img.original_path.includes(imagePath.split('/').pop())
-          );
+      // Jika imagePath adalah URL lengkap
+      if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
+        // Perbaiki URL localhost jika perlu
+        const fixedUrl = imagePath.includes('localhost:5000')
+          ? imagePath.replace('http://localhost:5000', apiUrl)
+          : imagePath;
 
-          if (matchingImage) {
-            const thumbnailUrl = `${apiUrl}/${matchingImage.thumbnail_path}`;
-
-            // Simpan ke cache untuk penggunaan berikutnya
-            if (window.imageCache) {
-              window.imageCache.set(imagePath, {
-                original: `${apiUrl}/${matchingImage.original_path}`,
-                medium: `${apiUrl}/${matchingImage.medium_path}`,
-                thumbnail: thumbnailUrl
-              });
-
-              // Simpan juga dengan postId sebagai key jika tersedia
-              if (postId) {
-                window.imageCache.set(postId, {
-                  original: `${apiUrl}/${matchingImage.original_path}`,
-                  medium: `${apiUrl}/${matchingImage.medium_path}`,
-                  thumbnail: thumbnailUrl
-                });
-              }
-            }
-
-            return thumbnailUrl; // Gunakan thumbnail path
-          }
-        }
+        const urls = { original: fixedUrl, medium: fixedUrl, thumbnail: fixedUrl };
+        saveToCache(cacheKey, urls);
+        return fixedUrl;
       }
 
       // Bersihkan path dari prefiks yang tidak perlu
       let cleanPath = imagePath;
       if (typeof cleanPath === 'string') {
-        cleanPath = cleanPath.replace(/^uploads\//, '');
-        cleanPath = cleanPath.replace(/^\/uploads\//, '');
+        cleanPath = cleanPath.replace(/^uploads\//, '').replace(/^\/uploads\//, '');
       }
 
       // Tambahkan version untuk cache busting jika diperlukan
       const version = imageVersions[postId] || '';
       const versionParam = version ? `?v=${version}` : '';
 
-      // Buat URL untuk thumbnail
-      let thumbnailUrl;
+      // Buat URL untuk thumbnail, medium, dan original
+      let thumbnailUrl, mediumUrl, originalUrl;
+
       if (!cleanPath.includes('/')) {
+        // Format standar
         thumbnailUrl = `${apiUrl}/uploads/thumbnail/${cleanPath}${versionParam}`;
+        mediumUrl = `${apiUrl}/uploads/medium/${cleanPath}${versionParam}`;
+        originalUrl = `${apiUrl}/uploads/original/${cleanPath}${versionParam}`;
       } else {
-        thumbnailUrl = `${apiUrl}/uploads/${cleanPath}${versionParam}`;
+        // Path lengkap
+        thumbnailUrl = mediumUrl = originalUrl = `${apiUrl}/uploads/${cleanPath}${versionParam}`;
       }
 
-      // Simpan ke cache untuk penggunaan berikutnya
-      if (window.imageCache) {
-        window.imageCache.set(imagePath, {
-          original: `${apiUrl}/uploads/original/${cleanPath}${versionParam}`,
-          medium: `${apiUrl}/uploads/medium/${cleanPath}${versionParam}`,
-          thumbnail: thumbnailUrl
-        });
+      // Simpan ke cache
+      saveToCache(cacheKey, { original: originalUrl, medium: mediumUrl, thumbnail: thumbnailUrl });
 
-        // Simpan juga dengan postId sebagai key jika tersedia
-        if (postId) {
-          window.imageCache.set(postId, {
-            original: `${apiUrl}/uploads/original/${cleanPath}${versionParam}`,
-            medium: `${apiUrl}/uploads/medium/${cleanPath}${versionParam}`,
-            thumbnail: thumbnailUrl
-          });
-        }
-      }
-
+      // Selalu gunakan thumbnail untuk AdminPosts
       return thumbnailUrl;
+
     } catch (error) {
+      console.error('Error in getPostImageUrl:', error);
       return '/default-fallback-image.jpg';
     }
   }, [imageVersions]);
@@ -1173,7 +1063,7 @@ function AdminPosts() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Modifikasi useEffect untuk tab switching dan inisialisasi data
+  // Modifikasi useEffect untuk tab switching dan inisialisasi data - DIOPTIMASI
   useEffect(() => {
     // Jangan jalankan jika masih dalam initialLoading
     if (initialLoading) return;
@@ -1187,27 +1077,36 @@ function AdminPosts() {
         if (activeTab === 'deleted-posts') {
           await fetchDeletedPosts();
         } else if (activeTab === 'posts') {
-          // Ambil labels terlebih dahulu
-          try {
-            await fetchLabels();
-          } catch (labelError) {
-            console.error('Error fetching labels:', labelError);
-          }
+          // Gunakan Promise.all untuk melakukan fetch secara paralel
+          // Ini akan mempercepat loading data secara signifikan
+          const fetchPromises = [];
 
-          // Kemudian ambil regular posts
-          try {
-            // Panggil fetchRegularPosts dengan flag isInitialLoad
-            await fetchRegularPosts(isInitialDataLoad);
-          } catch (postsError) {
-            console.error('Error fetching regular posts:', postsError);
-          }
+          // Tambahkan promise untuk fetch labels
+          fetchPromises.push(
+            fetchLabels().catch(error => {
+              console.error('Error fetching labels:', error);
+              return []; // Return empty array on error
+            })
+          );
 
-          // Terakhir ambil featured post
-          try {
-            await fetchFeaturedPost();
-          } catch (featuredError) {
-            console.error('Error fetching featured post:', featuredError);
-          }
+          // Tambahkan promise untuk fetch regular posts
+          fetchPromises.push(
+            fetchRegularPosts(isInitialDataLoad).catch(error => {
+              console.error('Error fetching regular posts:', error);
+              return []; // Return empty array on error
+            })
+          );
+
+          // Tambahkan promise untuk fetch featured post
+          fetchPromises.push(
+            fetchFeaturedPost().catch(error => {
+              console.error('Error fetching featured post:', error);
+              return null; // Return null on error
+            })
+          );
+
+          // Tunggu semua promise selesai
+          await Promise.all(fetchPromises);
         }
       } catch (error) {
         // Log ini penting untuk debugging error saat mengambil data untuk tab aktif
@@ -1217,7 +1116,10 @@ function AdminPosts() {
         setContentLoading(false);
         // Setelah loading pertama selesai, set isInitialDataLoad ke false
         if (isInitialDataLoad) {
-          setIsInitialDataLoad(false);
+          // Gunakan setTimeout untuk menghindari re-render yang menyebabkan doubling load
+          setTimeout(() => {
+            setIsInitialDataLoad(false);
+          }, 0);
         }
       }
     };
@@ -1225,7 +1127,7 @@ function AdminPosts() {
     // Jalankan fetch data
     fetchDataForActiveTab();
 
-  }, [activeTab, initialLoading, user?.id, isInitialDataLoad]); // Tambahkan isInitialDataLoad ke dependency array
+  }, [activeTab, initialLoading, user?.id]); // Hapus isInitialDataLoad dari dependency array
 
   useEffect(() => {
     const checkForUpdates = () => {
