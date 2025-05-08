@@ -171,8 +171,6 @@ const ResponsiveImage = ({
       console.log('Retrying with cache busting:', cacheBuster);
       setImgSrc(cacheBuster);
     }
-
-  }
   };
 
   // Handler untuk successful load
