@@ -29,7 +29,7 @@ const ResponsiveImage = ({
   const [formatIndex, setFormatIndex] = useState(0);
   const imgRef = useRef(null);
   const retryCount = useRef(0);
-  const MAX_RETRIES = 2;
+  const MAX_RETRIES = 1; // Kurangi jumlah percobaan untuk menghindari infinite loop
 
   // Simpan URL asli untuk referensi
   const originalUrl = src;
@@ -141,7 +141,25 @@ const ResponsiveImage = ({
     // Strategi 5: Ekstrak ukuran dan ID dari URL langsung
     const directMatch = cleanImgSrc.match(/\/uploads\/(original|medium|thumbnail)\/([^\/\?]+)/);
     if (directMatch && directMatch[1] && directMatch[2]) {
-      // URL sudah dalam format yang benar, coba dengan parameter dummy untuk refresh
+      // Jika sudah mencapai batas retry, coba dengan ekstensi file
+      if (retryCount.current >= 2) {
+        const size = directMatch[1];
+        const imageId = directMatch[2].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+        // Coba dengan ekstensi file yang berbeda
+        const extensions = ['', '.jpg', '.jpeg', '.png', '.webp', '.gif'];
+        const extensionIndex = Math.min(retryCount.current - 2, extensions.length - 1);
+
+        if (extensionIndex < extensions.length) {
+          const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[extensionIndex]}`;
+          console.log(`Trying with extension ${extensions[extensionIndex]}:`, newUrl);
+          setImgSrc(newUrl);
+          return;
+        }
+      }
+
+      // Jika belum mencapai batas retry atau sudah mencoba semua ekstensi, coba dengan parameter dummy
       const dummyParam = `${cleanImgSrc}${cleanImgSrc.includes('?') ? '&' : '?'}_dummy=${Math.random()}`;
       console.log('Refreshing direct URL with dummy parameter:', dummyParam);
       setImgSrc(dummyParam);

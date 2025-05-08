@@ -336,6 +336,77 @@ const ResponsivePostImage = ({
     };
   }, [fallbackSrc, height, size]);
 
+  // Inisialisasi database gambar jika belum ada
+  useEffect(() => {
+    if (!window.imageDatabase && typeof window !== 'undefined') {
+      // Coba ambil dari localStorage
+      try {
+        const cachedData = localStorage.getItem('imageDatabase');
+        if (cachedData) {
+          window.imageDatabase = JSON.parse(cachedData);
+          console.log('Loaded image database from localStorage:', window.imageDatabase.length, 'images');
+        }
+      } catch (error) {
+        console.error('Error loading image database from localStorage:', error);
+      }
+
+      // Jika tidak ada di localStorage, coba ambil dari server
+      if (!window.imageDatabase) {
+        const fetchImageDatabase = async () => {
+          try {
+            const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+            const response = await fetch(`${apiUrl}/api/images/database`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && Array.isArray(data.images)) {
+                window.imageDatabase = data.images;
+                console.log('Loaded image database from server:', window.imageDatabase.length, 'images');
+
+                // Simpan ke localStorage untuk penggunaan berikutnya
+                try {
+                  localStorage.setItem('imageDatabase', JSON.stringify(data.images));
+                } catch (error) {
+                  console.error('Error saving image database to localStorage:', error);
+                }
+              }
+            } else {
+              // Jika gagal mengambil dari server, coba gunakan data statis
+              try {
+                // Gunakan data dari DATABASE TABLE/images.json
+                const staticData = [
+                  {"id":"970dea2a-3f47-4c3b-a622-b7b3617f0ccd", "original_path":"uploads/original/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg", "thumbnail_path":"uploads/thumbnail/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg", "medium_path":"uploads/medium/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg"},
+                  {"id":"a2bc34ca-0d83-40fd-9008-a519a2964a2d", "original_path":"uploads/original/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png", "thumbnail_path":"uploads/thumbnail/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png", "medium_path":"uploads/medium/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png"},
+                  {"id":"3a935786-bfb4-46bb-b1c3-4505db2c7827", "original_path":"uploads/original/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg", "thumbnail_path":"uploads/thumbnail/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg", "medium_path":"uploads/medium/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg"},
+                  {"id":"6e965d95-1ec6-40e9-83b3-703b7bfd52df", "original_path":"uploads/original/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg", "thumbnail_path":"uploads/thumbnail/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg", "medium_path":"uploads/medium/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg"},
+                  {"id":"1e1896a9-40eb-4d45-bdda-6004e6b1dfa0", "original_path":"uploads/original/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp", "thumbnail_path":"uploads/thumbnail/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp", "medium_path":"uploads/medium/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp"},
+                  {"id":"9203f2d3-a8e7-49d7-9904-2a467c4b5d04", "original_path":"uploads/original/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp", "thumbnail_path":"uploads/thumbnail/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp", "medium_path":"uploads/medium/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp"},
+                  {"id":"4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "original_path":"uploads/original/4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "thumbnail_path":"uploads/thumbnail/4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "medium_path":"uploads/medium/4d8666de-26a3-49e3-aab3-2fad7ddeee2b"},
+                  {"id":"63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "original_path":"uploads/original/63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "thumbnail_path":"uploads/thumbnail/63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "medium_path":"uploads/medium/63982c1a-1e97-4364-a3fd-41f9edfdfa1c"}
+                ];
+
+                window.imageDatabase = staticData;
+                console.log('Using static image database:', staticData.length, 'images');
+
+                // Simpan ke localStorage untuk penggunaan berikutnya
+                try {
+                  localStorage.setItem('imageDatabase', JSON.stringify(staticData));
+                } catch (error) {
+                  console.error('Error saving static image database to localStorage:', error);
+                }
+              } catch (error) {
+                console.error('Error using static image database:', error);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching image database:', error);
+          }
+        };
+
+        fetchImageDatabase();
+      }
+    }
+  }, []);
+
   // Update imageInfo saat src berubah
   useEffect(() => {
     setImageInfo(extractImageInfo(src));
