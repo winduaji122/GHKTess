@@ -1,12 +1,52 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostCard.css';
 import ResponsivePostImage from './common/ResponsivePostImage';
-import { getImageUrl } from '../utils/imageHelper';
 import PropTypes from 'prop-types';
 
 const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
   const navigate = useNavigate();
+
+  // Fungsi untuk memperbaiki URL gambar dengan format lama
+  const fixImageUrl = useCallback((imageUrl) => {
+    if (!imageUrl) return null;
+
+    // Jika URL mengandung 'image-' (format lama), coba konversi ke UUID
+    if (typeof imageUrl === 'string' && imageUrl.includes('image-')) {
+      // Coba cari di database gambar berdasarkan nama file
+      if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+        const matchingImage = window.imageDatabase.find(img =>
+          img.original_path.includes(imageUrl.split('/').pop())
+        );
+
+        if (matchingImage) {
+          console.log('Found matching image in database:', matchingImage.id);
+          return matchingImage.id;
+        }
+      }
+
+      // Jika tidak ditemukan di database, gunakan URL asli
+      return imageUrl;
+    }
+
+    return imageUrl;
+  }, []);
+
+  // Inisialisasi database gambar jika belum ada
+  useEffect(() => {
+    if (!window.imageDatabase && typeof window !== 'undefined') {
+      // Coba ambil dari localStorage
+      try {
+        const cachedData = localStorage.getItem('imageDatabase');
+        if (cachedData) {
+          window.imageDatabase = JSON.parse(cachedData);
+          console.log('PostCard: Loaded image database from localStorage:', window.imageDatabase.length, 'images');
+        }
+      } catch (error) {
+        console.error('Error loading image database from localStorage:', error);
+      }
+    }
+  }, []);
 
   const truncateContent = useCallback((content, maxLength = isSpotlight ? 50 : 100) => {
     if (!content) return '';
@@ -50,7 +90,7 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
     return [];
   }, [post?.labels]);
 
-  // Fungsi getImageUrl sudah diimpor dari utils/imageHelper.js
+  // Gunakan fungsi fixImageUrl untuk memperbaiki URL gambar
 
   const postContent = useMemo(() => {
     if (!post || typeof post !== 'object') {
@@ -64,13 +104,17 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
       <>
         <div className="post-card-image-container">
           <ResponsivePostImage
-            src={post.image}
+            src={fixImageUrl(post.image)}
             alt={post.title || 'Post image'}
             className="post-card-image"
             height="200px"
             width="100%"
             objectFit="cover"
             size="thumbnail" // Gunakan ukuran thumbnail untuk performa lebih baik
+            priority={index < 3} // Prioritaskan 3 gambar pertama
+            onError={() => {
+              console.error('Error loading post card image:', post.image);
+            }}
           />
           {!isSpotlight && labels.length > 0 && (
             <div className="post-card-labels-overlay">
@@ -95,7 +139,7 @@ const PostCard = React.memo(function PostCard({ post, index, isSpotlight }) {
         </div>
       </>
     );
-  }, [post, getImageUrl, getLabels, truncateContent, isSpotlight]);
+  }, [post, fixImageUrl, getLabels, truncateContent, isSpotlight]);
 
   if (!postContent) {
     return null;
