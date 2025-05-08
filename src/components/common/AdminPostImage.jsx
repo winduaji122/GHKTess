@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect } from 'react';
-import SimpleResponsivePostImage from './SimpleResponsivePostImage';
+import ResponsivePostImage from './ResponsivePostImage';
+import { fixImageUrl } from '../../utils/imageUrlHelper';
 
 /**
  * Komponen AdminPostImage yang dioptimalkan untuk halaman admin posts
- * Menggunakan SimpleResponsivePostImage untuk performa yang lebih baik
+ * Menggunakan ResponsivePostImage untuk performa yang lebih baik
  */
 const AdminPostImage = ({
   src,
@@ -16,30 +17,8 @@ const AdminPostImage = ({
   fallbackSrc = '/placeholder-image.jpg',
   index = 0
 }) => {
-  // Fungsi untuk memperbaiki URL gambar dengan format lama
-  const fixImageUrl = useCallback((imageUrl) => {
-    if (!imageUrl) return null;
-
-    // Jika URL mengandung 'image-' (format lama), coba konversi ke UUID
-    if (typeof imageUrl === 'string' && imageUrl.includes('image-')) {
-      // Coba cari di database gambar berdasarkan nama file
-      if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
-        const matchingImage = window.imageDatabase.find(img =>
-          img.original_path.includes(imageUrl.split('/').pop())
-        );
-
-        if (matchingImage) {
-          console.log('Found matching image in database:', matchingImage.id);
-          return matchingImage.id;
-        }
-      }
-
-      // Jika tidak ditemukan di database, gunakan URL asli
-      return imageUrl;
-    }
-
-    return imageUrl;
-  }, []);
+  // Gunakan fungsi fixImageUrl dari imageUrlHelper.js
+  // Ini sudah diimpor di bagian atas file
 
   // Inisialisasi database gambar jika belum ada
   useEffect(() => {
@@ -57,7 +36,7 @@ const AdminPostImage = ({
   }, []);
 
   return (
-    <SimpleResponsivePostImage
+    <ResponsivePostImage
       src={fixImageUrl(src)}
       alt={alt}
       className={`admin-post-image-container ${className}`}
@@ -67,6 +46,7 @@ const AdminPostImage = ({
       onError={onError}
       size="thumbnail" // Gunakan ukuran thumbnail untuk performa yang lebih baik
       priority={index < 5} // Prioritaskan 5 gambar pertama
+      loading={index < 5 ? "eager" : "lazy"} // Lazy loading untuk gambar yang tidak terlihat
       fallbackSrc="/placeholder-image.jpg"
     />
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ResponsiveImage from './ResponsiveImage';
 import { getImageUrl } from '../../utils/imageHelper';
+import { getCorrectImageUrl } from '../../utils/imageUrlHelper';
 
 /**
  * Komponen ResponsivePostImage khusus untuk menampilkan gambar post
@@ -359,8 +360,8 @@ const ResponsivePostImage = ({
         }
       }
 
-      // Fallback: gunakan getImageUrl dengan parameter size
-      const url = getImageUrl(imagePath, null, size);
+      // Fallback: gunakan getCorrectImageUrl dengan parameter size
+      const url = getCorrectImageUrl(imagePath, size);
 
       return {
         main: url,
