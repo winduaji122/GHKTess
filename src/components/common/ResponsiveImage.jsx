@@ -175,64 +175,80 @@ const ResponsiveImage = ({
     const directMatch = cleanImgSrc.match(/\/uploads\/(original|medium|thumbnail)\/([^\/\?]+)/);
     if (directMatch && directMatch[1] && directMatch[2]) {
       const size = directMatch[1];
-      const imageId = directMatch[2].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
-      // Coba dengan ekstensi file yang berbeda
-      const extensions = ['', '.jpg', '.jpeg', '.png', '.gif', '.webp'];
+      // Ekstrak ID dan ekstensi jika ada
+      const fullImageId = directMatch[2];
+      const extensionMatch = fullImageId.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+      const imageId = extensionMatch ? fullImageId.substring(0, fullImageId.lastIndexOf('.')) : fullImageId;
+      const foundExtension = extensionMatch ? extensionMatch[0] : null;
 
-      // Jika ini adalah UUID, coba cari di database gambar terlebih dahulu
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (uuidPattern.test(imageId) && window.imageDatabase && Array.isArray(window.imageDatabase)) {
-        const matchingImage = window.imageDatabase.find(img => img.id === imageId);
-        if (matchingImage) {
-          // Ekstrak ekstensi dari path di database
-          const pathParts = matchingImage[`${size}_path`].split('.');
-          const extension = pathParts.length > 1 ? `.${pathParts.pop()}` : '';
-
-          if (extension) {
-            const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extension}`;
-            console.log(`Using extension ${extension} from database:`, newUrl);
-            setImgSrc(newUrl);
-            return;
-          }
-        }
+      // Jika ekstensi ditemukan dalam URL, simpan ke cache untuk penggunaan berikutnya
+      if (foundExtension && typeof window.saveImageExtension === 'function') {
+        window.saveImageExtension(imageId, foundExtension);
       }
 
-      // Jika ini adalah image-* format, coba cari di database gambar
-      if (imageId.includes('image-') && window.imageDatabase && Array.isArray(window.imageDatabase)) {
-        const matchingImage = window.imageDatabase.find(img =>
-          img.original_path.includes(imageId) ||
-          img.id === imageId
-        );
+      try {
+        // Import fungsi helper secara dinamis
+        import('../../utils/imageHelper').then(({ getImageUrlWithExtension }) => {
+          // Gunakan fungsi helper untuk mendapatkan URL dengan ekstensi yang benar
+          const newUrl = getImageUrlWithExtension(imageId, size);
+          console.log(`Using helper function to get URL with correct extension:`, newUrl);
 
-        if (matchingImage) {
-          // Ekstrak ekstensi dari path di database
-          const pathParts = matchingImage[`${size}_path`].split('.');
-          const extension = pathParts.length > 1 ? `.${pathParts.pop()}` : '';
-
-          if (extension) {
-            const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extension}`;
-            console.log(`Using extension ${extension} from database for image-* format:`, newUrl);
-            setImgSrc(newUrl);
-            return;
+          // Ekstrak ekstensi dari URL yang dihasilkan
+          const newExtensionMatch = newUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+          if (newExtensionMatch && typeof window.saveImageExtension === 'function') {
+            window.saveImageExtension(imageId, newExtensionMatch[0]);
           }
-        }
-      }
 
-      // Jika tidak ditemukan di database atau tidak ada ekstensi, coba semua ekstensi
-      const extensionIndex = Math.min(retryCount.current, extensions.length - 1);
-      if (extensionIndex < extensions.length) {
-        const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extensions[extensionIndex]}`;
-        console.log(`Trying with extension ${extensions[extensionIndex]}:`, newUrl);
+          setImgSrc(newUrl);
+        }).catch(error => {
+          console.error('Error importing imageHelper:', error);
+
+          // Fallback jika import gagal: gunakan pendekatan sederhana
+          const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const extensions = ['', '.jpg', '.jpeg', '.png', '.gif', '.webp'];
+          const extensionIndex = Math.min(retryCount.current, extensions.length - 1);
+
+          if (extensionIndex < extensions.length) {
+            const extension = extensions[extensionIndex];
+            const newUrl = `${apiUrl}/uploads/${size}/${imageId}${extension}`;
+            console.log(`Fallback: Trying with extension ${extension}:`, newUrl);
+
+            // Buat fungsi untuk memeriksa apakah URL valid
+            const checkUrl = (url, ext) => {
+              const img = new Image();
+              img.onload = () => {
+                // Jika gambar berhasil dimuat, simpan ekstensi ke cache
+                if (typeof window.saveImageExtension === 'function') {
+                  window.saveImageExtension(imageId, ext);
+                }
+              };
+              img.src = url;
+            };
+
+            // Jika ada ekstensi, periksa URL
+            if (extension) {
+              checkUrl(newUrl, extension);
+            }
+
+            setImgSrc(newUrl);
+          } else {
+            // Jika sudah mencoba semua ekstensi, coba dengan parameter dummy
+            const dummyParam = `${cleanImgSrc}${cleanImgSrc.includes('?') ? '&' : '?'}_dummy=${Math.random()}`;
+            console.log('Refreshing direct URL with dummy parameter:', dummyParam);
+            setImgSrc(dummyParam);
+          }
+        });
+      } catch (error) {
+        console.error('Error in dynamic import:', error);
+
+        // Fallback jika terjadi error: gunakan pendekatan sederhana
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const newUrl = `${apiUrl}/uploads/${size}/${imageId}.jpg`;
+        console.log(`Error fallback: Using default extension .jpg:`, newUrl);
         setImgSrc(newUrl);
-        return;
       }
 
-      // Jika sudah mencoba semua ekstensi, coba dengan parameter dummy
-      const dummyParam = `${cleanImgSrc}${cleanImgSrc.includes('?') ? '&' : '?'}_dummy=${Math.random()}`;
-      console.log('Refreshing direct URL with dummy parameter:', dummyParam);
-      setImgSrc(dummyParam);
       return;
     }
 

@@ -1,3 +1,43 @@
+// Deklarasi tipe untuk window.imageCache, window.imageDatabase, dan window.saveImageExtension
+if (typeof window !== 'undefined') {
+  window.imageCache = window.imageCache || new Map();
+  window.imageDatabase = window.imageDatabase || [];
+
+  // Deklarasi fungsi saveImageExtension jika belum ada
+  if (typeof window.saveImageExtension !== 'function') {
+    window.saveImageExtension = (id, extension) => {
+      try {
+        // Ambil cache yang sudah ada
+        const cachedExtensions = localStorage.getItem('imageExtensionCache') || '{}';
+        const extensionMap = JSON.parse(cachedExtensions);
+
+        // Tambahkan atau perbarui data
+        extensionMap[id] = extension;
+
+        // Simpan kembali ke localStorage
+        localStorage.setItem('imageExtensionCache', JSON.stringify(extensionMap));
+
+        // Tambahkan ke database gambar jika belum ada
+        if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+          const exists = window.imageDatabase.some(img => img.id === id);
+          if (!exists) {
+            window.imageDatabase.push({
+              id: id,
+              original_path: `uploads/original/${id}${extension}`,
+              thumbnail_path: `uploads/thumbnail/${id}${extension}`,
+              medium_path: `uploads/medium/${id}${extension}`
+            });
+          }
+        }
+
+        console.log(`Saved extension ${extension} for image ${id} to cache`);
+      } catch (error) {
+        console.error('Error saving image extension to cache:', error);
+      }
+    };
+  }
+}
+
 /**
  * Helper function untuk menangani URL gambar
  * @param {string} imagePath - Path gambar yang akan diproses
@@ -432,10 +472,121 @@ export const getResponsiveImageUrls = (imageId, preferredSize = 'auto') => {
   };
 };
 
+/**
+ * Fungsi untuk mendeteksi ekstensi file berdasarkan ID atau path
+ * @param {string} imageId - ID gambar atau path
+ * @returns {string} Ekstensi file yang terdeteksi (.jpg, .png, dll)
+ */
+export const detectImageExtension = (imageId) => {
+  if (!imageId) return '';
+
+  // Jika imageId sudah mengandung ekstensi, ekstrak dan kembalikan
+  const extensionMatch = imageId.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  if (extensionMatch) {
+    return extensionMatch[0].toLowerCase();
+  }
+
+  // Cek apakah ada di cache localStorage
+  try {
+    const cachedExtensions = localStorage.getItem('imageExtensionCache');
+    if (cachedExtensions) {
+      const extensionMap = JSON.parse(cachedExtensions);
+      if (extensionMap[imageId]) {
+        return extensionMap[imageId];
+      }
+    }
+  } catch (error) {
+    console.error('Error reading from imageExtensionCache:', error);
+  }
+
+  // Cek apakah ini adalah format image-*
+  if (typeof imageId === 'string' && imageId.includes('image-')) {
+    // Coba cari di database gambar
+    if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+      const matchingImage = window.imageDatabase.find(img =>
+        img.original_path.includes(imageId) ||
+        img.id === imageId
+      );
+
+      if (matchingImage) {
+        // Ekstrak ekstensi dari path di database
+        const pathParts = matchingImage.original_path.split('.');
+        if (pathParts.length > 1) {
+          const extension = `.${pathParts.pop().toLowerCase()}`;
+
+          // Simpan ke cache untuk penggunaan berikutnya
+          if (typeof window.saveImageExtension === 'function') {
+            window.saveImageExtension(imageId, extension);
+          }
+
+          return extension;
+        }
+      }
+    }
+
+    // Jika tidak ditemukan di database, coba deteksi dari pola
+    if (imageId.includes('-gif')) {
+      return '.gif';
+    } else if (imageId.includes('-png')) {
+      return '.png';
+    } else if (imageId.includes('-webp')) {
+      return '.webp';
+    } else {
+      return '.jpg'; // Default untuk format image-*
+    }
+  }
+
+  // Cek apakah ini adalah UUID
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidPattern.test(imageId)) {
+    // Coba cari di database gambar
+    if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+      const matchingImage = window.imageDatabase.find(img => img.id === imageId);
+      if (matchingImage) {
+        // Ekstrak ekstensi dari path di database
+        const pathParts = matchingImage.original_path.split('.');
+        if (pathParts.length > 1) {
+          const extension = `.${pathParts.pop().toLowerCase()}`;
+
+          // Simpan ke cache untuk penggunaan berikutnya
+          if (typeof window.saveImageExtension === 'function') {
+            window.saveImageExtension(imageId, extension);
+          }
+
+          return extension;
+        }
+      }
+    }
+
+    // Jika tidak ditemukan di database, gunakan .jpg sebagai default untuk UUID
+    return '.jpg';
+  }
+
+  // Default: gunakan .jpg
+  return '.jpg';
+};
+
+/**
+ * Fungsi untuk mendapatkan URL gambar dengan ekstensi yang benar
+ * @param {string} imageId - ID gambar
+ * @param {string} size - Ukuran gambar (original, medium, thumbnail)
+ * @returns {string} URL gambar dengan ekstensi yang benar
+ */
+export const getImageUrlWithExtension = (imageId, size = 'original') => {
+  if (!imageId) return null;
+
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const extension = detectImageExtension(imageId);
+
+  return `${apiUrl}/uploads/${size}/${imageId}${extension}`;
+};
+
 export default {
   getImageUrl,
   getProfileImageUrl,
   validateImage,
   sanitizeFileName,
-  getResponsiveImageUrls
+  getResponsiveImageUrls,
+  detectImageExtension,
+  getImageUrlWithExtension
 };

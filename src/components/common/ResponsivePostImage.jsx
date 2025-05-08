@@ -485,24 +485,40 @@ const ResponsivePostImage = ({
             } else {
               // Jika gagal mengambil dari server, coba gunakan data statis
               try {
-                // Gunakan data dari DATABASE TABLE/images.json
-                const staticData = [
-                  {"id":"970dea2a-3f47-4c3b-a622-b7b3617f0ccd", "original_path":"uploads/original/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg", "thumbnail_path":"uploads/thumbnail/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg", "medium_path":"uploads/medium/970dea2a-3f47-4c3b-a622-b7b3617f0ccd.jpg"},
-                  {"id":"a2bc34ca-0d83-40fd-9008-a519a2964a2d", "original_path":"uploads/original/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png", "thumbnail_path":"uploads/thumbnail/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png", "medium_path":"uploads/medium/a2bc34ca-0d83-40fd-9008-a519a2964a2d.png"},
-                  {"id":"3a935786-bfb4-46bb-b1c3-4505db2c7827", "original_path":"uploads/original/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg", "thumbnail_path":"uploads/thumbnail/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg", "medium_path":"uploads/medium/3a935786-bfb4-46bb-b1c3-4505db2c7827.jpeg"},
-                  {"id":"6e965d95-1ec6-40e9-83b3-703b7bfd52df", "original_path":"uploads/original/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg", "thumbnail_path":"uploads/thumbnail/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg", "medium_path":"uploads/medium/6e965d95-1ec6-40e9-83b3-703b7bfd52df.jpg"},
-                  {"id":"1e1896a9-40eb-4d45-bdda-6004e6b1dfa0", "original_path":"uploads/original/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp", "thumbnail_path":"uploads/thumbnail/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp", "medium_path":"uploads/medium/1e1896a9-40eb-4d45-bdda-6004e6b1dfa0.webp"},
-                  {"id":"9203f2d3-a8e7-49d7-9904-2a467c4b5d04", "original_path":"uploads/original/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp", "thumbnail_path":"uploads/thumbnail/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp", "medium_path":"uploads/medium/9203f2d3-a8e7-49d7-9904-2a467c4b5d04.webp"},
-                  {"id":"4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "original_path":"uploads/original/4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "thumbnail_path":"uploads/thumbnail/4d8666de-26a3-49e3-aab3-2fad7ddeee2b", "medium_path":"uploads/medium/4d8666de-26a3-49e3-aab3-2fad7ddeee2b"},
-                  {"id":"63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "original_path":"uploads/original/63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "thumbnail_path":"uploads/thumbnail/63982c1a-1e97-4364-a3fd-41f9edfdfa1c", "medium_path":"uploads/medium/63982c1a-1e97-4364-a3fd-41f9edfdfa1c"},
-                  // Tambahkan data gambar yang sering muncul di log error
-                  {"id":"d59f5a2c-31c8-49a4-8766-8c36ee25e20b", "original_path":"uploads/original/d59f5a2c-31c8-49a4-8766-8c36ee25e20b.jpg", "thumbnail_path":"uploads/thumbnail/d59f5a2c-31c8-49a4-8766-8c36ee25e20b.jpg", "medium_path":"uploads/medium/d59f5a2c-31c8-49a4-8766-8c36ee25e20b.jpg"},
-                  {"id":"fa2f8169-2d32-44b9-b41d-94cc25366bf4", "original_path":"uploads/original/fa2f8169-2d32-44b9-b41d-94cc25366bf4.jpg", "thumbnail_path":"uploads/thumbnail/fa2f8169-2d32-44b9-b41d-94cc25366bf4.jpg", "medium_path":"uploads/medium/fa2f8169-2d32-44b9-b41d-94cc25366bf4.jpg"},
-                  {"id":"d39520cd-6675-4e11-b3ea-304af7ff20a7", "original_path":"uploads/original/d39520cd-6675-4e11-b3ea-304af7ff20a7.jpg", "thumbnail_path":"uploads/thumbnail/d39520cd-6675-4e11-b3ea-304af7ff20a7.jpg", "medium_path":"uploads/medium/d39520cd-6675-4e11-b3ea-304af7ff20a7.jpg"},
-                  {"id":"e3fc5876-8d08-48f1-b774-800a12c13823", "original_path":"uploads/original/e3fc5876-8d08-48f1-b774-800a12c13823.jpg", "thumbnail_path":"uploads/thumbnail/e3fc5876-8d08-48f1-b774-800a12c13823.jpg", "medium_path":"uploads/medium/e3fc5876-8d08-48f1-b774-800a12c13823.jpg"},
-                  // Tambahkan data untuk image-1746675664601-311424452.gif
-                  {"id":"image-1746675664601-311424452", "original_path":"uploads/original/image-1746675664601-311424452.gif", "thumbnail_path":"uploads/thumbnail/image-1746675664601-311424452.gif", "medium_path":"uploads/medium/image-1746675664601-311424452.gif"}
-                ];
+                // Buat fungsi untuk menghasilkan data gambar secara dinamis dan otomatis
+                const generateDynamicImageData = () => {
+                  // Coba ambil data dari localStorage terlebih dahulu
+                  try {
+                    const cachedExtensions = localStorage.getItem('imageExtensionCache');
+                    if (cachedExtensions) {
+                      const extensionMap = JSON.parse(cachedExtensions);
+                      console.log('Loaded image extension cache from localStorage:', Object.keys(extensionMap).length, 'entries');
+
+                      // Konversi data dari localStorage ke format yang dibutuhkan
+                      return Object.entries(extensionMap).map(([id, ext]) => ({
+                        id: id,
+                        original_path: `uploads/original/${id}${ext}`,
+                        thumbnail_path: `uploads/thumbnail/${id}${ext}`,
+                        medium_path: `uploads/medium/${id}${ext}`
+                      }));
+                    }
+                  } catch (error) {
+                    console.error('Error loading image extension cache from localStorage:', error);
+                  }
+
+                  // Jika tidak ada di localStorage, buat data minimal
+                  // Sistem akan menambahkan data secara otomatis saat gambar dimuat
+                  return [];
+                };
+
+                // Gunakan fungsi untuk menghasilkan data gambar secara dinamis
+                const staticData = generateDynamicImageData();
+
+                // Pastikan fungsi saveImageExtension tersedia
+                if (typeof window.saveImageExtension !== 'function') {
+                  // Fungsi ini sekarang didefinisikan di imageHelper.js
+                  console.log('Using imageHelper.js saveImageExtension function');
+                }
 
                 window.imageDatabase = staticData;
                 console.log('Using static image database:', staticData.length, 'images');
