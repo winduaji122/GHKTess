@@ -2,6 +2,12 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import PostItem from './PostItem';
 
+// Deklarasi tipe untuk window.imageCache dan window.imageDatabase
+if (typeof window !== 'undefined') {
+  window.imageCache = window.imageCache || new Map();
+  window.imageDatabase = window.imageDatabase || [];
+}
+
 import { useAuth } from '../contexts/AuthContext';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -91,6 +97,9 @@ function AdminPosts() {
 
   const [initialLoading, setInitialLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
+
+  // Tambahkan state untuk melacak apakah ini adalah loading awal
+  const [isInitialDataLoad, setIsInitialDataLoad] = useState(true);
 
   // Tambahkan state untuk transisi
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -1163,9 +1172,6 @@ function AdminPosts() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
-
-  // Tambahkan state untuk melacak apakah ini adalah loading awal
-  const [isInitialDataLoad, setIsInitialDataLoad] = useState(true);
 
   // Modifikasi useEffect untuk tab switching dan inisialisasi data
   useEffect(() => {
