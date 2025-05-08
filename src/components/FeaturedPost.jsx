@@ -23,15 +23,36 @@ function FeaturedPost({ post }) {
       : decodedContent;
   }, []);
 
-  // Fungsi getImageUrl sudah diimpor dari utils/imageHelper.js
+  // Fungsi untuk memperbaiki URL gambar dengan format lama
+  const fixImageUrl = useCallback((imageUrl) => {
+    if (!imageUrl) return null;
 
-  // Hapus log yang tidak perlu untuk meningkatkan performa
+    // Jika URL mengandung 'image-' (format lama), coba konversi ke UUID
+    if (typeof imageUrl === 'string' && imageUrl.includes('image-')) {
+      // Coba cari di database gambar berdasarkan nama file
+      if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+        const matchingImage = window.imageDatabase.find(img =>
+          img.original_path.includes(imageUrl.split('/').pop())
+        );
+
+        if (matchingImage) {
+          console.log('Found matching image in database:', matchingImage.id);
+          return matchingImage.id;
+        }
+      }
+
+      // Jika tidak ditemukan di database, gunakan URL asli
+      return imageUrl;
+    }
+
+    return imageUrl;
+  }, []);
 
   return (
     <Link to={`/post/${post.id}`} className="featured-post">
       <div className="featured-image-container">
         <ResponsivePostImage
-          src={post.image}
+          src={fixImageUrl(post.image)}
           alt={post.title}
           className="featured-image"
           height="100%"

@@ -137,7 +137,44 @@ const ResponsivePostImage = ({
       // Cek apakah ini adalah UUID (format baru)
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidPattern.test(imagePath)) {
-        // Ini adalah ID gambar, coba cari di database
+        // Ini adalah ID gambar, coba cari di cache terlebih dahulu
+        if (window.imageCache && window.imageCache.has(imagePath)) {
+          const cachedUrls = window.imageCache.get(imagePath);
+          console.log('Using cached image URLs for:', imagePath);
+
+          // Tentukan main URL berdasarkan parameter size
+          let mainUrl;
+          if (size === 'thumbnail') {
+            mainUrl = cachedUrls.thumbnail;
+          } else if (size === 'medium') {
+            mainUrl = cachedUrls.medium;
+          } else if (size === 'original') {
+            mainUrl = cachedUrls.original;
+          } else if (size === 'auto') {
+            // Auto: pilih berdasarkan dimensi komponen
+            if (parseInt(height) <= 200) {
+              mainUrl = cachedUrls.thumbnail;
+            } else if (parseInt(height) <= 640) {
+              mainUrl = cachedUrls.medium;
+            } else {
+              mainUrl = cachedUrls.original;
+            }
+          } else {
+            // Default ke original
+            mainUrl = cachedUrls.original || cachedUrls.medium || cachedUrls.thumbnail;
+          }
+
+          return {
+            main: mainUrl,
+            thumbnail: cachedUrls.thumbnail,
+            medium: cachedUrls.medium,
+            original: cachedUrls.original,
+            srcSet: `${cachedUrls.thumbnail} 200w, ${cachedUrls.medium} 640w, ${cachedUrls.original} 1200w`,
+            sizes: "(max-width: 640px) 100vw, (max-width: 1200px) 640px, 1200px"
+          };
+        }
+
+        // Jika tidak ada di cache, coba cari di database
         try {
           // Coba ambil data gambar dari database
           const imageData = window.imageDatabase ? window.imageDatabase.find(img => img.id === imagePath) : null;
@@ -147,6 +184,16 @@ const ResponsivePostImage = ({
             const originalUrl = `${apiUrl}/${imageData.original_path}`;
             const mediumUrl = `${apiUrl}/${imageData.medium_path}`;
             const thumbnailUrl = `${apiUrl}/${imageData.thumbnail_path}`;
+
+            // Simpan ke cache untuk penggunaan berikutnya
+            if (!window.imageCache) {
+              window.imageCache = new Map();
+            }
+            window.imageCache.set(imagePath, {
+              original: originalUrl,
+              medium: mediumUrl,
+              thumbnail: thumbnailUrl
+            });
 
             // Tentukan main URL berdasarkan parameter size
             let mainUrl;
@@ -345,6 +392,40 @@ const ResponsivePostImage = ({
         if (cachedData) {
           window.imageDatabase = JSON.parse(cachedData);
           console.log('Loaded image database from localStorage:', window.imageDatabase.length, 'images');
+
+          // Inisialisasi cache gambar jika belum ada
+          if (!window.imageCache) {
+            window.imageCache = new Map();
+          }
+
+          // Pre-cache URL gambar untuk mempercepat loading
+          window.imageDatabase.forEach(img => {
+            const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+            // Cache URL untuk setiap ukuran
+            const originalUrl = `${apiUrl}/${img.original_path}`;
+            const mediumUrl = `${apiUrl}/${img.medium_path}`;
+            const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+            // Simpan ke cache dengan ID sebagai key
+            window.imageCache.set(img.id, {
+              original: originalUrl,
+              medium: mediumUrl,
+              thumbnail: thumbnailUrl
+            });
+
+            // Cache juga dengan nama file sebagai key untuk format lama
+            const originalFilename = img.original_path.split('/').pop();
+            if (originalFilename) {
+              window.imageCache.set(originalFilename, {
+                original: originalUrl,
+                medium: mediumUrl,
+                thumbnail: thumbnailUrl
+              });
+            }
+          });
+
+          console.log('Image cache initialized with', window.imageCache.size, 'entries');
         }
       } catch (error) {
         console.error('Error loading image database from localStorage:', error);
@@ -361,6 +442,38 @@ const ResponsivePostImage = ({
               if (data.success && Array.isArray(data.images)) {
                 window.imageDatabase = data.images;
                 console.log('Loaded image database from server:', window.imageDatabase.length, 'images');
+
+                // Inisialisasi cache gambar jika belum ada
+                if (!window.imageCache) {
+                  window.imageCache = new Map();
+                }
+
+                // Pre-cache URL gambar untuk mempercepat loading
+                window.imageDatabase.forEach(img => {
+                  // Cache URL untuk setiap ukuran
+                  const originalUrl = `${apiUrl}/${img.original_path}`;
+                  const mediumUrl = `${apiUrl}/${img.medium_path}`;
+                  const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+                  // Simpan ke cache dengan ID sebagai key
+                  window.imageCache.set(img.id, {
+                    original: originalUrl,
+                    medium: mediumUrl,
+                    thumbnail: thumbnailUrl
+                  });
+
+                  // Cache juga dengan nama file sebagai key untuk format lama
+                  const originalFilename = img.original_path.split('/').pop();
+                  if (originalFilename) {
+                    window.imageCache.set(originalFilename, {
+                      original: originalUrl,
+                      medium: mediumUrl,
+                      thumbnail: thumbnailUrl
+                    });
+                  }
+                });
+
+                console.log('Image cache initialized with', window.imageCache.size, 'entries');
 
                 // Simpan ke localStorage untuk penggunaan berikutnya
                 try {
@@ -386,6 +499,39 @@ const ResponsivePostImage = ({
 
                 window.imageDatabase = staticData;
                 console.log('Using static image database:', staticData.length, 'images');
+
+                // Inisialisasi cache gambar jika belum ada
+                if (!window.imageCache) {
+                  window.imageCache = new Map();
+                }
+
+                // Pre-cache URL gambar untuk mempercepat loading
+                const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+                staticData.forEach(img => {
+                  // Cache URL untuk setiap ukuran
+                  const originalUrl = `${apiUrl}/${img.original_path}`;
+                  const mediumUrl = `${apiUrl}/${img.medium_path}`;
+                  const thumbnailUrl = `${apiUrl}/${img.thumbnail_path}`;
+
+                  // Simpan ke cache dengan ID sebagai key
+                  window.imageCache.set(img.id, {
+                    original: originalUrl,
+                    medium: mediumUrl,
+                    thumbnail: thumbnailUrl
+                  });
+
+                  // Cache juga dengan nama file sebagai key untuk format lama
+                  const originalFilename = img.original_path.split('/').pop();
+                  if (originalFilename) {
+                    window.imageCache.set(originalFilename, {
+                      original: originalUrl,
+                      medium: mediumUrl,
+                      thumbnail: thumbnailUrl
+                    });
+                  }
+                });
+
+                console.log('Image cache initialized with', window.imageCache.size, 'entries from static data');
 
                 // Simpan ke localStorage untuk penggunaan berikutnya
                 try {

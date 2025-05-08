@@ -115,12 +115,39 @@ const ResponsiveImage = ({
     }
 
     // Strategi 3.2: Perbaiki URL yang salah format
-    if (cleanImgSrc.includes('/uploads/http://')) {
+    if (cleanImgSrc.includes('/uploads/http://') || cleanImgSrc.includes('/uploads/https://')) {
       const parts = cleanImgSrc.split('/uploads/');
       if (parts.length > 1) {
-        const wrongPath = parts[1];
-        const filename = wrongPath.split('/').pop();
-        const fixedUrl = `${apiUrl}/uploads/${filename}`;
+        // Ekstrak nama file dari URL yang salah
+        let wrongPath = parts[1];
+        let filename = '';
+
+        // Coba ekstrak nama file dari URL yang salah
+        if (wrongPath.includes('/')) {
+          // Jika URL mengandung path tambahan, ambil bagian terakhir
+          filename = wrongPath.split('/').pop();
+        } else {
+          // Jika URL tidak mengandung path tambahan, gunakan seluruh wrongPath
+          filename = wrongPath;
+        }
+
+        // Jika filename mengandung 'image-', coba cari di database gambar
+        if (filename.includes('image-') && window.imageDatabase && Array.isArray(window.imageDatabase)) {
+          const matchingImage = window.imageDatabase.find(img =>
+            img.original_path.includes(filename)
+          );
+
+          if (matchingImage) {
+            console.log('Found matching image in database for malformed URL:', matchingImage.id);
+            const fixedUrl = `${apiUrl}/uploads/medium/${matchingImage.id}`;
+            console.log('Fixed malformed URL with database match:', fixedUrl);
+            setImgSrc(fixedUrl);
+            return;
+          }
+        }
+
+        // Jika tidak ditemukan di database, gunakan nama file langsung
+        const fixedUrl = `${apiUrl}/uploads/medium/${filename}`;
         console.log('Fixed malformed URL:', fixedUrl);
         setImgSrc(fixedUrl);
         return;
