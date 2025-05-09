@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import ResponsivePostImage from './ResponsivePostImage';
-import { fixImageUrl } from '../../utils/imageUrlHelper';
 
 /**
  * Komponen AdminPostImage yang dioptimalkan untuk halaman admin posts
@@ -17,8 +16,30 @@ const AdminPostImage = ({
   fallbackSrc = '/placeholder-image.jpg',
   index = 0
 }) => {
-  // Gunakan fungsi fixImageUrl dari imageUrlHelper.js
-  // Ini sudah diimpor di bagian atas file
+  // Fungsi untuk memperbaiki URL gambar dengan format lama
+  const fixImageUrl = useCallback((imageUrl) => {
+    if (!imageUrl) return null;
+
+    // Jika URL mengandung 'image-' (format lama), coba konversi ke UUID
+    if (typeof imageUrl === 'string' && imageUrl.includes('image-')) {
+      // Coba cari di database gambar berdasarkan nama file
+      if (window.imageDatabase && Array.isArray(window.imageDatabase)) {
+        const matchingImage = window.imageDatabase.find(img =>
+          img.original_path.includes(imageUrl.split('/').pop())
+        );
+
+        if (matchingImage) {
+          console.log('Found matching image in database:', matchingImage.id);
+          return matchingImage.id;
+        }
+      }
+
+      // Jika tidak ditemukan di database, gunakan URL asli
+      return imageUrl;
+    }
+
+    return imageUrl;
+  }, []);
 
   // Inisialisasi database gambar jika belum ada
   useEffect(() => {
