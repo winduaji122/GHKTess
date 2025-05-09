@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './ResponsiveImage.css';
+import { DEFAULT_FALLBACK_IMAGE, isImageUrl } from '../../utils/fallbackImageConfig';
 
 // Inisialisasi cache gambar jika belum ada
 if (typeof window !== 'undefined') {
@@ -22,7 +23,7 @@ const ResponsiveImage = ({
   sizes,
   loading = 'lazy',
   onError,
-  fallbackSrc = '/placeholder-image.jpg',
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   thumbnailSrc,
   mediumSrc,
   formats
@@ -177,26 +178,45 @@ const ResponsiveImage = ({
 
       {/* Fallback jika error */}
       {hasError && (
-        <div
-          className="responsive-image-fallback"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f0f0f0',
-            color: '#666',
-            fontSize: '12px',
-            padding: '8px',
-            textAlign: 'center'
-          }}
-        >
-          Gambar tidak tersedia
-        </div>
+        <>
+          {/* Jika fallbackSrc adalah URL gambar, tampilkan gambar */}
+          {fallbackSrc && isImageUrl(fallbackSrc) ? (
+            <img
+              src={fallbackSrc}
+              alt={alt || "Gambar tidak tersedia"}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            /* Jika bukan URL gambar, tampilkan div dengan teks */
+            <div
+              className="responsive-image-fallback"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f0f0f0',
+                color: '#666',
+                fontSize: '12px',
+                padding: '8px',
+                textAlign: 'center'
+              }}
+            >
+              Gambar tidak tersedia
+            </div>
+          )}
+        </>
       )}
     </div>
   );

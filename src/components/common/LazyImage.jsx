@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { DEFAULT_FALLBACK_IMAGE, isImageUrl } from '../../utils/fallbackImageConfig';
 
 /**
  * Komponen LazyImage untuk menampilkan gambar dengan skeleton placeholder
@@ -32,6 +33,7 @@ const LazyImage = ({
   customPlaceholder,
   customError,
   priority = false,
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   ...props
 }) => {
   const [loading, setLoading] = useState(true);
@@ -140,6 +142,26 @@ const LazyImage = ({
     if (customError) {
       return <div ref={imgRef}>{customError}</div>;
     }
+
+    // Gunakan fallback image yang sudah didefinisikan di props
+
+    // Cek apakah fallbackSrc adalah URL gambar
+    if (fallbackSrc && isImageUrl(fallbackSrc)) {
+      return (
+        <img
+          ref={imgRef}
+          src={fallbackSrc}
+          alt={alt || "Gambar tidak tersedia"}
+          className={`writer-lazy-image-fallback ${className}`}
+          style={{ objectFit, ...style }}
+          width={width}
+          height={height}
+          {...props}
+        />
+      );
+    }
+
+    // Jika bukan URL gambar, tampilkan div dengan teks
     return (
       <div
         ref={imgRef}

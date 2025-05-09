@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ResponsiveImage from './ResponsiveImage';
 import { getImageUrl } from '../../utils/imageHelper';
 import { getResponsiveImageUrls } from '../../utils/getResponsiveImageUrls';
+import { DEFAULT_FALLBACK_IMAGE } from '../../utils/fallbackImageConfig';
 
 /**
  * Komponen SimplifiedResponsivePostImage yang lebih efisien untuk menampilkan gambar post
@@ -18,7 +19,7 @@ const SimplifiedResponsivePostImage = ({
   objectFit = 'cover',
   priority = false,
   onError,
-  fallbackSrc = '/placeholder-image.jpg',
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   size = 'auto' // 'auto', 'thumbnail', 'medium', atau 'original'
 }) => {
   const [imageInfo, setImageInfo] = useState({
