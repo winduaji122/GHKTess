@@ -58,86 +58,9 @@ const ResponsiveImage = ({
     // Increment retry counter
     retryCount.current += 1;
 
-    // Periksa apakah URL terlalu panjang (tanda infinite loop)
-    if (imgSrc.length > 500) {
-      console.error('URL terlalu panjang, kemungkinan infinite loop:', imgSrc.substring(0, 100) + '...');
-      setHasError(true);
-      setImgSrc(fallbackSrc);
-      return;
-    }
-
-    // Periksa apakah ini adalah percobaan ulang dengan ekstensi ganda
-    const multipleExtensions = imgSrc.match(/\.(jpg|jpeg|png|gif|webp)\.(jpg|jpeg|png|gif|webp)/i);
-    if (multipleExtensions) {
-      console.error('Terdeteksi multiple ekstensi, gunakan fallback:', imgSrc.substring(0, 100) + '...');
-      setHasError(true);
-      setImgSrc(fallbackSrc);
-      return;
-    }
-
-    // Jika URL mengandung /uploads/ tapi tidak mengandung ekstensi file, tambahkan ekstensi .jpg
-    if (imgSrc.includes('/uploads/') && !imgSrc.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      const newUrl = imgSrc + '.jpg';
-      setImgSrc(newUrl);
-      return;
-    }
-
-    // Strategi 1: Gunakan medium size jika tersedia
-    if (mediumSrc && imgSrc !== mediumSrc) {
-      setImgSrc(mediumSrc);
-      return;
-    }
-
-    // Strategi 2: Gunakan format alternatif jika tersedia
-    if (formats && formats.length > formatIndex + 1) {
-      const nextFormat = formats[formatIndex + 1];
-      setImgSrc(nextFormat.original || nextFormat.medium || nextFormat.thumbnail);
-      setFormatIndex(formatIndex + 1);
-      return;
-    }
-
-    // Strategi 3: Perbaiki URL yang salah format
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-
-    // Strategi 3.1: Perbaiki URL localhost
-    if (imgSrc.includes('localhost:5000')) {
-      const fixedUrl = imgSrc.replace('http://localhost:5000', apiUrl);
-      setImgSrc(fixedUrl);
-      return;
-    }
-
-    // Strategi 3.2: Konversi URL API ke URL langsung
-    const apiMatch = imgSrc.match(/\/api\/images\/([^\/]+)\/([^\/]+)/);
-    if (apiMatch && apiMatch[1] && apiMatch[2]) {
-      const imageId = apiMatch[1];
-      const size = apiMatch[2]; // original, medium, atau thumbnail
-      const directUrl = `${apiUrl}/uploads/${size}/${imageId}`;
-      setImgSrc(directUrl);
-      return;
-    }
-
-    // Strategi 5: Ekstrak ukuran dan ID dari URL langsung
-    const directMatch = imgSrc.match(/\/uploads\/(original|medium|thumbnail)\/([^\/\?]+)/);
-    if (directMatch && directMatch[1] && directMatch[2]) {
-      const size = directMatch[1];
-
-      // Ekstrak ID dan ekstensi jika ada
-      const fullImageId = directMatch[2];
-      const extensionMatch = fullImageId.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-      const imageId = extensionMatch ? fullImageId.substring(0, fullImageId.lastIndexOf('.')) : fullImageId;
-
-      // Gunakan pendekatan sederhana dengan ekstensi .jpg
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const newUrl = `${apiUrl}/uploads/${size}/${imageId}.jpg`;
-      setImgSrc(newUrl);
-
-      return;
-    }
-
-    // Strategi 6: Langsung gunakan fallback jika sudah mencoba beberapa kali
-
-    // Strategi 7: Jika sudah mencapai batas retry, gunakan fallback
-    if (retryCount.current >= MAX_RETRIES) {
+    // Jika URL adalah URL lengkap dengan format image-*
+    if (imgSrc.includes('/uploads/image-')) {
+      console.log('Gambar dengan format lama tidak ditemukan:', imgSrc);
       setHasError(true);
       setImgSrc(fallbackSrc);
 
@@ -147,7 +70,67 @@ const ResponsiveImage = ({
       return;
     }
 
-    // Strategi 8: Gunakan fallback
+    // Periksa apakah URL terlalu panjang (tanda infinite loop)
+    if (imgSrc.length > 500) {
+      console.error('URL terlalu panjang, kemungkinan infinite loop:', imgSrc.substring(0, 100) + '...');
+      setHasError(true);
+      setImgSrc(fallbackSrc);
+
+      if (onError) {
+        onError();
+      }
+      return;
+    }
+
+    // Periksa apakah ini adalah percobaan ulang dengan ekstensi ganda
+    const multipleExtensions = imgSrc.match(/\.(jpg|jpeg|png|gif|webp)\.(jpg|jpeg|png|gif|webp)/i);
+    if (multipleExtensions) {
+      console.error('Terdeteksi multiple ekstensi, gunakan fallback:', imgSrc.substring(0, 100) + '...');
+      setHasError(true);
+      setImgSrc(fallbackSrc);
+
+      if (onError) {
+        onError();
+      }
+      return;
+    }
+
+    // Jika sudah mencapai batas retry, gunakan fallback
+    if (retryCount.current >= MAX_RETRIES) {
+      console.log('Batas retry tercapai, gunakan fallback:', imgSrc);
+      setHasError(true);
+      setImgSrc(fallbackSrc);
+
+      if (onError) {
+        onError();
+      }
+      return;
+    }
+
+    // Strategi 1: Gunakan medium size jika tersedia dan belum dicoba
+    if (mediumSrc && imgSrc !== mediumSrc && !imgSrc.includes(mediumSrc)) {
+      console.log('Mencoba medium size:', mediumSrc);
+      setImgSrc(mediumSrc);
+      return;
+    }
+
+    // Strategi 2: Gunakan thumbnail size jika tersedia dan belum dicoba
+    if (thumbnailSrc && imgSrc !== thumbnailSrc && !imgSrc.includes(thumbnailSrc)) {
+      console.log('Mencoba thumbnail size:', thumbnailSrc);
+      setImgSrc(thumbnailSrc);
+      return;
+    }
+
+    // Strategi 3: Jika URL mengandung /uploads/ tapi tidak mengandung ekstensi file, tambahkan ekstensi .jpg
+    if (imgSrc.includes('/uploads/') && !imgSrc.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      const newUrl = imgSrc + '.jpg';
+      console.log('Menambahkan ekstensi .jpg:', newUrl);
+      setImgSrc(newUrl);
+      return;
+    }
+
+    // Strategi 4: Gunakan fallback
+    console.log('Semua strategi gagal, gunakan fallback:', imgSrc);
     setHasError(true);
     setImgSrc(fallbackSrc);
 

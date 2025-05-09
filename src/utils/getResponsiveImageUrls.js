@@ -44,6 +44,20 @@ export const getResponsiveImageUrls = (imagePath, size = 'auto') => {
 
   // Jika path sudah berupa URL lengkap
   if (path.startsWith('http')) {
+    // Jika URL mengandung format image-*, gunakan default-image.jpg
+    if (path.includes('/uploads/image-')) {
+      console.log('URL dengan format lama terdeteksi di getResponsiveImageUrls:', path);
+      const defaultUrl = `${apiUrl}/uploads/default-image.jpg`;
+      return {
+        original: defaultUrl,
+        medium: defaultUrl,
+        thumbnail: defaultUrl,
+        preferred: defaultUrl,
+        srcSet: null,
+        sizes: null
+      };
+    }
+
     // Jika URL menggunakan localhost, ganti dengan URL produksi
     if (path.includes('localhost:5000')) {
       const fixedUrl = path.replace(/http:\/\/localhost:5000/g, apiUrl);

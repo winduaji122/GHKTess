@@ -95,6 +95,11 @@ export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
 
     // Jika URL sudah menggunakan domain produksi, gunakan langsung
     if (path.includes('nodejs-production-0c33.up.railway.app')) {
+      // Jika URL mengandung format image-*, gunakan placeholder
+      if (path.includes('/uploads/image-')) {
+        console.log('URL dengan format lama terdeteksi:', path);
+        return `${apiUrl}/uploads/default-image.jpg`;
+      }
       return path;
     }
 
