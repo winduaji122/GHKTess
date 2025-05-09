@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
-import ResponsivePostImage from './ResponsivePostImage';
+import SimplifiedResponsivePostImage from './SimplifiedResponsivePostImage';
 
 /**
  * Komponen AdminPostImage yang dioptimalkan untuk halaman admin posts
- * Menggunakan ResponsivePostImage untuk performa yang lebih baik
+ * Menggunakan SimplifiedResponsivePostImage untuk performa yang lebih baik
  */
 const AdminPostImage = ({
   src,
@@ -57,7 +57,7 @@ const AdminPostImage = ({
   }, []);
 
   return (
-    <ResponsivePostImage
+    <SimplifiedResponsivePostImage
       src={fixImageUrl(src)}
       alt={alt}
       className={`admin-post-image-container ${className}`}

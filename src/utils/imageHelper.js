@@ -45,30 +45,19 @@ if (typeof window !== 'undefined') {
  * @param {string} size - Ukuran gambar yang diinginkan ('thumbnail', 'medium', 'original', 'auto')
  * @returns {string|null} URL lengkap gambar atau null jika tidak ada path
  */
+// Import getResponsiveImageUrls
+import { getResponsiveImageUrls } from './getResponsiveImageUrls';
+
+// Export getResponsiveImageUrls
+export { getResponsiveImageUrls };
+
 export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
   // Ambil base URL dari environment variable
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ghk-tess-backend.vercel.app';
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://nodejs-production-0c33.up.railway.app';
 
   // Jika tidak ada path, gunakan gambar default
   if (!imagePath) {
     return `${apiUrl}/uploads/default-image.jpg`;
-  }
-
-  // Cek apakah ini adalah UUID (format baru)
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidPattern.test(imagePath)) {
-    // Ini adalah ID gambar, gunakan URL langsung ke file
-    // Pilih path berdasarkan parameter size
-    if (size === 'thumbnail') {
-      return `${apiUrl}/uploads/thumbnail/${imagePath}`;
-    } else if (size === 'medium') {
-      return `${apiUrl}/uploads/medium/${imagePath}`;
-    } else if (size === 'original') {
-      return `${apiUrl}/uploads/original/${imagePath}`;
-    } else {
-      // Default ke original jika size adalah 'auto' atau tidak valid
-      return `${apiUrl}/uploads/original/${imagePath}`;
-    }
   }
 
   // Jika path adalah objek, coba ambil properti path
@@ -104,69 +93,44 @@ export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
       return path.replace(/http:\/\/localhost:5000/g, apiUrl);
     }
 
-    // Jika URL mengandung /uploads/original/ dan UUID, coba gunakan API endpoint
-    const uuidMatch = path.match(/\/uploads\/original\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
-    if (uuidMatch && uuidMatch[1]) {
-      return `${apiUrl}/api/images/${uuidMatch[1]}/original`;
+    // Jika URL sudah menggunakan domain produksi, gunakan langsung
+    if (path.includes('nodejs-production-0c33.up.railway.app')) {
+      return path;
     }
 
     return path;
   }
 
-  // Penanganan khusus untuk path yang mengandung UUID tanpa ekstensi
-  const uuidInPathMatch = path.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
-  if (uuidInPathMatch && uuidInPathMatch[1]) {
-    return `${apiUrl}/api/images/${uuidInPathMatch[1]}/original`;
+  // Cek apakah ini adalah UUID (format baru)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidPattern.test(path)) {
+    // Ini adalah ID gambar, gunakan URL langsung ke file
+    // Pilih path berdasarkan parameter size
+    let sizeDir = 'original';
+    if (size === 'thumbnail') {
+      sizeDir = 'thumbnail';
+    } else if (size === 'medium') {
+      sizeDir = 'medium';
+    } else if (size === 'original') {
+      sizeDir = 'original';
+    } else if (size === 'auto') {
+      // Auto: pilih berdasarkan konteks
+      sizeDir = 'medium'; // Default ke medium untuk 'auto'
+    }
+
+    // Tambahkan ekstensi .jpg untuk UUID
+    return `${apiUrl}/uploads/${sizeDir}/${path}.jpg`;
   }
 
-  // Penanganan khusus berdasarkan image_source
-  if (imageSource === 'carousel') {
-    // Untuk gambar dari carousel post
-
-    // Jika path sudah dimulai dengan uploads/, gunakan langsung
-    if (path.startsWith('uploads/')) {
-      return `${apiUrl}/${path}`;
-    }
-
-    // Jika path dimulai dengan carousel/, tambahkan uploads/
-    if (path.startsWith('carousel/')) {
-      // Periksa apakah path mengandung doubling 'carousel/carousel/'
-      if (path.startsWith('carousel/carousel/')) {
-        // Hapus salah satu 'carousel/'
-        const fixedPath = path.replace('carousel/carousel/', 'carousel/');
-        return `${apiUrl}/uploads/${fixedPath}`;
-      } else {
-        return `${apiUrl}/uploads/${path}`;
-      }
-    }
-
-    // Jika tidak ada prefix, tambahkan uploads/carousel/
-    return `${apiUrl}/uploads/carousel/${path}`;
-  } else if (imageSource === 'regular') {
-    // Untuk gambar dari regular post
-
-    // Jika path sudah dimulai dengan uploads/, gunakan langsung
-    if (path.startsWith('uploads/')) {
-      return `${apiUrl}/${path}`;
-    }
-
-    // Jika path dimulai dengan /, hapus
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-
-    // Jika tidak ada prefix, tambahkan uploads/
-    return `${apiUrl}/uploads/${cleanPath}`;
-  }
-
-  // Penanganan khusus untuk path yang dimulai dengan carousel/ (fallback)
-  if (path.startsWith('carousel/')) {
-    // Periksa apakah path mengandung doubling 'carousel/carousel/'
-    if (path.startsWith('carousel/carousel/')) {
-      // Hapus salah satu 'carousel/'
-      const fixedPath = path.replace('carousel/carousel/', 'carousel/');
-      return `${apiUrl}/uploads/${fixedPath}`;
-    } else {
+  // Jika path dimulai dengan 'image-', ini adalah format lama
+  if (path.startsWith('image-')) {
+    // Jika path sudah mengandung ekstensi file, gunakan langsung
+    if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       return `${apiUrl}/uploads/${path}`;
     }
+
+    // Jika tidak ada ekstensi, tambahkan .jpg
+    return `${apiUrl}/uploads/${path}.jpg`;
   }
 
   // Jika path dimulai dengan '/uploads/'
@@ -177,30 +141,6 @@ export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
   // Jika path dimulai dengan 'uploads/'
   if (path.startsWith('uploads/')) {
     return `${apiUrl}/${path}`;
-  }
-
-  // Jika path dimulai dengan '/storage/' atau 'storage/'
-  if (path.startsWith('/storage/')) {
-    return `${apiUrl}${path}`;
-  }
-  if (path.startsWith('storage/')) {
-    return `${apiUrl}/${path}`;
-  }
-
-  // Penanganan khusus untuk gambar profil
-  if (path.includes('profile-')) {
-    // Jika path sudah mengandung /uploads/profiles/, jangan tambahkan lagi
-    if (path.includes('/uploads/profiles/')) {
-      return path;
-    }
-
-    // Jika path mengandung /uploads/ tapi tidak /profiles/, tambahkan /profiles/
-    if (path.includes('/uploads/')) {
-      return path.replace('/uploads/', '/uploads/profiles/');
-    }
-
-    // Gunakan path yang benar dengan folder profiles/
-    return `${apiUrl}/uploads/profiles/${path}`;
   }
 
   // Default: tambahkan /uploads/ untuk semua kasus lainnya
