@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ResponsiveImage from './ResponsiveImage';
-import { getImageUrl, getResponsiveImageUrls } from '../../utils/imageHelper';
+import { getImageUrl } from '../../utils/imageHelper';
+import { getResponsiveImageUrls } from '../../utils/getResponsiveImageUrls';
 
 /**
  * Komponen SimplifiedResponsivePostImage yang lebih efisien untuk menampilkan gambar post
@@ -65,7 +66,7 @@ const SimplifiedResponsivePostImage = ({
 
     // Gunakan getResponsiveImageUrls untuk mendapatkan URL untuk berbagai ukuran
     const urls = getResponsiveImageUrls(imagePath, size);
-    
+
     if (!urls) {
       // Fallback ke getImageUrl jika getResponsiveImageUrls gagal
       const url = getImageUrl(imagePath, null, size);

@@ -46,10 +46,10 @@ if (typeof window !== 'undefined') {
  * @returns {string|null} URL lengkap gambar atau null jika tidak ada path
  */
 // Import getResponsiveImageUrls
-import { getResponsiveImageUrls } from './getResponsiveImageUrls';
+import { getResponsiveImageUrls as importedGetResponsiveImageUrls } from './getResponsiveImageUrls';
 
-// Export getResponsiveImageUrls
-export { getResponsiveImageUrls };
+// Re-export dengan nama yang berbeda untuk menghindari konflik
+export { importedGetResponsiveImageUrls as getResponsiveImageUrlsFromFile };
 
 export const getImageUrl = (imagePath, imageSource, size = 'auto') => {
   // Ambil base URL dari environment variable
